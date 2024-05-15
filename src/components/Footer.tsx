@@ -13,7 +13,7 @@ const Footer = () => {
                 <div>
                     <a href="https://www.ver.ax" target="_blank" rel="noopener noreferrer"
                        className="link"><img src={LogoVerax} alt={'Logo Verax'} height={24}/></a>
-                    <a href="https://github.com/alainncls/proof-of-audit" target="_blank" rel="noopener noreferrer"
+                    <a href="https://github.com/alainncls/discord-attestation" target="_blank" rel="noopener noreferrer"
                        className="link white"><FaGithub size={24}/></a>
                 </div>
             </div>

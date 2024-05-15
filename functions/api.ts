@@ -11,7 +11,7 @@ export async function handler(event: {
 
     const headers = {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
         "Content-Type": "application/json",
     };
@@ -49,11 +49,12 @@ export async function handler(event: {
     params.append('client_secret', DISCORD_CLIENT_SECRET);
     params.append('grant_type', 'authorization_code');
     params.append('code', code);
-    params.append('redirect_uri', 'https://discord-attestation.netlify.app/.netlify/functions/api');
+    params.append('redirect_uri', 'http://localhost:5173');
 
     try {
         const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', params);
         const {access_token} = tokenResponse.data;
+        console.log('access_token', access_token);
 
         const guildsResponse = await axios.get('https://discord.com/api/users/@me/guilds', {
             headers: {
@@ -63,17 +64,22 @@ export async function handler(event: {
 
         return {
             statusCode: 200,
+            headers,
             body: JSON.stringify(guildsResponse.data)
         };
     } catch (error: unknown) {
         if (error instanceof Error) {
+            console.log('message', error.message);
+            console.log('stack', error.stack);
             return {
                 statusCode: 500,
+                headers,
                 body: JSON.stringify({error: error.message})
             };
         } else {
             return {
                 statusCode: 500,
+                headers,
                 body: JSON.stringify({error: "An unknown error occurred"})
             };
         }

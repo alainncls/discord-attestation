@@ -1,24 +1,13 @@
-import {useEffect, useState} from 'react';
-import axios from 'axios';
+import {Guild} from "../types";
+import './GuildList.css'
 
-const GuildList = () => {
-    const [guilds, setGuilds] = useState([]);
+interface GuildListProps {
+    guilds: Guild[];
+}
 
-    useEffect(() => {
-        const fetchGuilds = async () => {
-            try {
-                const response = await axios.get('/.netlify/functions/api');
-                setGuilds(response.data);
-            } catch (error) {
-                console.error('Error fetching guilds:', error);
-            }
-        };
-
-        fetchGuilds();
-    }, []);
-
+const GuildList = ({guilds}: GuildListProps) => {
     return (
-        <div>
+        <div className={'guild-list-container'}>
             <h1>Your Discord Servers</h1>
             <ul>
                 {guilds.map((guild: { id: string, name: string }) => (

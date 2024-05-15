@@ -2,9 +2,10 @@ import axios from "axios";
 
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+const DEFAULT_REDIRECT_URL = 'http://localhost:5173';
 
 export async function handler(event: {
-    queryStringParameters: { code: string; method: string; token: { refresh_token: string } };
+    queryStringParameters: { code: string; method: string; isDev: boolean };
     body: string;
     httpMethod: string;
 }) {
@@ -42,14 +43,15 @@ export async function handler(event: {
         };
     }
 
-    const {code} = event.queryStringParameters;
+    const {code, isDev} = event.queryStringParameters;
+    const redirectUri = process.env.VITE_REDIRECT_URL ?? DEFAULT_REDIRECT_URL;
 
     const params = new URLSearchParams();
     params.append('client_id', DISCORD_CLIENT_ID);
     params.append('client_secret', DISCORD_CLIENT_SECRET);
     params.append('grant_type', 'authorization_code');
     params.append('code', code);
-    params.append('redirect_uri', 'http://localhost:5173');
+    params.append('redirect_uri', isDev ? DEFAULT_REDIRECT_URL : redirectUri);
 
     try {
         const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', params);

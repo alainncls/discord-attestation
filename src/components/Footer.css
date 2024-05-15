@@ -1,0 +1,37 @@
+.footer {
+    margin-top: auto;
+    background-color: #007BFF;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.2);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.copyright {
+    padding: 0;
+    margin: 0;
+}
+
+.link {
+    padding: 0 10px;
+}
+
+.white {
+    color: #fff;
+}
+
+.underline {
+    text-decoration: underline;
+}

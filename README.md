@@ -1,6 +1,6 @@
 # Discord Attestation
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges//deploy-status)](https://app.netlify.com/sites/discord-attestation/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/48ce283b-7559-462d-8208-a6870f72a9c4/deploy-status)](https://app.netlify.com/sites/discord-attestation/deploys)
 
 This project aims to provide a way to issue attestations of the presence of a user in a Discord server, using the [Verax Attestation Registry](https://www.ver.ax/).
 

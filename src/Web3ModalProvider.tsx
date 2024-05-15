@@ -16,6 +16,7 @@ createWeb3Modal({
     projectId: walletConnectProjectId,
     enableAnalytics: true,
     defaultChain: lineaSepolia,
+    themeMode: 'light',
     chainImages: {
         59144: LineaMainnetIcon,
         59141: LineaSepoliaIcon,

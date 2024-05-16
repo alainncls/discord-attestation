@@ -49,6 +49,8 @@ const App: React.FC = () => {
                 .then(data => {
                     if (data.error) {
                         console.error('Error fetching guilds:', data.error);
+                    } else if (data.message) {
+                        console.error('Error fetching guilds:', data.message);
                     } else {
                         setIsLoggedIn(true);
                         setGuilds(data);

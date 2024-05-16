@@ -18,4 +18,4 @@ npm run dev
 
 ## Portal on Linea Sepolia
 
-[``](https://explorer.ver.ax/linea-sepolia/portals/)
+[`0xcAB9f0F0Ccd30693c32C8Fd8aF26E09E4Fe6eadE`](https://explorer.ver.ax/linea-sepolia/portals/0xcAB9f0F0Ccd30693c32C8Fd8aF26E09E4Fe6eadE)

@@ -21,8 +21,8 @@ const App: React.FC = () => {
 
     const {address, chainId, isConnected} = useAccount();
 
-    const schemaId = "0x59ffe1d5bdbd99d418fc1dba03b136176ca52da322cab38fed6f29c2ca29bd71"
-    const portalId = "0x2fafe2c217be096e09b64c49825fe46b7c3e33b2"
+    const schemaId = "0xa8d6aefe759739c13a4151523a525bfe88b7dae97bdd5de50dab89cb247690d4"
+    const portalId = "0xcAB9f0F0Ccd30693c32C8Fd8aF26E09E4Fe6eadE"
 
     useEffect(() => {
         if (chainId && address) {
@@ -72,6 +72,8 @@ const App: React.FC = () => {
                         }],
                     },
                     [],
+                    false,
+                    100000000000000n,
                 );
                 if (receipt.transactionHash) {
                     setTxHash(receipt.transactionHash)

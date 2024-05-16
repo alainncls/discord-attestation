@@ -44,7 +44,7 @@ const App: React.FC = () => {
             localStorage.removeItem('discord_oauth_started');
 
             // Call the Netlify function to exchange the code for a token and fetch the guilds
-            fetch(`https://discord-attestation.netlify.app/.netlify/functions/api?code=${code}&isDev=true`)
+            fetch(`https://discord-attestation.netlify.app/.netlify/functions/api?code=${code}&isDev=${import.meta.env.MODE === 'development'}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {

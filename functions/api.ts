@@ -56,7 +56,6 @@ export async function handler(event: {
     try {
         const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', params);
         const {access_token} = tokenResponse.data;
-        console.log('access_token', access_token);
 
         const guildsResponse = await axios.get('https://discord.com/api/users/@me/guilds', {
             headers: {
@@ -71,8 +70,6 @@ export async function handler(event: {
         };
     } catch (error: unknown) {
         if (error instanceof Error) {
-            console.log('message', error.message);
-            console.log('stack', error.stack);
             return {
                 statusCode: 500,
                 headers,

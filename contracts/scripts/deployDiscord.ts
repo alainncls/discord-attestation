@@ -47,15 +47,15 @@ async function main() {
   const veraxSdk = new VeraxSdk(
     chainId === 59144
       ? VeraxSdk.DEFAULT_LINEA_MAINNET
-      : VeraxSdk.DEFAULT_LINEA_TESTNET,
+      : VeraxSdk.DEFAULT_LINEA_SEPOLIA,
     signer.address as Address,
     PRIVATE_KEY as Hex,
   );
 
   await veraxSdk.portal.register(
     discordPortalAddress,
-    'eFrogs Portal',
-    'eFrogs attestations',
+    'Discord Portal',
+    'Discord attestations',
     true,
     'alainnicolas.eth',
     true,

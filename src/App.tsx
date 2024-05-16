@@ -5,12 +5,12 @@ import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
 import ConnectButton from "./components/ConnectButton.tsx";
 import './App.css';
-import LogoVerax from "./assets/logo-verax.svg";
 import {VeraxSdk} from "@verax-attestation-registry/verax-sdk";
 import {Hex} from "viem";
 import {useAccount} from "wagmi";
 import {waitForTransactionReceipt} from "viem/actions";
 import {wagmiConfig} from "./wagmiConfig.ts";
+import {add} from 'date-fns';
 
 const App: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -19,7 +19,7 @@ const App: React.FC = () => {
     const [txHash, setTxHash] = useState<Hex>();
     const [attestationId, setAttestationId] = useState<Hex>();
 
-    const {address, chainId} = useAccount();
+    const {address, chainId, isConnected} = useAccount();
 
     const schemaId = "0x59ffe1d5bdbd99d418fc1dba03b136176ca52da322cab38fed6f29c2ca29bd71"
     const portalId = "0x2fafe2c217be096e09b64c49825fe46b7c3e33b2"
@@ -44,10 +44,9 @@ const App: React.FC = () => {
             localStorage.removeItem('discord_oauth_started');
 
             // Call the Netlify function to exchange the code for a token and fetch the guilds
-            fetch('https://discord-attestation.netlify.app/.netlify/functions/api?code=' + code)
+            fetch(`https://discord-attestation.netlify.app/.netlify/functions/api?code=${code}&isDev=true`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log('data', data)
                     if (data.error) {
                         console.error('Error fetching guilds:', data.error);
                     } else {
@@ -59,18 +58,17 @@ const App: React.FC = () => {
         }
     }, []);
 
-    const issueAttestation = async () => {
+    const issueAttestation = async (guildId: string) => {
         if (address && veraxSdk) {
             try {
                 let receipt = await veraxSdk.portal.attest(
                     portalId,
                     {
                         schemaId,
-                        expirationDate: Math.floor(Date.now() / 1000) + 2592000,
+                        expirationDate: Math.floor(add(new Date(), {months: 1}).getTime() / 1000),
                         subject: address,
                         attestationData: [{
-                            commitHash: 'test',
-                            repoUrl: 'test',
+                            guildId
                         }],
                     },
                     [],
@@ -85,7 +83,6 @@ const App: React.FC = () => {
                     alert(`Oops, something went wrong!`);
                 }
             } catch (e) {
-                console.log(e);
                 if (e instanceof Error) {
                     alert(`Oops, something went wrong: ${e.message}`);
                 }
@@ -93,10 +90,12 @@ const App: React.FC = () => {
         }
     };
 
-    const handleAttest = async () => {
-        setTxHash(undefined);
-        setAttestationId(undefined);
-        await issueAttestation();
+    const handleAttest = async (guildId: string) => {
+        if (isConnected) {
+            setTxHash(undefined);
+            setAttestationId(undefined);
+            await issueAttestation(guildId);
+        }
     };
 
     const truncateHexString = (hexString: string) => {
@@ -110,9 +109,6 @@ const App: React.FC = () => {
                 <ConnectButton/>
                 {isLoggedIn ? (
                     <>
-                        <button className="btn" onClick={handleAttest}>
-                            <img src={LogoVerax} alt={'Logo Verax'} height={24}/> Attest
-                        </button>
                         {txHash && <div className={'message'}>Transaction Hash: <a
                           href={`${chainId === 59144 ? 'https://lineascan.build/tx/' : 'https://sepolia.lineascan.build/tx/'}${txHash}`}
                           target="_blank" rel="noopener noreferrer">{truncateHexString(txHash)}</a></div>}
@@ -120,7 +116,7 @@ const App: React.FC = () => {
                         {attestationId && <div className={'message success'}>Attestation ID: <a
                           href={`${chainId === 59144 ? 'https://explorer.ver.ax/linea/attestations/' : 'https://explorer.ver.ax/linea-sepolia/attestations/'}${attestationId}`}
                           target="_blank" rel="noopener noreferrer">{truncateHexString(attestationId)}</a></div>}
-                        <GuildList guilds={guilds}/>
+                        <GuildList guilds={guilds} onAttest={handleAttest}/>
                     </>
                 ) : (
                     <LoginWithDiscord/>

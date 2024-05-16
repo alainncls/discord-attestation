@@ -84,3 +84,19 @@ button[type="submit"]:disabled {
 .btn:hover {
     background-color: #4752C4;
 }
+
+.btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 16px;
+}
+
+.btn-disabled {
+    background-color: #8A8A8A;
+    cursor: not-allowed;
+}
+
+.btn-disabled:hover {
+    background-color: #8A8A8A;
+}
+
+

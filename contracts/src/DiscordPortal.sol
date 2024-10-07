@@ -68,11 +68,11 @@ contract DiscordPortal is AbstractPortal, Ownable {
 
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(validationPayloads[0]);
         address signer = ecrecover(subjectHash, v, r, s);
-        if (signer != 0x8029dD56C10a9C2Dd8969a645d297b4636Aaf494) revert InvalidSubjectSignature();
+        if (signer != 0x6aDD17d22E8753869a3B9E83068Be1f16202046E) revert InvalidSubjectSignature();
 
         (r, s, v) = splitSignature(validationPayloads[1]);
         signer = ecrecover(guildIdHash, v, r, s);
-        if (signer != 0x8029dD56C10a9C2Dd8969a645d297b4636Aaf494) revert InvalidGuildIdSignature();
+        if (signer != 0x6aDD17d22E8753869a3B9E83068Be1f16202046E) revert InvalidGuildIdSignature();
     }
 
     /**

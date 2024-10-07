@@ -11,10 +11,14 @@ import {useAccount} from "wagmi";
 import {waitForTransactionReceipt} from "viem/actions";
 import {wagmiConfig} from "./wagmiConfig.ts";
 import {add} from 'date-fns';
+import Spinner from "./components/Spinner.tsx";
+import {SignedGuild} from "./types";
 
 const App: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-    const [guilds, setGuilds] = useState([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [guilds, setGuilds] = useState<SignedGuild[]>([]);
+    const [signedSubject, setSignedSubject] = useState<Hex>();
     const [veraxSdk, setVeraxSdk] = useState<VeraxSdk>();
     const [txHash, setTxHash] = useState<Hex>();
     const [attestationId, setAttestationId] = useState<Hex>();
@@ -22,7 +26,7 @@ const App: React.FC = () => {
     const {address, chainId, isConnected} = useAccount();
 
     const schemaId = "0xa8d6aefe759739c13a4151523a525bfe88b7dae97bdd5de50dab89cb247690d4"
-    const portalId = "0xcAB9f0F0Ccd30693c32C8Fd8aF26E09E4Fe6eadE"
+    const portalId = "0x4DA1fD9BF47c73Aa7002F155048a8ba7898C960C"
 
     useEffect(() => {
         if (chainId && address) {
@@ -40,11 +44,12 @@ const App: React.FC = () => {
         const code = urlParams.get('code');
 
         if (oauthStarted && code) {
+            setIsLoading(false);
             // Clear the flag in localStorage
             localStorage.removeItem('discord_oauth_started');
 
             // Call the Netlify function to exchange the code for a token and fetch the guilds
-            fetch(`https://discord-attestation.netlify.app/.netlify/functions/api?code=${code}&isDev=${import.meta.env.MODE === 'development'}`)
+            fetch(`https://discord.alainnicolas.fr/.netlify/functions/api?code=${code}&isDev=${import.meta.env.MODE === 'development'}&subject=${address}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
@@ -53,15 +58,18 @@ const App: React.FC = () => {
                         console.error('Error fetching guilds:', data.message);
                     } else {
                         setIsLoggedIn(true);
-                        setGuilds(data);
+                        console.log('data:', data);
+                        setGuilds(data.signedGuilds);
+                        setSignedSubject(data.subjectSignature);
                     }
                 })
                 .catch(error => console.error('Error:', error));
+            setIsLoading(false);
         }
-    }, []);
+    }, [address]);
 
-    const issueAttestation = async (guildId: string) => {
-        if (address && veraxSdk) {
+    const issueAttestation = async (signedGuild: SignedGuild) => {
+        if (address && veraxSdk && signedSubject) {
             try {
                 let receipt = await veraxSdk.portal.attest(
                     portalId,
@@ -70,10 +78,10 @@ const App: React.FC = () => {
                         expirationDate: Math.floor(add(new Date(), {months: 1}).getTime() / 1000),
                         subject: address,
                         attestationData: [{
-                            guildId
+                            guildId: signedGuild.id,
                         }],
                     },
-                    [],
+                    [signedSubject, signedGuild.signature],
                     false,
                     100000000000000n,
                 );
@@ -94,11 +102,11 @@ const App: React.FC = () => {
         }
     };
 
-    const handleAttest = async (guildId: string) => {
+    const handleAttest = async (signedGuild: SignedGuild) => {
         if (isConnected) {
             setTxHash(undefined);
             setAttestationId(undefined);
-            await issueAttestation(guildId);
+            await issueAttestation(signedGuild);
         }
     };
 
@@ -111,20 +119,20 @@ const App: React.FC = () => {
             <Header/>
             <div className="main-container">
                 <ConnectButton/>
-                {isLoggedIn ? (
-                    <>
-                        {txHash && <div className={'message'}>Transaction Hash: <a
-                          href={`${chainId === 59144 ? 'https://lineascan.build/tx/' : 'https://sepolia.lineascan.build/tx/'}${txHash}`}
-                          target="_blank" rel="noopener noreferrer">{truncateHexString(txHash)}</a></div>}
-                        {txHash && !attestationId && <div className={'message pending'}>Transaction pending...</div>}
-                        {attestationId && <div className={'message success'}>Attestation ID: <a
-                          href={`${chainId === 59144 ? 'https://explorer.ver.ax/linea/attestations/' : 'https://explorer.ver.ax/linea-sepolia/attestations/'}${attestationId}`}
-                          target="_blank" rel="noopener noreferrer">{truncateHexString(attestationId)}</a></div>}
-                        <GuildList guilds={guilds} onAttest={handleAttest}/>
-                    </>
-                ) : (
-                    <LoginWithDiscord/>
-                )}
+                {isLoading && <Spinner/>}
+                {!isLoggedIn && !isLoading && <LoginWithDiscord/>}
+                {isLoggedIn && guilds.length > 0 &&
+                  <>
+                      {txHash && <div className={'message'}>Transaction Hash: <a
+                        href={`${chainId === 59144 ? 'https://lineascan.build/tx/' : 'https://sepolia.lineascan.build/tx/'}${txHash}`}
+                        target="_blank" rel="noopener noreferrer">{truncateHexString(txHash)}</a></div>}
+                      {txHash && !attestationId && <div className={'message pending'}>Transaction pending...</div>}
+                      {attestationId && <div className={'message success'}>Attestation ID: <a
+                        href={`${chainId === 59144 ? 'https://explorer.ver.ax/linea/attestations/' : 'https://explorer.ver.ax/linea-sepolia/attestations/'}${attestationId}`}
+                        target="_blank" rel="noopener noreferrer">{truncateHexString(attestationId)}</a></div>}
+                    <GuildList guilds={guilds} onAttest={handleAttest}/>
+                  </>
+                }
             </div>
             <Footer/>
         </>

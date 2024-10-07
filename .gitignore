@@ -28,3 +28,6 @@ typechain-types
 *.njsproj
 *.sln
 *.sw?
+
+# Local Netlify folder
+.netlify

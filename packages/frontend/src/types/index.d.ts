@@ -1,6 +1,6 @@
 export interface Guild {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 export type SignedGuild = Guild & { signature: string };

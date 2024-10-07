@@ -2,7 +2,7 @@ import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: '.env' });
 
 const { INFURA_KEY, PRIVATE_KEY, LINEASCAN_API_KEY } = process.env;
 

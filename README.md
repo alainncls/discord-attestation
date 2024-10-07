@@ -9,13 +9,13 @@ The demo webapp is available at [discord.alainnicolas.fr](https://discord.alainn
 ## How to use
 
 ```bash
-npm i
+pnpm install
 ```
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 ## Portal on Linea Sepolia
 
-[`0xcAB9f0F0Ccd30693c32C8Fd8aF26E09E4Fe6eadE`](https://explorer.ver.ax/linea-sepolia/portals/0xcAB9f0F0Ccd30693c32C8Fd8aF26E09E4Fe6eadE)
+[`0x4DA1fD9BF47c73Aa7002F155048a8ba7898C960C`](https://explorer.ver.ax/linea-sepolia/portals/0x4DA1fD9BF47c73Aa7002F155048a8ba7898C960C)

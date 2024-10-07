@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
 import { Address, Hex } from 'viem';
 
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: '.env' });
 
 async function main() {
   console.log(`START DISCORD SCRIPT`);

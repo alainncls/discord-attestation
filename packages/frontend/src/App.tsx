@@ -41,37 +41,42 @@ const App: React.FC = () => {
   }, [chainId, address]);
 
   useEffect(() => {
-    // Check if the OAuth flow has completed
-    const oauthStarted = localStorage.getItem('discord_oauth_started');
+    if (localStorage.getItem('discord_oauth_started') === 'true') {
+      console.log('*** LOADING ***');
+      setIsLoading(true);
+    }
+  }, []);
+
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
-    if (oauthStarted && code) {
-      setIsLoading(false);
+    if (isLoading && code) {
       // Clear the flag in localStorage
       localStorage.removeItem('discord_oauth_started');
-
+      console.log('*** START FETCH ***');
       // Call the Netlify function to exchange the code for a token and fetch the guilds
       fetch(
         `https://discord.alainnicolas.fr/.netlify/functions/api?code=${code}&isDev=${import.meta.env.MODE === 'development'}&subject=${address}`,
       )
         .then((response) => response.json())
         .then((data) => {
+          console.log('*** END FETCH ***');
           if (data.error) {
             console.error('Error fetching guilds:', data.error);
           } else if (data.message) {
             console.error('Error fetching guilds:', data.message);
           } else {
             setIsLoggedIn(true);
-            console.log('data:', data);
             setGuilds(data.signedGuilds);
             setSignedSubject(data.subjectSignature);
           }
+          console.log('*** NOT LOADING ***');
+          setIsLoading(false);
         })
         .catch((error) => console.error('Error:', error));
-      setIsLoading(false);
     }
-  }, [address]);
+  }, [address, isLoading]);
 
   const issueAttestation = async (signedGuild: SignedGuild) => {
     if (address && veraxSdk && signedSubject) {

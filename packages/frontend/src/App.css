@@ -69,11 +69,11 @@ button[type="submit"]:disabled {
     justify-content: center;
     gap: 1rem;
     background-color: #5865F2;
+    border: 2px solid #5865F2;
     color: white;
     padding: 1rem 2rem;
     font-size: 20px;
     font-weight: bold;
-    border: none;
     border-radius: 0.5rem;
     box-shadow: none;
     cursor: pointer;
@@ -87,6 +87,15 @@ button[type="submit"]:disabled {
 .btn-small {
     padding: 0.5rem 1rem;
     font-size: 16px;
+}
+
+.btn-empty {
+    background-color: transparent;
+    color: #5865F2;
+}
+
+.btn-empty:hover {
+    background-color: #e1e1e1;
 }
 
 .btn-disabled {

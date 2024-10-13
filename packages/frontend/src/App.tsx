@@ -12,7 +12,7 @@ import { waitForTransactionReceipt } from 'viem/actions';
 import { wagmiConfig } from './wagmiConfig.ts';
 import { add } from 'date-fns';
 import Spinner from './components/Spinner.tsx';
-import { SignedGuild } from './types';
+import { DecodedPayload, SignedGuild } from './types';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -42,41 +42,73 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (localStorage.getItem('discord_oauth_started') === 'true') {
-      console.log('*** LOADING ***');
       setIsLoading(true);
     }
   }, []);
+
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
-    if (isLoading && code) {
+    const fetchAttestedGuilds = async (signedGuilds: SignedGuild[]): Promise<SignedGuild[]> => {
+
+      if (!veraxSdk) {
+        return signedGuilds;
+      }
+
+      const attestedGuilds = await veraxSdk.attestation.findBy(1000, 0, {
+        schema: schemaId,
+        portal: portalId.toLowerCase(),
+        subject: address,
+      });
+
+      console.log('attestedGuilds', attestedGuilds);
+
+      const updatedGuilds: SignedGuild[] = signedGuilds.map((guild) => {
+        const attestedGuild = attestedGuilds.find((attestedGuild) => {
+          console.log('(attestedGuild.decodedPayload as DecodedPayload[])[0].guildId', (attestedGuild.decodedPayload as DecodedPayload[])[0].guildId);
+          return (attestedGuild.decodedPayload as DecodedPayload[])[0].guildId === guild.id;
+        });
+        console.log('attestedGuild', attestedGuild);
+
+        return attestedGuild ? {
+          ...guild,
+          attestationId: attestedGuild.id,
+        } : guild;
+      });
+
+      console.log('updatedGuilds', updatedGuilds);
+
+      return updatedGuilds;
+    };
+
+    const fetchGuilds = async () => {
       // Clear the flag in localStorage
       localStorage.removeItem('discord_oauth_started');
-      console.log('*** START FETCH ***');
       // Call the Netlify function to exchange the code for a token and fetch the guilds
-      fetch(
+      const res = await fetch(
         `https://discord.alainnicolas.fr/.netlify/functions/api?code=${code}&isDev=${import.meta.env.MODE === 'development'}&subject=${address}`,
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('*** END FETCH ***');
-          if (data.error) {
-            console.error('Error fetching guilds:', data.error);
-          } else if (data.message) {
-            console.error('Error fetching guilds:', data.message);
-          } else {
-            setIsLoggedIn(true);
-            setGuilds(data.signedGuilds);
-            setSignedSubject(data.subjectSignature);
-          }
-          console.log('*** NOT LOADING ***');
-          setIsLoading(false);
-        })
-        .catch((error) => console.error('Error:', error));
+      );
+
+      const data = await res.json();
+
+      if (data.error) {
+        console.error('Error fetching guilds:', data.error);
+      } else if (data.message) {
+        console.error('Error fetching guilds:', data.message);
+      } else {
+        setIsLoggedIn(true);
+        setGuilds(await fetchAttestedGuilds(data.signedGuilds));
+        setSignedSubject(data.subjectSignature);
+      }
+      setIsLoading(false);
+    };
+
+    if (isLoading && code) {
+      fetchGuilds();
     }
-  }, [address, isLoading]);
+  }, [address, isLoading, veraxSdk]);
 
   const issueAttestation = async (signedGuild: SignedGuild) => {
     if (address && veraxSdk && signedSubject) {
@@ -124,6 +156,12 @@ const App: React.FC = () => {
     }
   };
 
+  const handleCheck = async (signedGuild: SignedGuild) => {
+    if (signedGuild.attestationId) {
+      window.open(`https://explorer.ver.ax/linea${chainId === 59144 ? '' : '-sepolia'}/attestations/${signedGuild.attestationId}`, '_blank');
+    }
+  };
+
   const truncateHexString = (hexString: string) => {
     return `${hexString.slice(0, 7)}...${hexString.slice(hexString.length - 5, hexString.length)}`;
   };
@@ -164,7 +202,7 @@ const App: React.FC = () => {
                 </a>
               </div>
             )}
-            <GuildList guilds={guilds} onAttest={handleAttest} />
+            <GuildList guilds={guilds} onAttest={handleAttest} onCheck={handleCheck} />
           </>
         )}
       </div>

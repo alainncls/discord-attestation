@@ -6,9 +6,10 @@ import { useAccount } from 'wagmi';
 interface GuildListProps {
   guilds: SignedGuild[];
   onAttest: (guild: SignedGuild) => void;
+  onCheck: (guild: SignedGuild) => void;
 }
 
-const GuildList = ({ guilds, onAttest }: GuildListProps) => {
+const GuildList = ({ guilds, onAttest, onCheck }: GuildListProps) => {
   const { isConnected } = useAccount();
 
   return (
@@ -18,12 +19,17 @@ const GuildList = ({ guilds, onAttest }: GuildListProps) => {
         {guilds.map((guild: SignedGuild) => (
           <div key={`${guild.id}`} className="guild-item">
             <li>{guild.name}</li>
-            <button
-              className={`btn btn-small ${isConnected ? '' : 'btn-disabled'}`}
-              onClick={() => onAttest(guild)}
-            >
-              <img src={LogoVerax} alt={'Logo Verax'} height={16} /> Attest
-            </button>
+            {guild.attestationId ?
+              <button className={`btn btn-small btn-empty`}
+                      onClick={() => onCheck(guild)}>
+                <img src={LogoVerax} alt={'Logo Verax'} height={16} className={'attested'} /> Check on Verax
+              </button> :
+              <button className={`btn btn-small ${isConnected ? '' : 'btn-disabled'}`}
+                      onClick={() => onAttest(guild)}>
+                <img src={LogoVerax} alt={'Logo Verax'} height={16} /> Attest on Verax
+              </button>
+
+            }
           </div>
         ))}
       </ul>

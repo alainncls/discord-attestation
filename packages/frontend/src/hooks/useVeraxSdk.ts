@@ -7,7 +7,10 @@ export const useVeraxSdk = (chainId?: number, address?: Address) => {
 
   useEffect(() => {
     if (chainId && address) {
-      const sdkConf = chainId === 59144 ? VeraxSdk.DEFAULT_LINEA_MAINNET_FRONTEND : VeraxSdk.DEFAULT_LINEA_SEPOLIA_FRONTEND;
+      const sdkConf =
+        chainId === 59144
+          ? VeraxSdk.DEFAULT_LINEA_MAINNET_FRONTEND
+          : VeraxSdk.DEFAULT_LINEA_SEPOLIA_FRONTEND;
       setVeraxSdk(new VeraxSdk(sdkConf, address));
     }
   }, [chainId, address]);

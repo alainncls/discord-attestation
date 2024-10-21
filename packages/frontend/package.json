@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.36.0",
-    "@verax-attestation-registry/verax-sdk": "^2.0.2",
+    "@verax-attestation-registry/verax-sdk": "^2.1.0",
     "@web3modal/wagmi": "^4.2.0",
     "axios": "^1.6.8",
     "date-fns": "^3.6.0",

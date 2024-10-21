@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Guild } from '../frontend/src/types';
-import { createWalletClient, Hex, http } from 'viem';
+import { createWalletClient, Hex, http, WalletClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { config } from 'dotenv';
 
@@ -22,7 +22,12 @@ const headers = {
 };
 
 const checkConfig = () => {
-  if (!VITE_DISCORD_CLIENT_ID || !DISCORD_CLIENT_SECRET || !VITE_REDIRECT_URL || !SIGNER_PRIVATE_KEY) {
+  if (
+    !VITE_DISCORD_CLIENT_ID ||
+    !DISCORD_CLIENT_SECRET ||
+    !VITE_REDIRECT_URL ||
+    !SIGNER_PRIVATE_KEY
+  ) {
     throw new Error('Configuration not set');
   }
 };
@@ -36,7 +41,10 @@ const getToken = async (code: string, isDev: boolean) => {
     redirect_uri: isDev ? DEV_REDIRECT_URL : VITE_REDIRECT_URL!,
   });
 
-  const response = await axios.post('https://discord.com/api/oauth2/token', params);
+  const response = await axios.post(
+    'https://discord.com/api/oauth2/token',
+    params,
+  );
   return response.data.access_token;
 };
 
@@ -47,21 +55,43 @@ const getGuilds = async (accessToken: string) => {
   return response.data as Guild[];
 };
 
-const signGuilds = async (guilds: Guild[], walletClient: ReturnType<typeof createWalletClient>) => {
-  return Promise.all(guilds.map(async (guild) => {
-    const signature: Hex = await walletClient.signMessage({
-      account: walletClient.account,
-      message: guild.id,
-    });
-    return { id: guild.id, name: guild.name, signature };
-  }));
-};
+const signGuilds = async (
+  walletClient: WalletClient,
+  guilds: Guild[],
+  subject: string,
+) => {
+  const domain = {
+    name: 'VerifyDiscord',
+    version: '1',
+    chainId: 59141,
+    verifyingContract: '0x7e2Fa20346eCd4f402Ec9Ebec290e0b2e520DeA5',
+  } as const;
 
-const signSubject = async (subject: string, walletClient: ReturnType<typeof createWalletClient>) => {
-  return walletClient.signMessage({
-    account: walletClient.account,
-    message: subject,
-  });
+  const types = {
+    Discord: [
+      { name: 'id', type: 'string' },
+      { name: 'subject', type: 'address' },
+    ],
+  };
+
+  return Promise.all(
+    guilds.map(async (guild) => {
+      const message = {
+        id: guild.id,
+        subject,
+      };
+
+      const signature = await walletClient.signTypedData({
+        account: walletClient.account,
+        domain,
+        types,
+        primaryType: 'Discord',
+        message,
+      });
+
+      return { id: guild.id, name: guild.name, signature };
+    }),
+  );
 };
 
 export async function handler(event: {
@@ -87,16 +117,16 @@ export async function handler(event: {
       transport: http('https://rpc.linea.build'),
     });
 
-    const signedGuilds = await signGuilds(guilds, walletClient);
-    const subjectSignature = await signSubject(subject, walletClient);
+    const signedGuilds = await signGuilds(walletClient, guilds, subject);
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ signedGuilds, subjectSignature }),
+      body: JSON.stringify({ signedGuilds }),
     };
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    const errorMessage =
+      error instanceof Error ? error.message : 'An unknown error occurred';
     return {
       statusCode: 500,
       headers,

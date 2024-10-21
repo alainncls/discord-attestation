@@ -26,8 +26,7 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     error WithdrawFail();
     error InvalidSignature();
     error InvalidSignatureLength();
-
-    event LogSender(address sender);
+    error NotImplemented();
 
     constructor(
         address[] memory modules,
@@ -35,9 +34,7 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     ) AbstractPortal(modules, router) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {}
 
     /**
-     * @notice Run before the payload is attested
-     * @param attestationPayload the attestation payload to be attested
-     * @param value the value sent with the attestation
+     * @inheritdoc AbstractPortal
      * @dev This function checks if
      *          the subject is a valid address,
      *          and if the value sent is sufficient
@@ -60,6 +57,68 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     }
 
     /**
+     * @inheritdoc AbstractPortal
+     * @dev This function is not implemented
+     */
+    function _onAttest(
+        AttestationPayload memory /*attestationPayload*/,
+        address /*attester*/,
+        uint256 /*value*/
+    ) internal pure override {
+        revert NotImplemented();
+    }
+
+    /**
+     *  @inheritdoc AbstractPortal
+     */
+    function _onReplace(
+        bytes32 /*attestationId*/,
+        AttestationPayload memory /*attestationPayload*/,
+        address /*attester*/,
+        uint256 /*value*/
+    ) internal view override {
+        if (msg.sender != portalRegistry.getPortalByAddress(address(this)).ownerAddress) revert OnlyPortalOwner();
+    }
+
+    /**
+     * @inheritdoc AbstractPortal
+     */
+    function _onBulkReplace(
+        bytes32[] memory /*attestationIds*/,
+        AttestationPayload[] memory /*attestationsPayloads*/,
+        bytes[][] memory /*validationPayloads*/
+    ) internal view override {
+        if (msg.sender != portalRegistry.getPortalByAddress(address(this)).ownerAddress) revert OnlyPortalOwner();
+    }
+
+    /**
+     * @inheritdoc AbstractPortal
+     * @dev This function is not implemented
+     */
+    function _onBulkAttest(
+        AttestationPayload[] memory /*attestationsPayloads*/,
+        bytes[][] memory /*validationPayloads*/
+    ) internal pure override {
+        revert NotImplemented();
+    }
+
+    /**
+     * @inheritdoc AbstractPortal
+     * @dev Only the Portal owner can revoke attestations
+     */
+    function _onRevoke(bytes32 /*attestationId*/) internal view override {
+        if (msg.sender != portalRegistry.getPortalByAddress(address(this)).ownerAddress) revert OnlyPortalOwner();
+    }
+
+    /**
+     * @inheritdoc AbstractPortal
+     * @dev Only the Portal owner can revoke attestations
+     */
+    function _onBulkRevoke(bytes32[] memory /*attestationIds*/) internal view override {
+        if (msg.sender != portalRegistry.getPortalByAddress(address(this)).ownerAddress) revert OnlyPortalOwner();
+    }
+
+    /**
      * @notice Set the fee required to attest
      * @param attestationFee The fee required to attest
      */
@@ -74,7 +133,7 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
      * @dev Only the owner can withdraw funds
      */
     function withdraw(address payable to, uint256 amount) external override onlyOwner {
-        (bool success, ) = to.call{value: amount}("");
+        (bool success,) = to.call{value: amount}("");
         if (!success) revert WithdrawFail();
     }
 

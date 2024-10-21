@@ -3,7 +3,10 @@ export interface Guild {
   name: string;
 }
 
-export type SignedGuild = Guild & { signature: string, attestationId?: string };
+export type SignedGuild = Guild & {
+  signature: string;
+  attestationId?: string;
+};
 
 interface DecodedPayload {
   guildId: string;

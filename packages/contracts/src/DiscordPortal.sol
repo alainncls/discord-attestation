@@ -4,75 +4,59 @@ pragma solidity 0.8.21;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {AbstractPortal} from "@verax-attestation-registry/verax-contracts/contracts/abstracts/AbstractPortal.sol";
 import {AttestationPayload} from "@verax-attestation-registry/verax-contracts/contracts/types/Structs.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 /**
  * @title eFrogs Portal
  * @author alainnicolas.eth
  * @notice This contract aims to attest of the presence in a Discord server
  */
-contract DiscordPortal is AbstractPortal, Ownable {
-    uint256 public fee;
+contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
+    uint256 public fee = 0.0001 ether;
+    address public constant SIGNER_ADDRESS = 0x6aDD17d22E8753869a3B9E83068Be1f16202046E;
+    bytes32 public constant SCHEMA_ID = 0xa8d6aefe759739c13a4151523a525bfe88b7dae97bdd5de50dab89cb247690d4;
+    string private constant SIGNING_DOMAIN = "VerifyDiscord";
+    string private constant SIGNATURE_VERSION = "1";
 
-    /// @dev Error thrown when the Schema used is not the expected one
     error InvalidSchema();
-    /// @dev Error thrown when the attestation subject is not an Ethereum address
     error InvalidSubject();
-    /// @dev Error thrown when the attestation subject is not the sender
     error SenderIsNotSubject();
-    /// @dev Error thrown when the attestation subject doesn't own an eFrog
-    error SenderIsNotOwner();
-    /// @dev Error thrown when the transaction value is insufficient to cover the fee
     error InsufficientFee();
-    /// @dev Error thrown when the withdraw fails
     error WithdrawFail();
-    /// @dev Error thrown when the subject signature is invalid
-    error InvalidSubjectSignature();
-    /// @dev Error thrown when the guildId signature is invalid
-    error InvalidGuildIdSignature();
-    /// @dev Error thrown when the signature length is invalid
+    error InvalidSignature();
     error InvalidSignatureLength();
 
-    constructor(address[] memory modules, address router) AbstractPortal(modules, router) {
-        fee = 0.0001 ether;
-    }
+    event LogSender(address sender);
+
+    constructor(
+        address[] memory modules,
+        address router
+    ) AbstractPortal(modules, router) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {}
 
     /**
      * @notice Run before the payload is attested
      * @param attestationPayload the attestation payload to be attested
      * @param value the value sent with the attestation
      * @dev This function checks if
-     *          the sender is the subject of the attestation
+     *          the subject is a valid address,
      *          and if the value sent is sufficient
+     *          and if the schema ID is correct
+     *          and if the payload is correctly signed
      */
     function _onAttestV2(
         AttestationPayload memory attestationPayload,
         bytes[] memory validationPayloads,
         uint256 value
     ) internal view override {
-        address subject;
-        if (attestationPayload.subject.length == 32) {
-            subject = abi.decode(attestationPayload.subject, (address));
-        } else if (attestationPayload.subject.length == 20) {
-            subject = address(uint160(bytes20(attestationPayload.subject)));
-        } else {
-            revert InvalidSubject();
-        }
+        if (attestationPayload.subject.length != 20) revert InvalidSubject();
+        address subject = address(uint160(bytes20(attestationPayload.subject)));
 
-        if (subject != msg.sender) revert SenderIsNotSubject();
         if (value < fee) revert InsufficientFee();
-        if (attestationPayload.schemaId != 0xa8d6aefe759739c13a4151523a525bfe88b7dae97bdd5de50dab89cb247690d4)
-            revert InvalidSchema();
+        if (attestationPayload.schemaId != SCHEMA_ID) revert InvalidSchema();
 
-        bytes32 subjectHash = keccak256(abi.encodePacked(subject));
-        bytes32 guildIdHash = keccak256(abi.encodePacked(abi.decode(attestationPayload.attestationData, (string))));
-
-        (bytes32 r, bytes32 s, uint8 v) = splitSignature(validationPayloads[0]);
-        address signer = ecrecover(subjectHash, v, r, s);
-        if (signer != 0x6aDD17d22E8753869a3B9E83068Be1f16202046E) revert InvalidSubjectSignature();
-
-        (r, s, v) = splitSignature(validationPayloads[1]);
-        signer = ecrecover(guildIdHash, v, r, s);
-        if (signer != 0x6aDD17d22E8753869a3B9E83068Be1f16202046E) revert InvalidGuildIdSignature();
+        string memory guildId = abi.decode(attestationPayload.attestationData, (string));
+        if (!verifySignature(validationPayloads[0], guildId, subject)) revert InvalidSignature();
     }
 
     /**
@@ -90,19 +74,15 @@ contract DiscordPortal is AbstractPortal, Ownable {
      * @dev Only the owner can withdraw funds
      */
     function withdraw(address payable to, uint256 amount) external override onlyOwner {
-        (bool s, ) = to.call{value: amount}("");
-        if (!s) revert WithdrawFail();
+        (bool success, ) = to.call{value: amount}("");
+        if (!success) revert WithdrawFail();
     }
 
-    function splitSignature(bytes memory sig) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
-        if (sig.length != 65) revert InvalidSignatureLength();
-
-        assembly {
-            r := mload(add(sig, 32))
-            s := mload(add(sig, 64))
-            v := byte(0, mload(add(sig, 96)))
-        }
-
-        return (r, s, v);
+    function verifySignature(bytes memory signature, string memory guildId, address subject) internal view returns (bool) {
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(abi.encode(keccak256("Discord(string id,address subject)"), keccak256(bytes(guildId)), subject))
+        );
+        address signer = ECDSA.recover(digest, signature);
+        return signer == SIGNER_ADDRESS;
     }
 }

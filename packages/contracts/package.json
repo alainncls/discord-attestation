@@ -19,7 +19,7 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@types/node": "^20.12.7",
     "@verax-attestation-registry/verax-contracts": "^9.0.0",
-    "@verax-attestation-registry/verax-sdk": "^2.1.0",
+    "@verax-attestation-registry/verax-sdk": "2.1.3",
     "dotenv": "^16.4.5",
     "ethers": "^6.12.0",
     "hardhat": "^2.22.3",

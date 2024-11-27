@@ -34,41 +34,6 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     ) AbstractPortal(modules, router) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {}
 
     /**
-     * @inheritdoc AbstractPortal
-     * @dev This function checks if
-     *          the subject is a valid address,
-     *          and if the value sent is sufficient
-     *          and if the schema ID is correct
-     *          and if the payload is correctly signed
-     */
-    function _onAttestV2(
-        AttestationPayload memory attestationPayload,
-        bytes[] memory validationPayloads,
-        uint256 value
-    ) internal view override {
-        if (attestationPayload.subject.length != 20) revert InvalidSubject();
-        address subject = address(uint160(bytes20(attestationPayload.subject)));
-
-        if (value < fee) revert InsufficientFee();
-        if (attestationPayload.schemaId != SCHEMA_ID) revert InvalidSchema();
-
-        string memory guildId = abi.decode(attestationPayload.attestationData, (string));
-        if (!verifySignature(validationPayloads[0], guildId, subject)) revert InvalidSignature();
-    }
-
-    /**
-     * @inheritdoc AbstractPortal
-     * @dev This function is not implemented
-     */
-    function _onAttest(
-        AttestationPayload memory /*attestationPayload*/,
-        address /*attester*/,
-        uint256 /*value*/
-    ) internal pure override {
-        revert NotImplemented();
-    }
-
-    /**
      *  @inheritdoc AbstractPortal
      */
     function _onReplace(

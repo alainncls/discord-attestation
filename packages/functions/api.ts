@@ -3,6 +3,7 @@ import { Guild } from '../frontend/src/types';
 import { createWalletClient, Hex, http, WalletClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { config } from 'dotenv';
+import { PORTAL_ID } from '../frontend/src/utils/constants';
 
 config({ path: '.env' });
 
@@ -64,12 +65,12 @@ const signGuilds = async (
     name: 'VerifyDiscord',
     version: '1',
     chainId: 59141,
-    verifyingContract: '0x7e2Fa20346eCd4f402Ec9Ebec290e0b2e520DeA5',
+    verifyingContract: PORTAL_ID,
   } as const;
 
   const types = {
     Discord: [
-      { name: 'id', type: 'string' },
+      { name: 'id', type: 'uint256' },
       { name: 'subject', type: 'address' },
     ],
   };
@@ -77,7 +78,7 @@ const signGuilds = async (
   return Promise.all(
     guilds.map(async (guild) => {
       const message = {
-        id: guild.id,
+        id: BigInt(guild.id),
         subject,
       };
 

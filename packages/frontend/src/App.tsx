@@ -5,7 +5,7 @@ import Header from './components/Header.tsx';
 import Footer from './components/Footer.tsx';
 import ConnectButton from './components/ConnectButton.tsx';
 import './App.css';
-import { Hex } from 'viem';
+import { Abi, Hex } from 'viem';
 import { useAccount } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { wagmiConfig } from './wagmiConfig.ts';
@@ -15,6 +15,7 @@ import { SignedGuild } from './types';
 import { useVeraxSdk } from './hooks/useVeraxSdk.ts';
 import { useFetchGuilds } from './hooks/useFetchGuilds.ts';
 import { PORTAL_ID, SCHEMA_ID } from './utils/constants.ts';
+import { abi as discordPortalAbi } from '../../contracts/artifacts/src/DiscordPortal.sol/DiscordPortal.json';
 
 const App: React.FC = () => {
   const { address, chainId, isConnected } = useAccount();
@@ -50,6 +51,7 @@ const App: React.FC = () => {
             [signedGuild.signature],
             false,
             100000000000000n,
+            discordPortalAbi as Abi,
           );
           if (receipt.transactionHash) {
             setTxHash(receipt.transactionHash);

@@ -133,7 +133,7 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
      * @dev Only the owner can withdraw funds
      */
     function withdraw(address payable to, uint256 amount) external override onlyOwner {
-        (bool success,) = to.call{value: amount}("");
+        (bool success, ) = to.call{value: amount}("");
         if (!success) revert WithdrawFail();
     }
 

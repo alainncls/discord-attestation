@@ -15,7 +15,7 @@ import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     uint256 public fee = 0.0001 ether;
     address public constant SIGNER_ADDRESS = 0x6aDD17d22E8753869a3B9E83068Be1f16202046E;
-    bytes32 public constant SCHEMA_ID = 0xa8d6aefe759739c13a4151523a525bfe88b7dae97bdd5de50dab89cb247690d4;
+    bytes32 public constant SCHEMA_ID = 0x2dbbaa5d8c394d99470ea8eebe48c52c0042db98d3f16719f9b5717c73487a23;
     string private constant SIGNING_DOMAIN = "VerifyDiscord";
     string private constant SIGNATURE_VERSION = "1";
 
@@ -32,6 +32,41 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
         address[] memory modules,
         address router
     ) AbstractPortal(modules, router) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {}
+
+    /**
+     * @inheritdoc AbstractPortal
+     * @dev This function checks if
+     *          the subject is a valid address,
+     *          and if the value sent is sufficient
+     *          and if the schema ID is correct
+     *          and if the payload is correctly signed
+     */
+    function _onAttestV2(
+        AttestationPayload memory attestationPayload,
+        bytes[] memory validationPayloads,
+        uint256 value
+    ) internal view override {
+        if (attestationPayload.subject.length != 20) revert InvalidSubject();
+        address subject = address(uint160(bytes20(attestationPayload.subject)));
+
+        if (value < fee) revert InsufficientFee();
+        if (attestationPayload.schemaId != SCHEMA_ID) revert InvalidSchema();
+
+        uint256 guildId = abi.decode(attestationPayload.attestationData, (uint256));
+        if (!verifySignature(validationPayloads[0], guildId, subject)) revert InvalidSignature();
+    }
+
+    /**
+     * @inheritdoc AbstractPortal
+     * @dev This function is not implemented
+     */
+    function _onAttest(
+        AttestationPayload memory /*attestationPayload*/,
+        address /*attester*/,
+        uint256 /*value*/
+    ) internal pure override {
+        revert NotImplemented();
+    }
 
     /**
      *  @inheritdoc AbstractPortal
@@ -102,9 +137,9 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
         if (!success) revert WithdrawFail();
     }
 
-    function verifySignature(bytes memory signature, string memory guildId, address subject) internal view returns (bool) {
+    function verifySignature(bytes memory signature, uint256 guildId, address subject) internal view returns (bool) {
         bytes32 digest = _hashTypedDataV4(
-            keccak256(abi.encode(keccak256("Discord(string id,address subject)"), keccak256(bytes(guildId)), subject))
+            keccak256(abi.encode(keccak256("Discord(uint256 id,address subject)"), guildId, subject))
         );
         address signer = ECDSA.recover(digest, signature);
         return signer == SIGNER_ADDRESS;

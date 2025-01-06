@@ -33,7 +33,7 @@ export const useFetchGuilds = (
               const attestedGuild = attestedGuilds.find(
                 (attested) =>
                   (attested.decodedPayload as DecodedPayload[])[0].guildId ===
-                  guild.id,
+                  BigInt(guild.id),
               );
               return attestedGuild
                 ? { ...guild, attestationId: attestedGuild.id }

@@ -9,5 +9,5 @@ export type SignedGuild = Guild & {
 };
 
 interface DecodedPayload {
-  guildId: string;
+  guildId: bigint;
 }

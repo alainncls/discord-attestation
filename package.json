@@ -9,11 +9,16 @@
     "postinstall": "pnpm --filter \"{packages/contracts}\" compile",
     "lint": "pnpm -r run lint",
     "lint:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json' '**/*.tsx' '**/*.json' '**/*.md'",
-    "test": "pnpm -r run test"
+    "prepare": "husky",
+    "test": "pnpm -r run test",
+    "update-readme": "tsc && node dist/updateReadme.js"
   },
   "devDependencies": {
+    "@types/node": "^20.12.7",
     "eslint": "^8.57.1",
-    "prettier": "^3.3.3"
+    "husky": "^9.1.7",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.2"
   },
   "packageManager": "pnpm@9.10.0",
   "engines": {

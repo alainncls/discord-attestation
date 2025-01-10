@@ -12,6 +12,8 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "noFallthroughCasesInSwitch": true,
+    "jsx": "react-jsx",
+    "types": ["node"],
     "outDir": "./dist"
   },
   "include": ["./*.ts"],

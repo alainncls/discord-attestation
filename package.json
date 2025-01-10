@@ -7,18 +7,28 @@
     "build": "pnpm -r --parallel run build",
     "dev": "pnpm -r --parallel run dev",
     "postinstall": "pnpm --filter \"{packages/contracts}\" compile",
-    "lint": "pnpm -r --parallel run lint",
-    "lint:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json' '**/*.tsx' '**/*.json' '**/*.md'",
+    "lint": "eslint . --ext .ts,.tsx && solhint 'packages/contracts/contracts/**/*.sol' && prettier --check '**/*.{ts,tsx,sol,json,md}'",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix && solhint --fix --noPrompt 'packages/contracts/contracts/**/*.sol' && prettier --write '**/*.{ts,tsx,sol,json,md}'",
     "prepare": "husky",
     "test": "pnpm -r --parallel run test",
     "update-readme": "tsc && node dist/updateReadme.js"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.11.30",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
     "husky": "^9.1.7",
     "prettier": "^3.3.3",
-    "typescript": "^5.6.2"
+    "prettier-plugin-solidity": "^1.3.1",
+    "solhint": "^4.1.1",
+    "solhint-plugin-prettier": "^0.1.0",
+    "typescript": "5.5.4"
   },
   "packageManager": "pnpm@9.10.0",
   "engines": {
@@ -28,15 +38,11 @@
   "pnpm": {
     "overrides": {
       "cookie@<0.7.0": ">=0.7.0",
-      "cross-spawn@>=7.0.0 <7.0.5": ">=7.0.5",
       "elliptic@>=5.2.1 <=6.5.6": ">=6.5.7",
       "elliptic@>=4.0.0 <=6.5.6": ">=6.5.7",
       "elliptic@>=2.0.0 <=6.5.6": ">=6.5.7",
       "elliptic@<6.5.6": ">=6.5.6",
       "elliptic@<6.6.0": ">=6.6.0",
-      "nanoid@<3.3.8": ">=3.3.8",
-      "secp256k1@>=4.0.0 <4.0.4": ">=4.0.4",
-      "secp256k1@=5.0.0": ">=5.0.1",
       "ws@>=7.0.0 <7.5.10": ">=7.5.10"
     }
   }

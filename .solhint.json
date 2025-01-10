@@ -1,0 +1,16 @@
+{
+  "extends": ["solhint:recommended"],
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": "error",
+    "compiler-version": ["error", "^0.8.0"],
+    "func-visibility": ["error", { "ignoreConstructors": true }],
+    "not-rely-on-time": "off",
+    "no-empty-blocks": "off",
+    "no-global-import": "off",
+    "private-vars-leading-underscore": ["warn", { "strict": false }],
+    "reason-string": ["warn", { "maxLength": 64 }],
+    "ordering": "warn",
+    "max-line-length": ["error", 120]
+  }
+}

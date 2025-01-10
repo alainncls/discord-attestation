@@ -4,13 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm -r run build",
-    "dev": "pnpm -r run dev",
+    "build": "pnpm -r --parallel run build",
+    "dev": "pnpm -r --parallel run dev",
     "postinstall": "pnpm --filter \"{packages/contracts}\" compile",
-    "lint": "pnpm -r run lint",
+    "lint": "pnpm -r --parallel run lint",
     "lint:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json' '**/*.tsx' '**/*.json' '**/*.md'",
     "prepare": "husky",
-    "test": "pnpm -r run test",
+    "test": "pnpm -r --parallel run test",
     "update-readme": "tsc && node dist/updateReadme.js"
   },
   "devDependencies": {

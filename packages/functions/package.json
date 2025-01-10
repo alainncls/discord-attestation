@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "functions:serve": "netlify functions:serve --functions . --port 8888",
+    "dev": "netlify functions:serve --functions . --port 8888",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {

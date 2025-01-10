@@ -1,13 +1,19 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
-    "outDir": "./dist",
-    "rootDir": "./",
-    "strict": true,
-    "esModuleInterop": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "./dist"
   },
-  "include": ["updateReadme.ts"]
+  "include": ["./*.ts"],
+  "exclude": ["node_modules", "dist", "packages/**/*"]
 }

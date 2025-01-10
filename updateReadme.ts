@@ -1,48 +1,32 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
-const constantsPath = path.join(
-  __dirname,
-  '../packages/frontend/src/utils/constants.ts',
-);
-const readmePath = path.join(__dirname, '../README.md');
+const constantsPath = join(__dirname, '../packages/frontend/src/utils/constants.ts');
+const readmePath = join(__dirname, '../README.md');
 
-fs.readFile(constantsPath, 'utf8', (err, data) => {
-  if (err) {
-    console.error('Error reading constants.ts:', err);
-    return;
-  }
+try {
+  const constantsContent = await readFile(constantsPath, 'utf8');
 
-  const portalIdMatch = data.match(
-    /export const PORTAL_ID: Address = '([^']+)'/,
-  );
+  const portalIdMatch = constantsContent.match(/export const PORTAL_ID: Address = '([^']+)'/);
   if (!portalIdMatch) {
-    console.error('PORTAL_ID not found in constants.ts');
-    return;
+    throw new Error('PORTAL_ID not found in constants.ts');
   }
+
   const portalId = portalIdMatch[1].toLowerCase();
+  const readmeContent = await readFile(readmePath, 'utf8');
 
-  fs.readFile(readmePath, 'utf8', (err, readmeData) => {
-    if (err) {
-      console.error('Error reading README.md:', err);
-      return;
-    }
+  const updatedReadme = readmeContent.replace(
+    /`0x[0-9a-fA-F]{40}`]\(https:\/\/explorer\.ver\.ax\/linea-sepolia\/portals\/0x[0-9a-fA-F]{40}\)/,
+    `\`${portalId}\`](https://explorer.ver.ax/linea-sepolia/portals/${portalId})`
+  );
 
-    const updatedReadme = readmeData.replace(
-      /`0x[0-9a-fA-F]{40}`]\(https:\/\/explorer\.ver\.ax\/linea-sepolia\/portals\/0x[0-9a-fA-F]{40}\)/,
-      `\`${portalId}\`](https://explorer.ver.ax/linea-sepolia/portals/${portalId})`,
-    );
-
-    fs.writeFile(readmePath, updatedReadme, 'utf8', (err) => {
-      if (err) {
-        console.error('Error writing README.md:', err);
-      } else {
-        console.log('README.md updated successfully.');
-      }
-    });
-  });
-});
+  await writeFile(readmePath, updatedReadme, 'utf8');
+  console.log('README.md updated successfully.');
+} catch (error) {
+  console.error('Error:', error instanceof Error ? error.message : 'Unknown error');
+  process.exit(1);
+}

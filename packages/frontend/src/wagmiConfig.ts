@@ -3,7 +3,7 @@ import { lineaSepolia, mainnet } from 'wagmi/chains';
 import { http } from 'wagmi';
 
 export const walletConnectProjectId = 'e6b9b6d71d0c99dd038d98f51468f741';
-const infuraApiKey: string = '2VbuXFYphoB468fyFPinOmis7o5';
+const infuraApiKey: string = '4822fb98767a4bc295a375e6855e0375';
 
 const metadata = {
   name: 'Discord Attestation',
@@ -19,8 +19,6 @@ export const wagmiConfig = defaultWagmiConfig({
   chains,
   transports: {
     [mainnet.id]: http(`https://mainnet.infura.io/v3/${infuraApiKey}`),
-    [lineaSepolia.id]: http(
-      `https://linea-sepolia.infura.io/v3/${infuraApiKey}`,
-    ),
+    [lineaSepolia.id]: http(`https://linea-sepolia.infura.io/v3/${infuraApiKey}`),
   },
 });

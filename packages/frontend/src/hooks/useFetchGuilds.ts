@@ -4,11 +4,7 @@ import { Address } from 'viem';
 import { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
 import { PORTAL_ID, SCHEMA_ID } from '../utils/constants';
 
-export const useFetchGuilds = (
-  veraxSdk?: VeraxSdk,
-  address?: Address,
-  code?: string | null,
-) => {
+export const useFetchGuilds = (veraxSdk?: VeraxSdk, address?: Address, code?: string | null) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [guilds, setGuilds] = useState<SignedGuild[]>([]);
@@ -18,7 +14,7 @@ export const useFetchGuilds = (
       const fetchGuilds = async () => {
         localStorage.removeItem('discord_oauth_started');
         const res = await fetch(
-          `https://discord.alainnicolas.fr/.netlify/functions/api?code=${code}&isDev=${import.meta.env.MODE === 'development'}&subject=${address}`,
+          `https://discord.alainnicolas.fr/.netlify/functions/api?code=${code}&isDev=${import.meta.env.MODE === 'development'}&subject=${address}`
         );
         const data = await res.json();
         if (!data.error && !data.message) {
@@ -32,13 +28,10 @@ export const useFetchGuilds = (
             data.signedGuilds.map((guild: SignedGuild) => {
               const attestedGuild = attestedGuilds.find(
                 (attested) =>
-                  (attested.decodedPayload as DecodedPayload[])[0].guildId ===
-                  BigInt(guild.id),
+                  (attested.decodedPayload as DecodedPayload[])[0].guildId === BigInt(guild.id)
               );
-              return attestedGuild
-                ? { ...guild, attestationId: attestedGuild.id }
-                : guild;
-            }),
+              return attestedGuild ? { ...guild, attestationId: attestedGuild.id } : guild;
+            })
           );
         }
         setIsLoading(false);

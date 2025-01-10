@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import GuildList from './components/GuildList.tsx';
-import LoginWithDiscord from './components/LoginWithDiscord.tsx';
-import Header from './components/Header.tsx';
-import Footer from './components/Footer.tsx';
-import ConnectButton from './components/ConnectButton.tsx';
+import GuildList from './components/GuildList';
+import LoginWithDiscord from './components/LoginWithDiscord';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import ConnectButton from './components/ConnectButton';
 import './App.css';
 import { Abi, Hex } from 'viem';
 import { useAccount } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
-import { wagmiConfig } from './wagmiConfig.ts';
+import { wagmiConfig } from './wagmiConfig';
 import { add } from 'date-fns';
-import Spinner from './components/Spinner.tsx';
+import Spinner from './components/Spinner';
 import { SignedGuild } from './types';
-import { useVeraxSdk } from './hooks/useVeraxSdk.ts';
-import { useFetchGuilds } from './hooks/useFetchGuilds.ts';
-import { PORTAL_ID, SCHEMA_ID } from './utils/constants.ts';
+import { useVeraxSdk } from './hooks/useVeraxSdk';
+import { useFetchGuilds } from './hooks/useFetchGuilds';
+import { PORTAL_ID, SCHEMA_ID } from './utils/constants';
 import { abi as discordPortalAbi } from '../../contracts/artifacts/src/DiscordPortal.sol/DiscordPortal.json';
 
 const App: React.FC = () => {
@@ -23,7 +23,7 @@ const App: React.FC = () => {
   const { isLoggedIn, isLoading, guilds, setIsLoading } = useFetchGuilds(
     veraxSdk,
     address,
-    new URLSearchParams(window.location.search).get('code'),
+    new URLSearchParams(window.location.search).get('code')
   );
   const [txHash, setTxHash] = useState<Hex>();
   const [attestationId, setAttestationId] = useState<Hex>();
@@ -42,16 +42,14 @@ const App: React.FC = () => {
             PORTAL_ID,
             {
               schemaId: SCHEMA_ID,
-              expirationDate: Math.floor(
-                add(new Date(), { months: 1 }).getTime() / 1000,
-              ),
+              expirationDate: Math.floor(add(new Date(), { months: 1 }).getTime() / 1000),
               subject: address,
               attestationData: [{ guildId: signedGuild.id }],
             },
             [signedGuild.signature],
             false,
             100000000000000n,
-            discordPortalAbi as Abi,
+            discordPortalAbi as Abi
           );
           if (receipt.transactionHash) {
             setTxHash(receipt.transactionHash);
@@ -63,12 +61,11 @@ const App: React.FC = () => {
             alert(`Oops, something went wrong!`);
           }
         } catch (e) {
-          if (e instanceof Error)
-            alert(`Oops, something went wrong: ${e.message}`);
+          if (e instanceof Error) alert(`Oops, something went wrong: ${e.message}`);
         }
       }
     },
-    [address, veraxSdk],
+    [address, veraxSdk]
   );
 
   const handleAttest = useCallback(
@@ -79,7 +76,7 @@ const App: React.FC = () => {
         await issueAttestation(signedGuild);
       }
     },
-    [isConnected, issueAttestation],
+    [isConnected, issueAttestation]
   );
 
   const handleCheck = useCallback(
@@ -87,11 +84,11 @@ const App: React.FC = () => {
       if (signedGuild.attestationId) {
         window.open(
           `https://explorer.ver.ax/linea${chainId === 59144 ? '' : '-sepolia'}/attestations/${signedGuild.attestationId}`,
-          '_blank',
+          '_blank'
         );
       }
     },
-    [chainId],
+    [chainId]
   );
 
   const truncateHexString = (hexString: string) =>
@@ -133,11 +130,7 @@ const App: React.FC = () => {
                 </a>
               </div>
             )}
-            <GuildList
-              guilds={guilds}
-              onAttest={handleAttest}
-              onCheck={handleCheck}
-            />
+            <GuildList guilds={guilds} onAttest={handleAttest} onCheck={handleCheck} />
           </>
         )}
       </div>

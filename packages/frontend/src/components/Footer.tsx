@@ -18,12 +18,7 @@ const Footer = () => {
           </a>
         </p>
         <div>
-          <a
-            href="https://www.ver.ax"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="link"
-          >
+          <a href="https://www.ver.ax" target="_blank" rel="noopener noreferrer" className="link">
             <img src={LogoVerax} alt={'Logo Verax'} height={24} />
           </a>
           <a

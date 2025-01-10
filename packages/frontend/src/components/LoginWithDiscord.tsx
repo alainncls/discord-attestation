@@ -1,5 +1,4 @@
 import { FaDiscord } from 'react-icons/fa';
-import './LoginWithDiscord.css';
 
 const CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URL;

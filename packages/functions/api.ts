@@ -7,12 +7,8 @@ import { PORTAL_ID } from '../frontend/src/utils/constants';
 
 config({ path: '.env' });
 
-const {
-  VITE_DISCORD_CLIENT_ID,
-  DISCORD_CLIENT_SECRET,
-  VITE_REDIRECT_URL,
-  SIGNER_PRIVATE_KEY,
-} = process.env;
+const { VITE_DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, VITE_REDIRECT_URL, SIGNER_PRIVATE_KEY } =
+  process.env;
 const DEV_REDIRECT_URL = 'http://localhost:5173';
 
 const headers = {
@@ -35,17 +31,14 @@ const checkConfig = () => {
 
 const getToken = async (code: string, isDev: boolean) => {
   const params = new URLSearchParams({
-    client_id: VITE_DISCORD_CLIENT_ID!,
-    client_secret: DISCORD_CLIENT_SECRET!,
+    client_id: VITE_DISCORD_CLIENT_ID ?? '',
+    client_secret: DISCORD_CLIENT_SECRET ?? '',
     grant_type: 'authorization_code',
     code,
-    redirect_uri: isDev ? DEV_REDIRECT_URL : VITE_REDIRECT_URL!,
+    redirect_uri: isDev ? DEV_REDIRECT_URL : (VITE_REDIRECT_URL ?? ''),
   });
 
-  const response = await axios.post(
-    'https://discord.com/api/oauth2/token',
-    params,
-  );
+  const response = await axios.post('https://discord.com/api/oauth2/token', params);
   return response.data.access_token;
 };
 
@@ -56,11 +49,7 @@ const getGuilds = async (accessToken: string) => {
   return response.data as Guild[];
 };
 
-const signGuilds = async (
-  walletClient: WalletClient,
-  guilds: Guild[],
-  subject: string,
-) => {
+const signGuilds = async (walletClient: WalletClient, guilds: Guild[], subject: string) => {
   const domain = {
     name: 'VerifyDiscord',
     version: '1',
@@ -75,6 +64,12 @@ const signGuilds = async (
     ],
   };
 
+  const account = walletClient.account;
+
+  if (!account) {
+    throw new Error('Signer account not found');
+  }
+
   return Promise.all(
     guilds.map(async (guild) => {
       const message = {
@@ -83,7 +78,7 @@ const signGuilds = async (
       };
 
       const signature = await walletClient.signTypedData({
-        account: walletClient.account,
+        account,
         domain,
         types,
         primaryType: 'Discord',
@@ -91,7 +86,7 @@ const signGuilds = async (
       });
 
       return { id: guild.id, name: guild.name, signature };
-    }),
+    })
   );
 };
 
@@ -115,7 +110,7 @@ export async function handler(event: {
 
     const walletClient = createWalletClient({
       account: privateKeyToAccount(SIGNER_PRIVATE_KEY as Hex),
-      transport: http('https://rpc.linea.build'),
+      transport: http('https://rpc.linea.build'), // No need to use a paid endpoint
     });
 
     const signedGuilds = await signGuilds(walletClient, guilds, subject);
@@ -126,8 +121,7 @@ export async function handler(event: {
       body: JSON.stringify({ signedGuilds }),
     };
   } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'An unknown error occurred';
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return {
       statusCode: 500,
       headers,

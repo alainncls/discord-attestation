@@ -3,7 +3,7 @@ import { Guild } from '../frontend/src/types';
 import { createWalletClient, Hex, http, WalletClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { config } from 'dotenv';
-import { PORTAL_ID } from '../frontend/src/utils/constants';
+import { PORTAL_ID, PORTAL_ID_TESTNET } from '../frontend/src/utils/constants';
 
 config({ path: '.env' });
 
@@ -49,12 +49,17 @@ const getGuilds = async (accessToken: string) => {
   return response.data as Guild[];
 };
 
-const signGuilds = async (walletClient: WalletClient, guilds: Guild[], subject: string) => {
+const signGuilds = async (
+  walletClient: WalletClient,
+  guilds: Guild[],
+  subject: string,
+  chainId: number
+) => {
   const domain = {
     name: 'VerifyDiscord',
     version: '1',
-    chainId: 59141,
-    verifyingContract: PORTAL_ID,
+    chainId: chainId,
+    verifyingContract: chainId === 59144 ? PORTAL_ID : PORTAL_ID_TESTNET,
   } as const;
 
   const types = {
@@ -91,7 +96,7 @@ const signGuilds = async (walletClient: WalletClient, guilds: Guild[], subject: 
 };
 
 export async function handler(event: {
-  queryStringParameters: { code: string; isDev: string; subject: string };
+  queryStringParameters: { code: string; isDev: string; subject: string; chainId: string };
   body: string;
   httpMethod: string;
 }) {
@@ -102,8 +107,9 @@ export async function handler(event: {
   try {
     checkConfig();
 
-    const { code, isDev, subject } = event.queryStringParameters;
+    const { code, isDev, subject, chainId } = event.queryStringParameters;
     const isDevBoolean = isDev === 'true';
+    const chainIdNumber = parseInt(chainId);
 
     const accessToken = await getToken(code, isDevBoolean);
     const guilds = await getGuilds(accessToken);
@@ -113,7 +119,7 @@ export async function handler(event: {
       transport: http('https://rpc.linea.build'), // No need to use a paid endpoint
     });
 
-    const signedGuilds = await signGuilds(walletClient, guilds, subject);
+    const signedGuilds = await signGuilds(walletClient, guilds, subject, chainIdNumber);
 
     return {
       statusCode: 200,

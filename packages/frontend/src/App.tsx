@@ -14,7 +14,7 @@ import Spinner from './components/Spinner';
 import { SignedGuild } from './types';
 import { useVeraxSdk } from './hooks/useVeraxSdk';
 import { useFetchGuilds } from './hooks/useFetchGuilds';
-import { PORTAL_ID, SCHEMA_ID } from './utils/constants';
+import { PORTAL_ID, PORTAL_ID_TESTNET, SCHEMA_ID } from './utils/constants';
 import { abi as discordPortalAbi } from '../../contracts/artifacts/src/DiscordPortal.sol/DiscordPortal.json';
 
 const App: React.FC = () => {
@@ -23,7 +23,8 @@ const App: React.FC = () => {
   const { isLoggedIn, isLoading, guilds, setIsLoading } = useFetchGuilds(
     veraxSdk,
     address,
-    new URLSearchParams(window.location.search).get('code')
+    new URLSearchParams(window.location.search).get('code'),
+    chainId
   );
   const [txHash, setTxHash] = useState<Hex>();
   const [attestationId, setAttestationId] = useState<Hex>();
@@ -38,8 +39,8 @@ const App: React.FC = () => {
     async (signedGuild: SignedGuild) => {
       if (address && veraxSdk) {
         try {
-          let receipt = await veraxSdk.portal.attestV2(
-            PORTAL_ID,
+          let receipt = await veraxSdk.portal.attest(
+            chainId === 59144 ? PORTAL_ID : PORTAL_ID_TESTNET,
             {
               schemaId: SCHEMA_ID,
               expirationDate: Math.floor(add(new Date(), { months: 1 }).getTime() / 1000),
@@ -65,7 +66,7 @@ const App: React.FC = () => {
         }
       }
     },
-    [address, veraxSdk]
+    [address, chainId, veraxSdk]
   );
 
   const handleAttest = useCallback(

@@ -2,7 +2,7 @@
 pragma solidity 0.8.21;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {AbstractPortal} from "@verax-attestation-registry/verax-contracts/contracts/abstracts/AbstractPortal.sol";
+import {AbstractPortalV2} from "@verax-attestation-registry/verax-contracts/contracts/abstracts/AbstractPortalV2.sol";
 import {AttestationPayload} from "@verax-attestation-registry/verax-contracts/contracts/types/Structs.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
@@ -12,7 +12,7 @@ import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
  * @author alainnicolas.eth
  * @notice This contract aims to attest of the presence in a Discord server
  */
-contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
+contract DiscordPortal is AbstractPortalV2, Ownable, EIP712 {
     uint256 public fee = 0.0001 ether;
     address public constant SIGNER_ADDRESS = 0x6aDD17d22E8753869a3B9E83068Be1f16202046E;
     bytes32 public constant SCHEMA_ID = 0x2dbbaa5d8c394d99470ea8eebe48c52c0042db98d3f16719f9b5717c73487a23;
@@ -23,7 +23,6 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     error InvalidSubject();
     error SenderIsNotSubject();
     error InsufficientFee();
-    error WithdrawFail();
     error InvalidSignature();
     error InvalidSignatureLength();
     error NotImplemented();
@@ -31,17 +30,17 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     constructor(
         address[] memory modules,
         address router
-    ) AbstractPortal(modules, router) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {}
+    ) AbstractPortalV2(modules, router) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {}
 
     /**
-     * @inheritdoc AbstractPortal
+     * @inheritdoc AbstractPortalV2
      * @dev This function checks if
      *          the subject is a valid address,
      *          and if the value sent is sufficient
      *          and if the schema ID is correct
      *          and if the payload is correctly signed
      */
-    function _onAttestV2(
+    function _onAttest(
         AttestationPayload memory attestationPayload,
         bytes[] memory validationPayloads,
         uint256 value
@@ -57,19 +56,7 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     }
 
     /**
-     * @inheritdoc AbstractPortal
-     * @dev This function is not implemented
-     */
-    function _onAttest(
-        AttestationPayload memory /*attestationPayload*/,
-        address /*attester*/,
-        uint256 /*value*/
-    ) internal pure override {
-        revert NotImplemented();
-    }
-
-    /**
-     *  @inheritdoc AbstractPortal
+     *  @inheritdoc AbstractPortalV2
      */
     function _onReplace(
         bytes32 /*attestationId*/,
@@ -81,7 +68,7 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     }
 
     /**
-     * @inheritdoc AbstractPortal
+     * @inheritdoc AbstractPortalV2
      */
     function _onBulkReplace(
         bytes32[] memory /*attestationIds*/,
@@ -92,7 +79,7 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     }
 
     /**
-     * @inheritdoc AbstractPortal
+     * @inheritdoc AbstractPortalV2
      * @dev This function is not implemented
      */
     function _onBulkAttest(
@@ -103,7 +90,7 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     }
 
     /**
-     * @inheritdoc AbstractPortal
+     * @inheritdoc AbstractPortalV2
      * @dev Only the Portal owner can revoke attestations
      */
     function _onRevoke(bytes32 /*attestationId*/) internal view override {
@@ -111,7 +98,7 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
     }
 
     /**
-     * @inheritdoc AbstractPortal
+     * @inheritdoc AbstractPortalV2
      * @dev Only the Portal owner can revoke attestations
      */
     function _onBulkRevoke(bytes32[] memory /*attestationIds*/) internal view override {
@@ -124,17 +111,6 @@ contract DiscordPortal is AbstractPortal, Ownable, EIP712 {
      */
     function setFee(uint256 attestationFee) public onlyOwner {
         fee = attestationFee;
-    }
-
-    /**
-     * @notice Withdraw funds from the Portal
-     * @param to the address to send the funds to
-     * @param amount the amount to withdraw
-     * @dev Only the owner can withdraw funds
-     */
-    function withdraw(address payable to, uint256 amount) external override onlyOwner {
-        (bool success, ) = to.call{value: amount}("");
-        if (!success) revert WithdrawFail();
     }
 
     function verifySignature(bytes memory signature, uint256 guildId, address subject) internal view returns (bool) {

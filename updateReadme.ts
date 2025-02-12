@@ -11,18 +11,34 @@ const readmePath = join(__dirname, '../README.md');
 try {
   const constantsContent = await readFile(constantsPath, 'utf8');
 
-  const portalIdMatch = constantsContent.match(/export const PORTAL_ID: Address = '([^']+)'/);
-  if (!portalIdMatch) {
+  const portalIdSepoliaMatch = constantsContent.match(
+    /export const PORTAL_ID_TESTNET: Address = '([^']+)'/
+  );
+  if (!portalIdSepoliaMatch) {
+    throw new Error('PORTAL_ID_TESTNET not found in constants.ts');
+  }
+
+  const portalIdTestnet = portalIdSepoliaMatch[1].toLowerCase();
+
+  const portalIdMainnetMatch = constantsContent.match(
+    /export const PORTAL_ID: Address = '([^']+)'/
+  );
+  if (!portalIdMainnetMatch) {
     throw new Error('PORTAL_ID not found in constants.ts');
   }
 
-  const portalId = portalIdMatch[1].toLowerCase();
+  const portalIdMainnet = portalIdMainnetMatch[1].toLowerCase();
   const readmeContent = await readFile(readmePath, 'utf8');
 
-  const updatedReadme = readmeContent.replace(
-    /`0x[0-9a-fA-F]{40}`]\(https:\/\/explorer\.ver\.ax\/linea-sepolia\/portals\/0x[0-9a-fA-F]{40}\)/,
-    `\`${portalId}\`](https://explorer.ver.ax/linea-sepolia/portals/${portalId})`
-  );
+  const updatedReadme = readmeContent
+    .replace(
+      /`0x[0-9a-fA-F]{40}`]\(https:\/\/explorer\.ver\.ax\/linea-sepolia\/portals\/0x[0-9a-fA-F]{40}\)/,
+      `\`${portalIdTestnet}\`](https://explorer.ver.ax/linea-sepolia/portals/${portalIdTestnet})`
+    )
+    .replace(
+      /`0x[0-9a-fA-F]{40}`]\(https:\/\/explorer\.ver\.ax\/linea\/portals\/0x[0-9a-fA-F]{40}\)/,
+      `\`${portalIdMainnet}\`](https://explorer.ver.ax/linea/portals/${portalIdMainnet})`
+    );
 
   await writeFile(readmePath, updatedReadme, 'utf8');
   console.log('README.md updated successfully.');

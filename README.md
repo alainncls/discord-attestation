@@ -49,10 +49,15 @@ pnpm run dev
 
 ## 🔗 Contract Deployments
 
-### Linea Sepolia (Testnet)
+### Linea Sepolia
 
 - Portal: [
-  `0x562225b292a775f2cb24f4014bb8e2cc9316ce93`](https://explorer.ver.ax/linea-sepolia/portals/0x562225b292a775f2cb24f4014bb8e2cc9316ce93)
+  `0x07601016572ee88c1c71fa64edfca767b02ec07b`](https://explorer.ver.ax/linea-sepolia/portals/0x07601016572ee88c1c71fa64edfca767b02ec07b)
+
+### Linea Mainnet
+
+- Portal: [
+  `0x`](https://explorer.ver.ax/linea/portals/0x)
 
 ## 🛠 Tech Stack
 

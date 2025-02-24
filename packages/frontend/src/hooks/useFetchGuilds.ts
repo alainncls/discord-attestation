@@ -30,7 +30,7 @@ export const useFetchGuilds = (
           setIsLoggedIn(true);
           const attestedGuilds = await veraxSdk.attestation.findBy(1000, 0, {
             schema: SCHEMA_ID,
-            portal: (chainId === 59144 ? PORTAL_ID_TESTNET : PORTAL_ID).toLowerCase(),
+            portal: (chainId === 59144 ? PORTAL_ID : PORTAL_ID_TESTNET).toLowerCase(),
             subject: address,
           });
           setGuilds(

@@ -11,20 +11,20 @@ Visit [discord.alainnicolas.fr](https://discord.alainnicolas.fr/) to try the app
 
 ## ✨ Features
 
-- Connect your Web3 wallet
+- Connect your wallet
 - Authenticate with Discord
 - Generate on-chain attestations of your server memberships
-- Verify attestations through Verax Protocol
-- Full Linea network integration
+- Check attestations on the Verax Explorer
+- Leveraging the Linea network to host the attestations
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- pnpm package manager
-- A Web3 wallet (MetaMask recommended 🦊)
-- Discord account
+- Node.js (v23.7.0 or higher)
+- pnpm package manager (v9.14.0 or higher)
+- A wallet (MetaMask recommended 🦊)
+- A Discord account
 
 ### Installation
 
@@ -47,17 +47,21 @@ pnpm install
 pnpm run dev
 ```
 
-## 🔗 Contract Deployments
+## 🔗 Verax Deployments
 
 ### Linea Sepolia
 
-- Portal: [
-  `0x07601016572ee88c1c71fa64edfca767b02ec07b`](https://explorer.ver.ax/linea-sepolia/portals/0x07601016572ee88c1c71fa64edfca767b02ec07b)
+[
+`0xd0fb47ea3960d15425137b2ff83955c3beb6a85c`](https://explorer.ver.ax/linea-sepolia/portals/0xd0fb47ea3960d15425137b2ff83955c3beb6a85c)
 
 ### Linea Mainnet
 
-- Portal: [
-  `0x`](https://explorer.ver.ax/linea/portals/0x)
+[`0x`](https://explorer.ver.ax/linea/portals/0x)
+
+### Schema
+
+[
+`0xefa96ce61912c5bb59cb4c26645ea193fc03a234fe09a6b2c8b85aaa51a382d6`](https://explorer.ver.ax/linea/schemas/0xefa96ce61912c5bb59cb4c26645ea193fc03a234fe09a6b2c8b85aaa51a382d6)
 
 ## 🛠 Tech Stack
 

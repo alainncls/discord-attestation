@@ -45,7 +45,7 @@ const App: React.FC = () => {
               schemaId: SCHEMA_ID,
               expirationDate: Math.floor(add(new Date(), { months: 1 }).getTime() / 1000),
               subject: address,
-              attestationData: [{ guildId: signedGuild.id }],
+              attestationData: [{ guildId: signedGuild.id, guildName: signedGuild.name }],
             },
             [signedGuild.signature],
             false,

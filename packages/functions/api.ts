@@ -4,6 +4,7 @@ import { createWalletClient, Hex, http, WalletClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { config } from 'dotenv';
 import { PORTAL_ID, PORTAL_ID_TESTNET } from '../frontend/src/utils/constants';
+import { Context } from '@netlify/functions';
 
 config({ path: '.env' });
 
@@ -95,23 +96,30 @@ const signGuilds = async (
   );
 };
 
-export async function handler(event: {
-  queryStringParameters: { code: string; isDev: string; subject: string; chainId: string };
-  body: string;
-  httpMethod: string;
-}) {
-  if (event.httpMethod === 'OPTIONS') {
+export default async (req: Request, context: Context) => {
+  if (req.method === 'OPTIONS') {
     return { statusCode: 204, headers, body: '' };
   }
 
   try {
     checkConfig();
 
-    const { code, isDev, subject, chainId } = event.queryStringParameters;
-    const isDevBoolean = isDev === 'true';
-    const chainIdNumber = parseInt(chainId);
+    const { searchParams } = context.url;
+    const code = searchParams.get('code');
+    const isDev = searchParams.get('isDev') === 'true';
+    const subject = searchParams.get('subject');
+    const rawChainId = searchParams.get('chainId');
 
-    const accessToken = await getToken(code, isDevBoolean);
+    if (!code || !subject || !rawChainId) {
+      return new Response(JSON.stringify({ error: 'Missing parameters' }), {
+        status: 400,
+        headers,
+      });
+    }
+
+    const chainId = parseInt(rawChainId);
+
+    const accessToken = await getToken(code, isDev);
     const guilds = await getGuilds(accessToken);
 
     const walletClient = createWalletClient({
@@ -119,19 +127,17 @@ export async function handler(event: {
       transport: http('https://rpc.linea.build'), // No need to use a paid endpoint
     });
 
-    const signedGuilds = await signGuilds(walletClient, guilds, subject, chainIdNumber);
+    const signedGuilds = await signGuilds(walletClient, guilds, subject, chainId);
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ signedGuilds }),
-    };
+    return new Response(JSON.stringify({ signedGuilds }), {
+      status: 200,
+      headers: headers,
+    });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    return {
-      statusCode: 500,
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
       headers,
-      body: JSON.stringify({ error: errorMessage }),
-    };
+    });
   }
-}
+};

@@ -8,6 +8,7 @@
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@netlify/functions": "^3.0.0",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "viem": "^2.23.0"

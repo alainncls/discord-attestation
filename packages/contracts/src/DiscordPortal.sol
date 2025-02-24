@@ -15,7 +15,7 @@ import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 contract DiscordPortal is AbstractPortalV2, Ownable, EIP712 {
     uint256 public fee = 0.0001 ether;
     address public constant SIGNER_ADDRESS = 0x6aDD17d22E8753869a3B9E83068Be1f16202046E;
-    bytes32 public constant SCHEMA_ID = 0x2dbbaa5d8c394d99470ea8eebe48c52c0042db98d3f16719f9b5717c73487a23;
+    bytes32 public constant SCHEMA_ID = 0xefa96ce61912c5bb59cb4c26645ea193fc03a234fe09a6b2c8b85aaa51a382d6;
     string private constant SIGNING_DOMAIN = "VerifyDiscord";
     string private constant SIGNATURE_VERSION = "1";
 
@@ -26,6 +26,11 @@ contract DiscordPortal is AbstractPortalV2, Ownable, EIP712 {
     error InvalidSignature();
     error InvalidSignatureLength();
     error NotImplemented();
+
+    struct GuildPayload {
+        uint256 guildId;
+        string guildName;
+    }
 
     constructor(
         address[] memory modules,
@@ -51,8 +56,8 @@ contract DiscordPortal is AbstractPortalV2, Ownable, EIP712 {
         if (value < fee) revert InsufficientFee();
         if (attestationPayload.schemaId != SCHEMA_ID) revert InvalidSchema();
 
-        uint256 guildId = abi.decode(attestationPayload.attestationData, (uint256));
-        if (!verifySignature(validationPayloads[0], guildId, subject)) revert InvalidSignature();
+        GuildPayload memory payload = abi.decode(attestationPayload.attestationData, (GuildPayload));
+        if (!verifySignature(validationPayloads[0], payload.guildId, subject)) revert InvalidSignature();
     }
 
     /**

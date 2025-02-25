@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import GuildList from './components/GuildList';
 import LoginWithDiscord from './components/LoginWithDiscord';
 import Header from './components/Header';
@@ -17,7 +17,7 @@ import { useFetchGuilds } from './hooks/useFetchGuilds';
 import { PORTAL_ID, PORTAL_ID_TESTNET, SCHEMA_ID } from './utils/constants';
 import { abi as discordPortalAbi } from '../../contracts/artifacts/src/DiscordPortal.sol/DiscordPortal.json';
 
-const App: React.FC = () => {
+function App() {
   const { address, chainId, isConnected } = useAccount();
   const { veraxSdk } = useVeraxSdk(chainId, address);
   const { isLoggedIn, isLoading, guilds, setIsLoading } = useFetchGuilds(
@@ -138,6 +138,6 @@ const App: React.FC = () => {
       <Footer />
     </>
   );
-};
+}
 
 export default App;

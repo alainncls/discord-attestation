@@ -5,8 +5,10 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat run scripts/deployDiscord.ts --network",
-    "lint": "prettier --list-different '**/*.sol' '**/*.ts' '**/*.json' && npm run solhint",
-    "lint:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json'",
+    "lint": "eslint . && pnpm run solhint",
+    "lint:fix": "eslint --fix .",
+    "prettier": "prettier --list-different '**/*.sol' '**/*.ts' '**/*.json'",
+    "prettier:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json'",
     "solhint": "solhint **/*.sol -c .solhint.json",
     "test": "npx hardhat test"
   },
@@ -23,6 +25,10 @@
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5",
     "hardhat": "^2.22.18",
+    "prettier": "^3.5.2",
+    "prettier-plugin-solidity": "^1.4.2",
+    "solhint": "^5.0.5",
+    "solhint-plugin-prettier": "^0.1.0",
     "viem": "^2.23.0"
   }
 }

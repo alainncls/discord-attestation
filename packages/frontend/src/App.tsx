@@ -8,7 +8,7 @@ import './App.css';
 import { Abi, Hex } from 'viem';
 import { useAccount } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
-import { wagmiConfig } from './wagmiConfig';
+import { wagmiAdapter } from './wagmiConfig';
 import { add } from 'date-fns';
 import Spinner from './components/Spinner';
 import { SignedGuild } from './types';
@@ -54,7 +54,7 @@ const App: React.FC = () => {
           );
           if (receipt.transactionHash) {
             setTxHash(receipt.transactionHash);
-            receipt = await waitForTransactionReceipt(wagmiConfig.getClient(), {
+            receipt = await waitForTransactionReceipt(wagmiAdapter.wagmiConfig.getClient(), {
               hash: receipt.transactionHash,
             });
             setAttestationId(receipt.logs?.[0].topics[1]);

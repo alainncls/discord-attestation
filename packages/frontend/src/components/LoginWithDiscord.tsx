@@ -1,4 +1,5 @@
 import { FaDiscord } from 'react-icons/fa';
+import './LoginWithDiscord.css';
 
 const CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URL;
@@ -12,9 +13,11 @@ const LoginWithDiscord = () => {
   };
 
   return (
-    <button className="btn" onClick={handleLogin}>
-      <FaDiscord size={24} /> Login with Discord
-    </button>
+    <div className="login-container">
+      <button className="discord-btn" onClick={handleLogin}>
+        <FaDiscord size={24} /> Login with Discord
+      </button>
+    </div>
   );
 };
 

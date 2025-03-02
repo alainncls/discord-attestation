@@ -1,12 +1,28 @@
 .guild-list-container {
-    color: #000000;
+    width: 100%;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.guild-list-container h1 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.guild-list {
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left;
 }
 
 .guild-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 1rem 0;
+    margin: 0.5rem 0;
 }
 
 .attested {

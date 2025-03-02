@@ -1,0 +1,23 @@
+.message {
+    padding: 10px;
+    border-radius: 5px;
+    word-break: break-all;
+}
+
+.message.pending {
+    color: #856404;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.message a {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.message a:hover {
+    text-decoration: none;
+}

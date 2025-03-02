@@ -1,30 +1,30 @@
 .guild-list-container {
-    width: 100%;
-    margin-top: 20px;
-    text-align: center;
+  width: 100%;
+  margin-top: 20px;
+  text-align: center;
 }
 
 .guild-list-container h1 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .guild-list {
-    display: flex;
-    flex-direction: column;
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: left;
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
 }
 
 .guild-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.5rem 0;
 }
 
 .attested {
-    filter: invert(51%) sepia(94%) saturate(725%) hue-rotate(72deg) brightness(93%) contrast(102%);
+  filter: invert(51%) sepia(94%) saturate(725%) hue-rotate(72deg) brightness(93%) contrast(102%);
 }

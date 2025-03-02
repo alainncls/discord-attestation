@@ -8,8 +8,8 @@
     "dev": "vite",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "prettier": "prettier --list-different '**/*.ts' '**/*.json'",
-    "prettier:fix": "prettier --write '**/*.ts' '**/*.json'",
+    "prettier": "prettier --list-different '**/*.ts' '**/*.css' '**/*.json'",
+    "prettier:fix": "prettier --write '**/*.ts' '**/*.css' '**/*.json'",
     "preview": "vite preview"
   },
   "dependencies": {

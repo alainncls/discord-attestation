@@ -1,19 +1,19 @@
 /* Base styles */
 :root {
-  --primary-color: #5865F2;
-  --primary-hover-color: #4752C4;
-  --discord-color: #5865F2;
-  --discord-hover-color: #4752C4;
-  --secondary-color: #57F287;
+  --primary-color: #5865f2;
+  --primary-hover-color: #4752c4;
+  --discord-color: #5865f2;
+  --discord-hover-color: #4752c4;
+  --secondary-color: #57f287;
   --secondary-hover-color: #45d66c;
   --text-color: #333;
   --light-text-color: #666;
   --background-color: #f9f9f9;
   --light-background: #f9f9f9;
   --border-color: #e1e1e1;
-  --success-color: #57F287;
-  --warning-color: #FEE75C;
-  --error-color: #ED4245;
+  --success-color: #57f287;
+  --warning-color: #fee75c;
+  --error-color: #ed4245;
   --button-width: 150px; /* Reduced width for buttons */
 }
 
@@ -79,61 +79,59 @@ body {
 }
 
 #root {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .main-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    flex-grow: 1;
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  flex-grow: 1;
+  padding: 20px;
 }
 
-button[type="submit"] {
-    padding: 10px 20px;
-    border: none;
-    background-color: #007BFF;
-    color: #fff;
-    border-radius: 4px;
-    cursor: pointer;
-    align-self: center;
+button[type='submit'] {
+  padding: 10px 20px;
+  border: none;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: center;
 }
 
-button[type="submit"]:hover {
-    background-color: #0056b3;
+button[type='submit']:hover {
+  background-color: #0056b3;
 }
 
-button[type="submit"]:disabled {
-    background-color: dimgrey;
-    color: linen;
-    opacity: 1;
+button[type='submit']:disabled {
+  background-color: dimgrey;
+  color: linen;
+  opacity: 1;
 }
 
 .error {
-    color: red;
-    margin-bottom: 10px;
-    width: 100%;
-    text-align: center;
+  color: red;
+  margin-bottom: 10px;
+  width: 100%;
+  text-align: center;
 }
 
 .message {
-    color: #000000;
-    padding-top: 20px;
-    text-align: center;
+  color: #000000;
+  padding-top: 20px;
+  text-align: center;
 }
 
 .success {
-    color: #008000;
-    font-weight: bold;
+  color: #008000;
+  font-weight: bold;
 }
 
 .pending {
-    color: #FF8C00;
+  color: #ff8c00;
 }
-
-

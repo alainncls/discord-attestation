@@ -1,14 +1,14 @@
 .loading-icon {
-    color: #5865F2;
-    font-size: 4rem;
-    animation: animate 2s infinite;
+  color: #5865f2;
+  font-size: 4rem;
+  animation: animate 2s infinite;
 }
 
 @keyframes animate {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(720deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(720deg);
+  }
 }

@@ -49,5 +49,5 @@ export const useFetchGuilds = (
     }
   }, [isLoading, code, address, veraxSdk, chainId]);
 
-  return { isLoggedIn, isLoading, guilds, setIsLoading };
+  return { isLoggedIn, isLoading, guilds, setGuilds, setIsLoading };
 };

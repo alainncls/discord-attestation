@@ -8,6 +8,8 @@ import { useVeraxSdk } from './hooks/useVeraxSdk';
 import { useFetchGuilds } from './hooks/useFetchGuilds';
 import { useAttestationManager } from './hooks/useAttestationManager';
 import { linea, lineaSepolia } from 'wagmi/chains';
+import { Hex } from 'viem';
+import { SignedGuild } from './types';
 
 function App() {
   const { address, chainId } = useAccount();
@@ -20,7 +22,7 @@ function App() {
     }
   }, [chainId, switchChain]);
 
-  const { isLoggedIn, isLoading, guilds, setIsLoading } = useFetchGuilds(
+  const { isLoggedIn, isLoading, guilds, setIsLoading, setGuilds } = useFetchGuilds(
     veraxSdk,
     address,
     new URLSearchParams(window.location.search).get('code'),
@@ -38,6 +40,15 @@ function App() {
     }
   }, [setIsLoading]);
 
+  const handleAttestAndUpdateGuilds = async (guild: SignedGuild) => {
+    await handleAttest(guild, (guildId: string, attestId: Hex) => {
+      const updatedGuilds = guilds.map(currentGuild =>
+        currentGuild.id === guildId ? { ...currentGuild, attestationId: attestId } : currentGuild,
+      );
+      setGuilds(updatedGuilds);
+    });
+  };
+
   return (
     <div className="app-container">
       <Header />
@@ -48,7 +59,7 @@ function App() {
         txHash={txHash}
         attestationId={attestationId}
         chainId={chainId}
-        onAttest={handleAttest}
+        onAttest={handleAttestAndUpdateGuilds}
         onCheck={handleCheck}
       />
       <Footer />

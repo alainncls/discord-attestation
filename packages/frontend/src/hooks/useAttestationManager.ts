@@ -15,7 +15,7 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
   const [attestationId, setAttestationId] = useState<Hex>();
 
   const issueAttestation = useCallback(
-    async (signedGuild: SignedGuild) => {
+    async (signedGuild: SignedGuild, onSuccess?: (guildId: string, attestId: Hex) => void) => {
       if (!address || !veraxSdk) return;
 
       try {
@@ -33,7 +33,7 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
           [signedGuild.signature],
           false,
           100000000000000n,
-          discordPortalAbi as Abi
+          discordPortalAbi as Abi,
         );
 
         if (receipt.transactionHash) {
@@ -41,7 +41,13 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
           receipt = await waitForTransactionReceipt(wagmiAdapter.wagmiConfig.getClient(), {
             hash: receipt.transactionHash,
           });
-          setAttestationId(receipt.logs?.[0].topics[1]);
+
+          const attestId = receipt.logs?.[0].topics[1];
+          setAttestationId(attestId);
+
+          if (attestId && onSuccess) {
+            onSuccess(signedGuild.id, attestId);
+          }
         } else {
           alert(`Oops, something went wrong!`);
         }
@@ -49,16 +55,16 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
         if (e instanceof Error) alert(`Oops, something went wrong: ${e.message}`);
       }
     },
-    [address, chainId, veraxSdk]
+    [address, chainId, veraxSdk],
   );
 
   const handleAttest = useCallback(
-    async (signedGuild: SignedGuild) => {
+    async (signedGuild: SignedGuild, onSuccess?: (guildId: string, attestId: Hex) => void) => {
       if (isConnected) {
-        await issueAttestation(signedGuild);
+        await issueAttestation(signedGuild, onSuccess);
       }
     },
-    [isConnected, issueAttestation]
+    [isConnected, issueAttestation],
   );
 
   const handleCheck = useCallback(
@@ -66,11 +72,11 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
       if (signedGuild.attestationId) {
         window.open(
           `https://explorer.ver.ax/linea${chainId === 59144 ? '' : '-sepolia'}/attestations/${signedGuild.attestationId}`,
-          '_blank'
+          '_blank',
         );
       }
     },
-    [chainId]
+    [chainId],
   );
 
   return {

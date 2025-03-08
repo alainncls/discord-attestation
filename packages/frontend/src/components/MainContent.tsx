@@ -14,6 +14,7 @@ interface MainContentProps {
   guilds: SignedGuild[];
   txHash?: Hex;
   attestationId?: Hex;
+  pendingGuildId?: string | null;
   chainId?: number;
   onAttest: (guild: SignedGuild) => void;
   onCheck: (guild: SignedGuild) => void;
@@ -25,6 +26,7 @@ const MainContent = ({
                        guilds,
                        txHash,
                        attestationId,
+                       pendingGuildId,
                        chainId,
                        onAttest,
                        onCheck,
@@ -49,7 +51,12 @@ const MainContent = ({
             chainId={chainId}
             truncateHexString={truncateHexString}
           />
-          <GuildList guilds={guilds} onAttest={onAttest} onCheck={onCheck} />
+          <GuildList 
+            guilds={guilds} 
+            pendingGuildId={pendingGuildId}
+            onAttest={onAttest} 
+            onCheck={onCheck} 
+          />
         </>
       )}
     </div>

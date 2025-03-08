@@ -1,34 +1,40 @@
 .guild-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0;
-  border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    border-radius: 0;
 }
 
 .guild-name {
-  font-weight: 500;
-  font-size: 1rem;
+    font-weight: 500;
+    font-size: 1rem;
 }
 
 .attested {
-  filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg)
-    brightness(90%) contrast(85%);
+    filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(90%) contrast(85%);
 }
 
 /* Ensure consistent button sizing */
 .guild-item button {
-  min-width: var(--button-width);
-  text-align: center;
-  white-space: nowrap;
+    min-width: var(--button-width);
+    text-align: center;
+    white-space: nowrap;
 }
 
 .verax-button {
-  width: var(--button-width);
-  text-align: center;
-  white-space: nowrap;
-  justify-content: center;
-  letter-spacing: 0.2px;
-  padding-left: 0;
-  padding-right: 0;
+    width: var(--button-width);
+    text-align: center;
+    white-space: nowrap;
+    justify-content: center;
+    letter-spacing: 0.2px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.verax-button .loading-icon {
+    font-size: 1rem;
+    margin-right: 5px;
+    display: inline-block;
+    vertical-align: middle;
 }

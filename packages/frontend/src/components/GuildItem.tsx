@@ -5,11 +5,12 @@ import './GuildItem.css';
 
 interface GuildItemProps {
   guild: SignedGuild;
+  isPending?: boolean;
   onAttest: (guild: SignedGuild) => void;
   onCheck: (guild: SignedGuild) => void;
 }
 
-const GuildItem = ({ guild, onAttest, onCheck }: GuildItemProps) => {
+const GuildItem = ({ guild, isPending, onAttest, onCheck }: GuildItemProps) => {
   const { isConnected } = useAccount();
 
   return (
@@ -23,13 +24,21 @@ const GuildItem = ({ guild, onAttest, onCheck }: GuildItemProps) => {
         <button
           className={`btn btn-small verax-button ${isConnected ? '' : 'btn-disabled'}`}
           onClick={() => onAttest(guild)}
-          disabled={!isConnected}
+          disabled={!isConnected || isPending}
         >
-          <img src={LogoVerax} alt="Logo Verax" height={16} /> Attest on Verax
+          {isPending ? (
+            <>
+              Attesting...
+            </>
+          ) : (
+            <>
+              <img src={LogoVerax} alt="Logo Verax" height={16} /> Attest on Verax
+            </>
+          )}
         </button>
       )}
     </div>
   );
 };
 
-export default GuildItem; 
+export default GuildItem;

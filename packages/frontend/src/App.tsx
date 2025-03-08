@@ -29,7 +29,7 @@ function App() {
     chainId,
   );
 
-  const { txHash, attestationId, handleAttest, handleCheck } = useAttestationManager(
+  const { txHash, attestationId, pendingGuildId, handleAttest, handleCheck } = useAttestationManager(
     veraxSdk,
     chainId,
   );
@@ -41,12 +41,15 @@ function App() {
   }, [setIsLoading]);
 
   const handleAttestAndUpdateGuilds = async (guild: SignedGuild) => {
-    await handleAttest(guild, (guildId: string, attestId: Hex) => {
-      const updatedGuilds = guilds.map(currentGuild =>
-        currentGuild.id === guildId ? { ...currentGuild, attestationId: attestId } : currentGuild,
-      );
-      setGuilds(updatedGuilds);
-    });
+    await handleAttest(
+      guild, 
+      (guildId: string, attestId: Hex) => {
+        const updatedGuilds = guilds.map(g => 
+          g.id === guildId ? { ...g, attestationId: attestId } : g
+        );
+        setGuilds(updatedGuilds);
+      },
+    );
   };
 
   return (
@@ -58,6 +61,7 @@ function App() {
         guilds={guilds}
         txHash={txHash}
         attestationId={attestationId}
+        pendingGuildId={pendingGuildId}
         chainId={chainId}
         onAttest={handleAttestAndUpdateGuilds}
         onCheck={handleCheck}

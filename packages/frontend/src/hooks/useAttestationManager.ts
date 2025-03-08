@@ -13,14 +13,16 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
   const { address, isConnected } = useAccount();
   const [txHash, setTxHash] = useState<Hex>();
   const [attestationId, setAttestationId] = useState<Hex>();
+  const [pendingGuildId, setPendingGuildId] = useState<string | null>(null);
 
   const issueAttestation = useCallback(
-    async (signedGuild: SignedGuild, onSuccess?: (guildId: string, attestId: Hex) => void) => {
+    async (signedGuild: SignedGuild, onSuccess?: (guildId: string, attestId: Hex) => void, onError?: () => void) => {
       if (!address || !veraxSdk) return;
 
       try {
         setTxHash(undefined);
         setAttestationId(undefined);
+        setPendingGuildId(signedGuild.id);
 
         let receipt = await veraxSdk.portal.attest(
           chainId === 59144 ? PORTAL_ID : PORTAL_ID_TESTNET,
@@ -33,7 +35,7 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
           [signedGuild.signature],
           false,
           100000000000000n,
-          discordPortalAbi as Abi,
+          discordPortalAbi as Abi
         );
 
         if (receipt.transactionHash) {
@@ -41,30 +43,36 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
           receipt = await waitForTransactionReceipt(wagmiAdapter.wagmiConfig.getClient(), {
             hash: receipt.transactionHash,
           });
-
+          
           const attestId = receipt.logs?.[0].topics[1];
           setAttestationId(attestId);
-
+          
           if (attestId && onSuccess) {
             onSuccess(signedGuild.id, attestId);
           }
         } else {
+          setPendingGuildId(null);
+          if (onError) onError();
           alert(`Oops, something went wrong!`);
         }
       } catch (e) {
+        setPendingGuildId(null);
+        if (onError) onError();
         if (e instanceof Error) alert(`Oops, something went wrong: ${e.message}`);
+      } finally {
+        setPendingGuildId(null);
       }
     },
-    [address, chainId, veraxSdk],
+    [address, chainId, veraxSdk]
   );
 
   const handleAttest = useCallback(
-    async (signedGuild: SignedGuild, onSuccess?: (guildId: string, attestId: Hex) => void) => {
+    async (signedGuild: SignedGuild, onSuccess?: (guildId: string, attestId: Hex) => void, onError?: () => void) => {
       if (isConnected) {
-        await issueAttestation(signedGuild, onSuccess);
+        await issueAttestation(signedGuild, onSuccess, onError);
       }
     },
-    [isConnected, issueAttestation],
+    [isConnected, issueAttestation]
   );
 
   const handleCheck = useCallback(
@@ -72,16 +80,17 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
       if (signedGuild.attestationId) {
         window.open(
           `https://explorer.ver.ax/linea${chainId === 59144 ? '' : '-sepolia'}/attestations/${signedGuild.attestationId}`,
-          '_blank',
+          '_blank'
         );
       }
     },
-    [chainId],
+    [chainId]
   );
 
   return {
     txHash,
     attestationId,
+    pendingGuildId,
     handleAttest,
     handleCheck,
   };

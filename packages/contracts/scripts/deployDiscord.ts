@@ -41,11 +41,10 @@ async function main() {
 
   console.log('Registering DiscordPortal.sol...');
 
-  const chainId = network.config.chainId;
   const signers = await ethers.getSigners();
   const signer = signers[0];
   const veraxSdk = new VeraxSdk(
-    chainId === 59144
+    network.name === 'linea'
       ? VeraxSdk.DEFAULT_LINEA_MAINNET
       : VeraxSdk.DEFAULT_LINEA_SEPOLIA,
     signer.address as Address,
@@ -57,7 +56,7 @@ async function main() {
     'Discord Portal',
     'Discord attestations',
     true,
-    'alainnicolas.eth',
+    'alain.linea.eth',
     true,
   );
 

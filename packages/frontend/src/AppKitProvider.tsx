@@ -3,6 +3,7 @@ import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { networks, projectId, wagmiAdapter } from './wagmiConfig';
 import LineaSepoliaIcon from './assets/linea-sepolia.svg';
+import LineaMainnetIcon from './assets/linea-mainnet.svg';
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ createAppKit({
   themeMode: 'light',
   chainImages: {
     59141: LineaSepoliaIcon,
+    59144: LineaMainnetIcon,
   },
 });
 

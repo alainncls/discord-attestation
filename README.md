@@ -56,7 +56,8 @@ pnpm run dev
 
 ### Linea Mainnet
 
-[`0x`](https://explorer.ver.ax/linea/portals/0x)
+[
+`0x407e280281b812adef69a91230659c9d738d82cb`](https://explorer.ver.ax/linea/portals/0x407e280281b812adef69a91230659c9d738d82cb)
 
 ### Schema
 

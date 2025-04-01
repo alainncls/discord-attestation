@@ -91,10 +91,10 @@ importers:
         version: 5.66.9(react@19.0.0)
       '@verax-attestation-registry/verax-sdk':
         specifier: 2.2.2
-        version: 2.2.2(@graphql-mesh/types@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(@types/node@22.13.14)(@types/react@19.0.10)(bufferutil@4.0.8)(graphql-ws@5.16.0(graphql@16.9.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tslib@2.8.1)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.1)
+        version: 2.2.2(@graphql-mesh/types@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(@types/node@22.13.15)(@types/react@19.0.10)(bufferutil@4.0.8)(graphql-ws@5.16.0(graphql@16.9.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tslib@2.8.1)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.1)
       axios:
-        specifier: ^1.7.9
-        version: 1.7.9
+        specifier: ^1.8.2
+        version: 1.8.4
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -128,7 +128,7 @@ importers:
         version: 19.0.4(@types/react@19.0.10)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.3.4(vite@6.2.4(@types/node@22.13.14)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0))
+        version: 4.3.4(vite@6.2.4(@types/node@22.13.15)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0))
       eslint:
         specifier: ^9.21.0
         version: 9.21.0(jiti@2.3.3)
@@ -149,7 +149,7 @@ importers:
         version: 8.25.0(eslint@9.21.0(jiti@2.3.3))(typescript@5.7.3)
       vite:
         specifier: ^6.2.4
-        version: 6.2.4(@types/node@22.13.14)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0)
+        version: 6.2.4(@types/node@22.13.15)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0)
 
   packages/functions:
     dependencies:
@@ -157,8 +157,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       axios:
-        specifier: ^1.7.9
-        version: 1.7.9
+        specifier: ^1.8.2
+        version: 1.8.4
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -174,7 +174,7 @@ importers:
         version: 9.21.0(jiti@2.3.3)
       netlify-cli:
         specifier: ^19.0.0
-        version: 19.0.0(@types/node@22.13.14)(bufferutil@4.0.8)(idb-keyval@6.2.1)(picomatch@4.0.2)(rollup@4.38.0)(utf-8-validate@5.0.10)
+        version: 19.0.0(@types/node@22.13.15)(bufferutil@4.0.8)(idb-keyval@6.2.1)(picomatch@4.0.2)(rollup@4.38.0)(utf-8-validate@5.0.10)
       typescript:
         specifier: ~5.7.2
         version: 5.7.3
@@ -2178,8 +2178,8 @@ packages:
   '@types/node@22.13.1':
     resolution: {integrity: sha512-jK8uzQlrvXqEU91UxiK5J7pKHyzgnI1Qnl0QDHIgVGuolJhRb9EEl28Cj9b3rGR8B2lhFCtvIm5os8lFnO/1Ew==}
 
-  '@types/node@22.13.14':
-    resolution: {integrity: sha512-Zs/Ollc1SJ8nKUAgc7ivOEdIBM8JAKgrqqUYi2J997JuKO7/tpQC+WCetQ1sypiKCQWHdvdg9wBNpUPEWZae7w==}
+  '@types/node@22.13.15':
+    resolution: {integrity: sha512-imAbQEEbVni6i6h6Bd5xkCRwLqFc8hihCsi2GbtDoAtUcAFQ6Zs4pFXTZUUbroTkXdImczWM9AI8eZUuybXE3w==}
 
   '@types/node@22.13.5':
     resolution: {integrity: sha512-+lTU0PxZXn0Dr1NBtC7Y8cR21AJr87dLLU953CWA6pMxxv/UDc7jYAY90upcrie1nRcD6XNG5HOYEDtgW5TxAg==}
@@ -2997,10 +2997,6 @@ packages:
     resolution: {integrity: sha512-zkDT5WAF4hSSoUgyfg5tFIxz8XQK+25W/TLVojJTMKBaxevLBBtLxgqguAuVQB8PVW79FVjHcU+GJ9tVbDZ9mQ==}
     engines: {node: '>=14.16'}
 
-  call-bind-apply-helpers@1.0.1:
-    resolution: {integrity: sha512-BhYE+WDaywFg2TBWYNXAE+8B1ATnThNBqXHP5nQu0jWJdVvY2hvkpyB3qOmtmDePiS5/BDQ8wASEWGMWRG148g==}
-    engines: {node: '>= 0.4'}
-
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
     engines: {node: '>= 0.4'}
@@ -3733,10 +3729,6 @@ packages:
   error-stack-parser@2.1.4:
     resolution: {integrity: sha512-Sk5V6wVazPhq5MhpO+AUxJn5x7XSXGl1R93Vn7i+zS15KDVxQijejNCrz8340/2bgLBjR9GtEG8ZVKONDjcqGQ==}
 
-  es-define-property@1.0.0:
-    resolution: {integrity: sha512-jxayLKShrEqqzJ0eumQbVhTYQM27CfT1T35+gCgDFoL82JLsXqTJ76zv6A0YLOgEnLUMvLzsDsGIrl8NFpT2gQ==}
-    engines: {node: '>= 0.4'}
-
   es-define-property@1.0.1:
     resolution: {integrity: sha512-e3nRfgfUZ4rNGL232gUgX06QNyyez04KdjFrF+LTRoOXmrOgFKDg4BCdsjW8EnT69eqdYGmRpJwiPVYNrCaW3g==}
     engines: {node: '>= 0.4'}
@@ -3747,10 +3739,6 @@ packages:
 
   es-module-lexer@1.6.0:
     resolution: {integrity: sha512-qqnD1yMU6tk/jnaMosogGySTZP8YtUgAffA9nMN+E/rjxcfRQ6IEk7IiozUjgxKoFHBGjTLnrHB/YC45r/59EQ==}
-
-  es-object-atoms@1.0.0:
-    resolution: {integrity: sha512-MZ4iQ6JwHOBQjahnjwaC1ZtIBH+2ohjamzAO3oaHcXYup7qxjF2fixyH+Q71voWHeOkI2q/TnJao/KfXYIZWbw==}
-    engines: {node: '>= 0.4'}
 
   es-object-atoms@1.1.1:
     resolution: {integrity: sha512-FGgH2h8zKNim9ljj7dankFPcICIK9Cp5bm+c2gQSYePhpaG5+esrLODihIorn+Pe6FGJzWhXQotPv73jTaldXA==}
@@ -4323,14 +4311,6 @@ packages:
   get-func-name@2.0.2:
     resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
 
-  get-intrinsic@1.2.4:
-    resolution: {integrity: sha512-5uYhsJH8VJBTv7oslg4BznJYhDoRI6waYCxMmCdnTrcCrHA/fCFKoTFz2JKKE0HdDFUF7/oQuhzumXJK7paBRQ==}
-    engines: {node: '>= 0.4'}
-
-  get-intrinsic@1.2.7:
-    resolution: {integrity: sha512-VW6Pxhsrk0KAOqs3WEd0klDiF/+V7gQOpAvY1jVU/LHmaD/kQO4523aiJuikX/QAKYiW6x8Jh+RJej1almdtCA==}
-    engines: {node: '>= 0.4'}
-
   get-intrinsic@1.3.0:
     resolution: {integrity: sha512-9fSjSaos/fRIVIp+xSJlE6lfwhES7LNtKaCBIamHsjr2na1BiABJPo0mOjjz8GJDURarmCPGqaiVg5mfjb98CQ==}
     engines: {node: '>= 0.4'}
@@ -4458,9 +4438,6 @@ packages:
     engines: {node: '>=0.6.0'}
     hasBin: true
 
-  gopd@1.0.1:
-    resolution: {integrity: sha512-d65bNlIadxvpb/A2abVdlqKqV563juRnZ1Wtk6s1sIR8uNsXR70xqIzVqxVf1eTqDunwT2MkczEeaezCKTZhwA==}
-
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
@@ -4553,14 +4530,6 @@ packages:
 
   has-property-descriptors@1.0.2:
     resolution: {integrity: sha512-55JNKuIW+vq4Ke1BjOTjM2YctQIvCT7GFzHwmfZPGo5wnrgkid0YQtnAleFSqumZm4az3n2BS+erby5ipJdgrg==}
-
-  has-proto@1.0.3:
-    resolution: {integrity: sha512-SJ1amZAJUiZS+PhsVLf5tGydlaVB8EdFpaSO4gmiUKUOxk8qzn5AIy4ZeJUmh22znIdk/uMAUT2pl3FxzVUH+Q==}
-    engines: {node: '>= 0.4'}
-
-  has-symbols@1.0.3:
-    resolution: {integrity: sha512-l3LCuF6MgDNwTDKkdYGEihYjt5pRPbEg46rtlmnSPlUbgmB8LOIrKJbYYFBSbnPaJexMKtiPO8hmeRjRz2Td+A==}
-    engines: {node: '>= 0.4'}
 
   has-symbols@1.1.0:
     resolution: {integrity: sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ==}
@@ -5380,6 +5349,10 @@ packages:
 
   mime-db@1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
+    engines: {node: '>= 0.6'}
+
+  mime-db@1.54.0:
+    resolution: {integrity: sha512-aU5EJuIN2WDemCcAp2vFBfp/m4EAhWJnUNSSw0ixs7/kXbd6Pg64EmwJkNdFhB8aWt1sH2CTXrLxo/iAGV3oPQ==}
     engines: {node: '>= 0.6'}
 
   mime-types@2.1.35:
@@ -8596,7 +8569,7 @@ snapshots:
       - subscriptions-transport-ws
       - utf-8-validate
 
-  '@graphql-mesh/graphql@0.95.8(@graphql-mesh/cross-helpers@0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0))(@graphql-mesh/store@0.95.8)(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(@types/node@22.13.14)(@types/react@19.0.10)(bufferutil@4.0.8)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tslib@2.8.1)(utf-8-validate@5.0.10)':
+  '@graphql-mesh/graphql@0.95.8(@graphql-mesh/cross-helpers@0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0))(@graphql-mesh/store@0.95.8)(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(@types/node@22.13.15)(@types/react@19.0.10)(bufferutil@4.0.8)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tslib@2.8.1)(utf-8-validate@5.0.10)':
     dependencies:
       '@graphql-mesh/cross-helpers': 0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0)
       '@graphql-mesh/store': 0.95.8(@graphql-mesh/cross-helpers@0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0))(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0)(tslib@2.8.1)
@@ -8604,8 +8577,8 @@ snapshots:
       '@graphql-mesh/types': 0.95.8(@graphql-mesh/store@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0)(tslib@2.8.1)
       '@graphql-mesh/utils': 0.95.8(@graphql-mesh/cross-helpers@0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0))(@graphql-mesh/types@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0)(tslib@2.8.1)
       '@graphql-tools/delegate': 10.2.10(graphql@16.9.0)
-      '@graphql-tools/federation': 1.1.36(@types/node@22.13.14)(@types/react@19.0.10)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      '@graphql-tools/url-loader': 8.0.2(@types/node@22.13.14)(bufferutil@4.0.8)(graphql@16.9.0)(utf-8-validate@5.0.10)
+      '@graphql-tools/federation': 1.1.36(@types/node@22.13.15)(@types/react@19.0.10)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@graphql-tools/url-loader': 8.0.2(@types/node@22.13.15)(bufferutil@4.0.8)(graphql@16.9.0)(utf-8-validate@5.0.10)
       '@graphql-tools/utils': 10.8.6(graphql@16.9.0)
       graphql: 16.9.0
       lodash.get: 4.4.2
@@ -8802,14 +8775,14 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@graphql-tools/executor-http@1.1.6(@types/node@22.13.14)(graphql@16.9.0)':
+  '@graphql-tools/executor-http@1.1.6(@types/node@22.13.15)(graphql@16.9.0)':
     dependencies:
       '@graphql-tools/utils': 10.7.2(graphql@16.9.0)
       '@repeaterjs/repeater': 3.0.6
       '@whatwg-node/fetch': 0.9.21
       extract-files: 11.0.0
       graphql: 16.9.0
-      meros: 1.3.0(@types/node@22.13.14)
+      meros: 1.3.0(@types/node@22.13.15)
       tslib: 2.8.1
       value-or-promise: 1.0.12
     transitivePeerDependencies:
@@ -8869,10 +8842,10 @@ snapshots:
       - react-dom
       - subscriptions-transport-ws
 
-  '@graphql-tools/federation@1.1.36(@types/node@22.13.14)(@types/react@19.0.10)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+  '@graphql-tools/federation@1.1.36(@types/node@22.13.15)(@types/react@19.0.10)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@graphql-tools/delegate': 10.2.10(graphql@16.9.0)
-      '@graphql-tools/executor-http': 1.1.6(@types/node@22.13.14)(graphql@16.9.0)
+      '@graphql-tools/executor-http': 1.1.6(@types/node@22.13.15)(graphql@16.9.0)
       '@graphql-tools/merge': 9.0.17(graphql@16.9.0)
       '@graphql-tools/schema': 10.0.16(graphql@16.9.0)
       '@graphql-tools/stitch': 9.2.10(graphql@16.9.0)
@@ -8961,12 +8934,12 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@graphql-tools/url-loader@8.0.2(@types/node@22.13.14)(bufferutil@4.0.8)(graphql@16.9.0)(utf-8-validate@5.0.10)':
+  '@graphql-tools/url-loader@8.0.2(@types/node@22.13.15)(bufferutil@4.0.8)(graphql@16.9.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@ardatan/sync-fetch': 0.0.1
       '@graphql-tools/delegate': 10.2.10(graphql@16.9.0)
       '@graphql-tools/executor-graphql-ws': 1.3.0(bufferutil@4.0.8)(graphql@16.9.0)(utf-8-validate@5.0.10)
-      '@graphql-tools/executor-http': 1.1.6(@types/node@22.13.14)(graphql@16.9.0)
+      '@graphql-tools/executor-http': 1.1.6(@types/node@22.13.15)(graphql@16.9.0)
       '@graphql-tools/executor-legacy-ws': 1.1.0(bufferutil@4.0.8)(graphql@16.9.0)(utf-8-validate@5.0.10)
       '@graphql-tools/utils': 10.7.2(graphql@16.9.0)
       '@graphql-tools/wrap': 10.0.5(graphql@16.9.0)
@@ -9349,7 +9322,7 @@ snapshots:
       yaml: 2.7.0
       yargs: 17.7.2
 
-  '@netlify/build@29.58.10(@opentelemetry/api@1.8.0)(@types/node@22.13.14)(picomatch@4.0.2)(rollup@4.38.0)':
+  '@netlify/build@29.58.10(@opentelemetry/api@1.8.0)(@types/node@22.13.15)(picomatch@4.0.2)(rollup@4.38.0)':
     dependencies:
       '@bugsnag/js': 7.25.0
       '@netlify/blobs': 7.4.0
@@ -9406,7 +9379,7 @@ snapshots:
       strip-ansi: 7.1.0
       supports-color: 9.4.0
       terminal-link: 3.0.0
-      ts-node: 10.9.2(@types/node@22.13.14)(typescript@5.7.3)
+      ts-node: 10.9.2(@types/node@22.13.15)(typescript@5.7.3)
       typescript: 5.7.3
       uuid: 9.0.1
       yargs: 17.7.2
@@ -10675,7 +10648,7 @@ snapshots:
 
   '@types/concat-stream@1.6.1':
     dependencies:
-      '@types/node': 22.13.14
+      '@types/node': 22.13.15
 
   '@types/debug@4.1.12':
     dependencies:
@@ -10687,12 +10660,12 @@ snapshots:
 
   '@types/form-data@0.0.33':
     dependencies:
-      '@types/node': 22.13.14
+      '@types/node': 22.13.15
 
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 22.13.14
+      '@types/node': 22.13.15
 
   '@types/http-cache-semantics@4.0.4': {}
 
@@ -10726,7 +10699,7 @@ snapshots:
     dependencies:
       undici-types: 6.20.0
 
-  '@types/node@22.13.14':
+  '@types/node@22.13.15':
     dependencies:
       undici-types: 6.20.0
 
@@ -10918,11 +10891,11 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@verax-attestation-registry/verax-sdk@2.2.2(@graphql-mesh/types@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(@types/node@22.13.14)(@types/react@19.0.10)(bufferutil@4.0.8)(graphql-ws@5.16.0(graphql@16.9.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tslib@2.8.1)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.1)':
+  '@verax-attestation-registry/verax-sdk@2.2.2(@graphql-mesh/types@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(@types/node@22.13.15)(@types/react@19.0.10)(bufferutil@4.0.8)(graphql-ws@5.16.0(graphql@16.9.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tslib@2.8.1)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.1)':
     dependencies:
       '@graphql-mesh/cache-localforage': 0.95.8(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(graphql@16.9.0)(tslib@2.8.1)
       '@graphql-mesh/cross-helpers': 0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0)
-      '@graphql-mesh/graphql': 0.95.8(@graphql-mesh/cross-helpers@0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0))(@graphql-mesh/store@0.95.8)(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(@types/node@22.13.14)(@types/react@19.0.10)(bufferutil@4.0.8)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tslib@2.8.1)(utf-8-validate@5.0.10)
+      '@graphql-mesh/graphql': 0.95.8(@graphql-mesh/cross-helpers@0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0))(@graphql-mesh/store@0.95.8)(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(@types/node@22.13.15)(@types/react@19.0.10)(bufferutil@4.0.8)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tslib@2.8.1)(utf-8-validate@5.0.10)
       '@graphql-mesh/http': 0.96.14(@graphql-mesh/cross-helpers@0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0))(@graphql-mesh/runtime@0.96.13(@graphql-mesh/cross-helpers@0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0))(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0)(tslib@2.8.1))(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(graphql@16.9.0)(tslib@2.8.1)
       '@graphql-mesh/merger-bare': 0.95.8(@graphql-mesh/store@0.95.8)(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0)(tslib@2.8.1)
       '@graphql-mesh/runtime': 0.96.13(@graphql-mesh/cross-helpers@0.4.6(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0))(@graphql-mesh/types@0.95.8)(@graphql-mesh/utils@0.95.8)(@graphql-tools/utils@10.8.6(graphql@16.9.0))(graphql@16.9.0)(tslib@2.8.1)
@@ -10969,14 +10942,14 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vitejs/plugin-react@4.3.4(vite@6.2.4(@types/node@22.13.14)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0))':
+  '@vitejs/plugin-react@4.3.4(vite@6.2.4(@types/node@22.13.15)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0))':
     dependencies:
       '@babel/core': 7.26.9
       '@babel/plugin-transform-react-jsx-self': 7.25.9(@babel/core@7.26.9)
       '@babel/plugin-transform-react-jsx-source': 7.25.9(@babel/core@7.26.9)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
-      vite: 6.2.4(@types/node@22.13.14)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0)
+      vite: 6.2.4(@types/node@22.13.15)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -12099,11 +12072,6 @@ snapshots:
       normalize-url: 8.0.1
       responselike: 3.0.0
 
-  call-bind-apply-helpers@1.0.1:
-    dependencies:
-      es-errors: 1.3.0
-      function-bind: 1.1.2
-
   call-bind-apply-helpers@1.0.2:
     dependencies:
       es-errors: 1.3.0
@@ -12111,15 +12079,15 @@ snapshots:
 
   call-bind@1.0.8:
     dependencies:
-      call-bind-apply-helpers: 1.0.1
-      es-define-property: 1.0.0
-      get-intrinsic: 1.2.4
+      call-bind-apply-helpers: 1.0.2
+      es-define-property: 1.0.1
+      get-intrinsic: 1.3.0
       set-function-length: 1.2.2
 
   call-bound@1.0.3:
     dependencies:
-      call-bind-apply-helpers: 1.0.1
-      get-intrinsic: 1.2.7
+      call-bind-apply-helpers: 1.0.2
+      get-intrinsic: 1.3.0
 
   callsite@1.0.0: {}
 
@@ -12619,9 +12587,9 @@ snapshots:
 
   define-data-property@1.1.4:
     dependencies:
-      es-define-property: 1.0.0
+      es-define-property: 1.0.1
       es-errors: 1.3.0
-      gopd: 1.0.1
+      gopd: 1.2.0
 
   define-lazy-prop@3.0.0: {}
 
@@ -12740,7 +12708,7 @@ snapshots:
 
   dunder-proto@1.0.1:
     dependencies:
-      call-bind-apply-helpers: 1.0.1
+      call-bind-apply-helpers: 1.0.2
       es-errors: 1.3.0
       gopd: 1.2.0
 
@@ -12835,19 +12803,11 @@ snapshots:
     dependencies:
       stackframe: 1.3.4
 
-  es-define-property@1.0.0:
-    dependencies:
-      get-intrinsic: 1.2.4
-
   es-define-property@1.0.1: {}
 
   es-errors@1.3.0: {}
 
   es-module-lexer@1.6.0: {}
-
-  es-object-atoms@1.0.0:
-    dependencies:
-      es-errors: 1.3.0
 
   es-object-atoms@1.1.1:
     dependencies:
@@ -13277,7 +13237,7 @@ snapshots:
 
   ext-list@2.2.2:
     dependencies:
-      mime-db: 1.52.0
+      mime-db: 1.54.0
 
   ext-name@5.0.0:
     dependencies:
@@ -13652,27 +13612,6 @@ snapshots:
 
   get-func-name@2.0.2: {}
 
-  get-intrinsic@1.2.4:
-    dependencies:
-      es-errors: 1.3.0
-      function-bind: 1.1.2
-      has-proto: 1.0.3
-      has-symbols: 1.0.3
-      hasown: 2.0.2
-
-  get-intrinsic@1.2.7:
-    dependencies:
-      call-bind-apply-helpers: 1.0.1
-      es-define-property: 1.0.1
-      es-errors: 1.3.0
-      es-object-atoms: 1.0.0
-      function-bind: 1.1.2
-      get-proto: 1.0.1
-      gopd: 1.2.0
-      has-symbols: 1.1.0
-      hasown: 2.0.2
-      math-intrinsics: 1.1.0
-
   get-intrinsic@1.3.0:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -13699,7 +13638,7 @@ snapshots:
   get-proto@1.0.1:
     dependencies:
       dunder-proto: 1.0.1
-      es-object-atoms: 1.0.0
+      es-object-atoms: 1.1.1
 
   get-stream@5.2.0:
     dependencies:
@@ -13830,10 +13769,6 @@ snapshots:
   gonzales-pe@4.3.0:
     dependencies:
       minimist: 1.2.8
-
-  gopd@1.0.1:
-    dependencies:
-      get-intrinsic: 1.2.4
 
   gopd@1.2.0: {}
 
@@ -14004,17 +13939,13 @@ snapshots:
 
   has-property-descriptors@1.0.2:
     dependencies:
-      es-define-property: 1.0.0
-
-  has-proto@1.0.3: {}
-
-  has-symbols@1.0.3: {}
+      es-define-property: 1.0.1
 
   has-symbols@1.1.0: {}
 
   has-tostringtag@1.0.2:
     dependencies:
-      has-symbols: 1.0.3
+      has-symbols: 1.1.0
 
   has-unicode@2.0.1: {}
 
@@ -14807,9 +14738,9 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.13.1
 
-  meros@1.3.0(@types/node@22.13.14):
+  meros@1.3.0(@types/node@22.13.15):
     optionalDependencies:
-      '@types/node': 22.13.14
+      '@types/node': 22.13.15
 
   methods@1.1.2: {}
 
@@ -14825,6 +14756,8 @@ snapshots:
       picomatch: 2.3.1
 
   mime-db@1.52.0: {}
+
+  mime-db@1.54.0: {}
 
   mime-types@2.1.35:
     dependencies:
@@ -14987,12 +14920,12 @@ snapshots:
 
   nested-error-stacks@2.1.1: {}
 
-  netlify-cli@19.0.0(@types/node@22.13.14)(bufferutil@4.0.8)(idb-keyval@6.2.1)(picomatch@4.0.2)(rollup@4.38.0)(utf-8-validate@5.0.10):
+  netlify-cli@19.0.0(@types/node@22.13.15)(bufferutil@4.0.8)(idb-keyval@6.2.1)(picomatch@4.0.2)(rollup@4.38.0)(utf-8-validate@5.0.10):
     dependencies:
       '@bugsnag/js': 8.2.0
       '@fastify/static': 7.0.4
       '@netlify/blobs': 8.1.1
-      '@netlify/build': 29.58.10(@opentelemetry/api@1.8.0)(@types/node@22.13.14)(picomatch@4.0.2)(rollup@4.38.0)
+      '@netlify/build': 29.58.10(@opentelemetry/api@1.8.0)(@types/node@22.13.15)(picomatch@4.0.2)(rollup@4.38.0)
       '@netlify/build-info': 8.0.0
       '@netlify/config': 20.21.7
       '@netlify/edge-bundler': 12.3.2(rollup@4.38.0)(supports-color@9.4.0)
@@ -16147,8 +16080,8 @@ snapshots:
       define-data-property: 1.1.4
       es-errors: 1.3.0
       function-bind: 1.1.2
-      get-intrinsic: 1.2.4
-      gopd: 1.0.1
+      get-intrinsic: 1.3.0
+      gopd: 1.2.0
       has-property-descriptors: 1.0.2
 
   setimmediate@1.0.5: {}
@@ -16199,14 +16132,14 @@ snapshots:
     dependencies:
       call-bound: 1.0.3
       es-errors: 1.3.0
-      get-intrinsic: 1.2.7
+      get-intrinsic: 1.3.0
       object-inspect: 1.13.3
 
   side-channel-weakmap@1.0.2:
     dependencies:
       call-bound: 1.0.3
       es-errors: 1.3.0
-      get-intrinsic: 1.2.7
+      get-intrinsic: 1.3.0
       object-inspect: 1.13.3
       side-channel-map: 1.0.1
 
@@ -16775,14 +16708,14 @@ snapshots:
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
-  ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3):
+  ts-node@10.9.2(@types/node@22.13.15)(typescript@5.7.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 22.13.14
+      '@types/node': 22.13.15
       acorn: 8.14.0
       acorn-walk: 8.3.4
       arg: 4.1.3
@@ -17145,13 +17078,13 @@ snapshots:
       - utf-8-validate
       - zod
 
-  vite@6.2.4(@types/node@22.13.14)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0):
+  vite@6.2.4(@types/node@22.13.15)(jiti@2.3.3)(terser@5.37.0)(yaml@2.7.0):
     dependencies:
       esbuild: 0.25.2
       postcss: 8.5.3
       rollup: 4.38.0
     optionalDependencies:
-      '@types/node': 22.13.14
+      '@types/node': 22.13.15
       fsevents: 2.3.3
       jiti: 2.3.3
       terser: 5.37.0

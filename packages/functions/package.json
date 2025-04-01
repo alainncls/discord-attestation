@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@netlify/functions": "^3.0.0",
-    "axios": "^1.7.9",
+    "axios": "^1.8.2",
     "dotenv": "^16.4.7",
     "viem": "^2.23.5"
   },

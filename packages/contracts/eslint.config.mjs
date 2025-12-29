@@ -1,13 +1,12 @@
 import { baseConfig } from '../../eslint.config.js';
 
 export default [
-  { ignores: ['dist', 'node_modules'] },
+  { ignores: ['typechain-types', 'node_modules', 'artifacts', 'cache'] },
   ...baseConfig,
   {
     files: ['**/*.ts'],
     rules: {
       'no-console': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
 ];

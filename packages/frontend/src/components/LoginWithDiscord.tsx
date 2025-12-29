@@ -14,8 +14,9 @@ const LoginWithDiscord = () => {
 
   return (
     <div className="login-container">
-      <button className="discord-btn" onClick={handleLogin}>
-        <FaDiscord size={24} /> Login with Discord
+      <button type="button" className="discord-btn" onClick={handleLogin}>
+        <FaDiscord size={24} aria-hidden="true" />
+        <span>Login with Discord</span>
       </button>
     </div>
   );

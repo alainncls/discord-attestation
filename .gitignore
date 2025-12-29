@@ -2,14 +2,11 @@ node_modules
 dist
 .env
 
-# Contracts
 artifacts
 cache
 typechain-types
 
-# Editor directories and files
 .idea
 .DS_Store
 
-# Local Netlify folder
 .netlify

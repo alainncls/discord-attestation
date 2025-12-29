@@ -1,4 +1,5 @@
-import { Hex } from 'viem';
+import type { Hex } from 'viem';
+import { linea } from 'wagmi/chains';
 import './TransactionStatus.css';
 
 interface TransactionStatusProps {
@@ -8,38 +9,47 @@ interface TransactionStatusProps {
   truncateHexString: (hexString: string) => string;
 }
 
-const TransactionStatus = ({ txHash, attestationId, chainId, truncateHexString }: TransactionStatusProps) => {
+const TransactionStatus = ({
+  txHash,
+  attestationId,
+  chainId,
+  truncateHexString,
+}: TransactionStatusProps) => {
   if (!txHash) return null;
-  
+
+  const explorerBaseUrl =
+    chainId === linea.id ? 'https://lineascan.build/tx/' : 'https://sepolia.lineascan.build/tx/';
+
+  const veraxBaseUrl =
+    chainId === linea.id
+      ? 'https://explorer.ver.ax/linea/attestations/'
+      : 'https://explorer.ver.ax/linea-sepolia/attestations/';
+
   return (
-    <>
+    <div className="transaction-status" role="status" aria-live="polite">
       <div className="message">
         Transaction Hash:{' '}
-        <a
-          href={`${chainId === 59144 ? 'https://lineascan.build/tx/' : 'https://sepolia.lineascan.build/tx/'}${txHash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a href={`${explorerBaseUrl}${txHash}`} target="_blank" rel="noopener noreferrer">
           {truncateHexString(txHash)}
         </a>
       </div>
-      
-      {!attestationId && <div className="message pending">Transaction pending...</div>}
-      
+
+      {!attestationId && (
+        <div className="message pending" aria-busy="true">
+          Transaction pending...
+        </div>
+      )}
+
       {attestationId && (
         <div className="message success">
           Attestation ID:{' '}
-          <a
-            href={`${chainId === 59144 ? 'https://explorer.ver.ax/linea/attestations/' : 'https://explorer.ver.ax/linea-sepolia/attestations/'}${attestationId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={`${veraxBaseUrl}${attestationId}`} target="_blank" rel="noopener noreferrer">
             {truncateHexString(attestationId)}
           </a>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
-export default TransactionStatus; 
+export default TransactionStatus;

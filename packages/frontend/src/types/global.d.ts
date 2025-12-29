@@ -3,12 +3,10 @@ declare module '*.svg' {
   export default content;
 }
 
-interface ImportMetaEnv {
-  readonly VITE_DISCORD_CLIENT_ID: string;
-  readonly VITE_REDIRECT_URL: string;
-  readonly VITE_MODE: 'development' | 'production';
+// Insights analytics global (loaded via script tag in index.html)
+interface InsightsAnalytics {
+  init: (projectId: string) => void;
+  trackPages: () => void;
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
+declare const insights: InsightsAnalytics | undefined;

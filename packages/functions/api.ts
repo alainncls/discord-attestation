@@ -1,12 +1,11 @@
 import axios from 'axios';
-import { Guild } from '../frontend/src/types';
-import { createWalletClient, Hex, http, WalletClient } from 'viem';
+import type { Guild } from './lib/types';
+import { createWalletClient, http } from 'viem';
+import type { Hex, WalletClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { config } from 'dotenv';
-import { PORTAL_ID, PORTAL_ID_TESTNET } from '../frontend/src/utils/constants';
-import { Context } from '@netlify/functions';
-
-config({ path: '.env' });
+import { linea } from 'viem/chains';
+import { PORTAL_ID, PORTAL_ID_TESTNET } from './lib/constants';
+import type { Context } from '@netlify/functions';
 
 const { VITE_DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, VITE_REDIRECT_URL, SIGNER_PRIVATE_KEY } =
   process.env;
@@ -54,13 +53,13 @@ const signGuilds = async (
   walletClient: WalletClient,
   guilds: Guild[],
   subject: string,
-  chainId: number
+  chainId: number,
 ) => {
   const domain = {
     name: 'VerifyDiscord',
     version: '1',
     chainId: chainId,
-    verifyingContract: chainId === 59144 ? PORTAL_ID : PORTAL_ID_TESTNET,
+    verifyingContract: chainId === linea.id ? PORTAL_ID : PORTAL_ID_TESTNET,
   } as const;
 
   const types = {
@@ -92,13 +91,13 @@ const signGuilds = async (
       });
 
       return { id: guild.id, name: guild.name, signature };
-    })
+    }),
   );
 };
 
 export default async (req: Request, context: Context) => {
   if (req.method === 'OPTIONS') {
-    return { statusCode: 204, headers, body: '' };
+    return new Response('', { status: 204, headers });
   }
 
   try {
@@ -117,21 +116,21 @@ export default async (req: Request, context: Context) => {
       });
     }
 
-    const chainId = parseInt(rawChainId);
+    const chainId = parseInt(rawChainId, 10);
 
     const accessToken = await getToken(code, isDev);
     const guilds = await getGuilds(accessToken);
 
     const walletClient = createWalletClient({
       account: privateKeyToAccount(SIGNER_PRIVATE_KEY as Hex),
-      transport: http('https://rpc.linea.build'), // No need to use a paid endpoint
+      transport: http('https://rpc.linea.build'),
     });
 
     const signedGuilds = await signGuilds(walletClient, guilds, subject, chainId);
 
     return new Response(JSON.stringify({ signedGuilds }), {
       status: 200,
-      headers: headers,
+      headers,
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';

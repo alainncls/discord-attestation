@@ -14,20 +14,19 @@ try {
   const portalIdSepoliaMatch = constantsContent.match(
     /export const PORTAL_ID_TESTNET: Address = '([^']+)'/,
   );
-  if (!portalIdSepoliaMatch) {
+  const portalIdTestnet = portalIdSepoliaMatch?.[1]?.toLowerCase();
+  if (!portalIdTestnet) {
     throw new Error('PORTAL_ID_TESTNET not found in constants.ts');
   }
-
-  const portalIdTestnet = portalIdSepoliaMatch[1].toLowerCase();
 
   const portalIdMainnetMatch = constantsContent.match(
     /export const PORTAL_ID: Address = '([^']+)'/,
   );
-  if (!portalIdMainnetMatch) {
+  const portalIdMainnet = portalIdMainnetMatch?.[1]?.toLowerCase();
+  if (!portalIdMainnet) {
     throw new Error('PORTAL_ID not found in constants.ts');
   }
 
-  const portalIdMainnet = portalIdMainnetMatch[1].toLowerCase();
   const readmeContent = await readFile(readmePath, 'utf8');
 
   const updatedReadme = readmeContent

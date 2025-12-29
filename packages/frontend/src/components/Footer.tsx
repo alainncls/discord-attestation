@@ -6,30 +6,32 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-content">
-        <p className={'copyright'}>
-          Made with <span>❤️</span> by{' '}
-          <a
-            className={'underline white'}
-            href="https://alainnicolas.fr/en/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <p className="copyright">
+          Made with <span aria-label="love">❤️</span> by{' '}
+          <a href="https://alainnicolas.fr/en/" target="_blank" rel="noopener noreferrer">
             Alain Nicolas
           </a>
         </p>
-        <div>
-          <a href="https://www.ver.ax" target="_blank" rel="noopener noreferrer" className="link">
-            <img src={LogoVerax} alt={'Logo Verax'} height={24} />
+        <nav className="footer-links" aria-label="External links">
+          <a
+            href="https://www.ver.ax"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-link"
+            aria-label="Visit Verax website"
+          >
+            <img src={LogoVerax} alt="Verax logo" height={24} />
           </a>
           <a
             href="https://github.com/alainncls/discord-attestation"
             target="_blank"
             rel="noopener noreferrer"
-            className="link white"
+            className="footer-link"
+            aria-label="View source code on GitHub"
           >
-            <FaGithub size={24} />
+            <FaGithub size={24} aria-hidden="true" />
           </a>
-        </div>
+        </nav>
       </div>
     </footer>
   );

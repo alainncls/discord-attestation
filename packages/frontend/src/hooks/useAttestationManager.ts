@@ -2,7 +2,7 @@ import type { Hex } from 'viem';
 import { useAccount } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { add } from 'date-fns';
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
 import type { SignedGuild } from '../types';
 import { PORTAL_ID, PORTAL_ID_TESTNET, SCHEMA_ID } from '../utils/constants';
@@ -55,9 +55,7 @@ export const useAttestationManager = (
             attestationData: [{ guildId: signedGuild.id, guildName: signedGuild.name }],
           },
           [signedGuild.signature],
-          false,
-          100000000000000n,
-          discordPortalAbi,
+          { waitForConfirmation: false, value: 100000000000000n, customAbi: discordPortalAbi },
         );
 
         if (receipt.transactionHash) {

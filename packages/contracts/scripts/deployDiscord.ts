@@ -57,7 +57,7 @@ async function main() {
     'Discord attestations',
     true,
     'alain.linea.eth',
-    true,
+    { waitForConfirmation: true },
   );
 
   console.log(`DiscordPortal is registered!`);

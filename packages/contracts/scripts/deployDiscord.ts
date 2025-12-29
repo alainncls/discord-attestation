@@ -22,10 +22,7 @@ async function main() {
 
   const constructorArguments = [[], ROUTER_ADDRESS];
 
-  const discordPortal = await ethers.deployContract(
-    'DiscordPortal',
-    constructorArguments,
-  );
+  const discordPortal = await ethers.deployContract('DiscordPortal', constructorArguments);
   await discordPortal.waitForDeployment();
   const discordPortalAddress = (await discordPortal.getAddress()) as Address;
 
@@ -43,10 +40,13 @@ async function main() {
 
   const signers = await ethers.getSigners();
   const signer = signers[0];
+
+  if (!signer) {
+    throw new Error('No signer available');
+  }
+
   const veraxSdk = new VeraxSdk(
-    network.name === 'linea'
-      ? VeraxSdk.DEFAULT_LINEA_MAINNET
-      : VeraxSdk.DEFAULT_LINEA_SEPOLIA,
+    network.name === 'linea' ? VeraxSdk.DEFAULT_LINEA_MAINNET : VeraxSdk.DEFAULT_LINEA_SEPOLIA,
     signer.address as Address,
     PRIVATE_KEY as Hex,
   );

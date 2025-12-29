@@ -1,22 +1,44 @@
-import { Abi, Hex } from 'viem';
+import type { Hex } from 'viem';
 import { useAccount } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { add } from 'date-fns';
 import { useState, useCallback } from 'react';
 import { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
-import { SignedGuild } from '../types';
+import type { SignedGuild } from '../types';
 import { PORTAL_ID, PORTAL_ID_TESTNET, SCHEMA_ID } from '../utils/constants';
 import { wagmiAdapter } from '../wagmiConfig';
-import { abi as discordPortalAbi } from '../../../contracts/artifacts/src/DiscordPortal.sol/DiscordPortal.json';
+import { linea } from 'wagmi/chains';
+import { discordPortalAbi } from '../utils/discordPortalAbi';
 
-export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => {
+type ShowErrorFn = (message: string) => void;
+
+export const useAttestationManager = (
+  veraxSdk?: VeraxSdk,
+  chainId?: number,
+  showError?: ShowErrorFn,
+) => {
   const { address, isConnected } = useAccount();
   const [txHash, setTxHash] = useState<Hex>();
   const [attestationId, setAttestationId] = useState<Hex>();
   const [pendingGuildId, setPendingGuildId] = useState<string | null>(null);
 
+  const handleError = useCallback(
+    (message: string) => {
+      if (showError) {
+        showError(message);
+      } else {
+        console.error(message);
+      }
+    },
+    [showError],
+  );
+
   const issueAttestation = useCallback(
-    async (signedGuild: SignedGuild, onSuccess?: (guildId: string, attestId: Hex) => void, onError?: () => void) => {
+    async (
+      signedGuild: SignedGuild,
+      onSuccess?: (guildId: string, attestId: Hex) => void,
+      onError?: () => void,
+    ) => {
       if (!address || !veraxSdk) return;
 
       try {
@@ -25,7 +47,7 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
         setPendingGuildId(signedGuild.id);
 
         let receipt = await veraxSdk.portal.attest(
-          chainId === 59144 ? PORTAL_ID : PORTAL_ID_TESTNET,
+          chainId === linea.id ? PORTAL_ID : PORTAL_ID_TESTNET,
           {
             schemaId: SCHEMA_ID,
             expirationDate: Math.floor(add(new Date(), { months: 1 }).getTime() / 1000),
@@ -35,7 +57,7 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
           [signedGuild.signature],
           false,
           100000000000000n,
-          discordPortalAbi as Abi
+          discordPortalAbi,
         );
 
         if (receipt.transactionHash) {
@@ -43,48 +65,54 @@ export const useAttestationManager = (veraxSdk?: VeraxSdk, chainId?: number) => 
           receipt = await waitForTransactionReceipt(wagmiAdapter.wagmiConfig.getClient(), {
             hash: receipt.transactionHash,
           });
-          
-          const attestId = receipt.logs?.[0].topics[1];
-          setAttestationId(attestId);
-          
-          if (attestId && onSuccess) {
-            onSuccess(signedGuild.id, attestId);
+
+          const firstLog = receipt.logs?.[0];
+          const attestId = firstLog?.topics[1];
+          if (attestId) {
+            setAttestationId(attestId);
+            onSuccess?.(signedGuild.id, attestId);
           }
         } else {
           setPendingGuildId(null);
-          if (onError) onError();
-          alert(`Oops, something went wrong!`);
+          onError?.();
+          handleError('Transaction failed. Please try again.');
         }
       } catch (e) {
         setPendingGuildId(null);
-        if (onError) onError();
-        if (e instanceof Error) alert(`Oops, something went wrong: ${e.message}`);
+        onError?.();
+        const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+        handleError(`Attestation failed: ${errorMessage}`);
       } finally {
         setPendingGuildId(null);
       }
     },
-    [address, chainId, veraxSdk]
+    [address, chainId, veraxSdk, handleError],
   );
 
   const handleAttest = useCallback(
-    async (signedGuild: SignedGuild, onSuccess?: (guildId: string, attestId: Hex) => void, onError?: () => void) => {
+    async (
+      signedGuild: SignedGuild,
+      onSuccess?: (guildId: string, attestId: Hex) => void,
+      onError?: () => void,
+    ) => {
       if (isConnected) {
         await issueAttestation(signedGuild, onSuccess, onError);
       }
     },
-    [isConnected, issueAttestation]
+    [isConnected, issueAttestation],
   );
 
   const handleCheck = useCallback(
     (signedGuild: SignedGuild) => {
       if (signedGuild.attestationId) {
-        window.open(
-          `https://explorer.ver.ax/linea${chainId === 59144 ? '' : '-sepolia'}/attestations/${signedGuild.attestationId}`,
-          '_blank'
-        );
+        const baseUrl =
+          chainId === linea.id
+            ? 'https://explorer.ver.ax/linea/attestations/'
+            : 'https://explorer.ver.ax/linea-sepolia/attestations/';
+        window.open(`${baseUrl}${signedGuild.attestationId}`, '_blank');
       }
     },
-    [chainId]
+    [chainId],
   );
 
   return {

@@ -21,8 +21,8 @@ Visit [discord.alainnicolas.fr](https://discord.alainnicolas.fr/) to try the app
 
 ### Prerequisites
 
-- Node.js (v23.7.0 or higher)
-- pnpm package manager (v9.14.0 or higher)
+- Node.js v22.21.1 (see `.nvmrc`)
+- pnpm v10.26.2
 - A wallet (MetaMask recommended 🦊)
 - A Discord account
 

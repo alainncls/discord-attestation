@@ -1,4 +1,4 @@
-import { SignedGuild } from '../types';
+import type { SignedGuild } from '../types';
 import './GuildList.css';
 import GuildItem from './GuildItem';
 

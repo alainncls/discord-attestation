@@ -1,23 +1,46 @@
-.message {
-  padding: 10px;
-  border-radius: 5px;
+.transaction-status {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.transaction-status .message {
+  padding: var(--space-sm) 0;
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
   word-break: break-all;
+  color: var(--color-text);
 }
 
-.message.pending {
-  color: #856404;
+.transaction-status .message.pending {
+  color: var(--color-warning);
+  animation: pulse 2s infinite;
 }
 
-.message.success {
-  background-color: #d4edda;
-  color: #155724;
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
-.message a {
-  color: #007bff;
+.transaction-status .message.success {
+  color: var(--color-success);
+}
+
+.transaction-status .message a {
+  color: var(--color-primary-light);
   text-decoration: underline;
+  transition: color var(--transition-fast);
 }
 
-.message a:hover {
-  text-decoration: none;
+.transaction-status .message a:hover {
+  color: var(--color-primary);
 }

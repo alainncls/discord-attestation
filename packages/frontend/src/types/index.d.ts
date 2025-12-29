@@ -1,13 +1,15 @@
+import { Hex } from 'viem';
+
 export interface Guild {
   id: string;
   name: string;
 }
 
-export type SignedGuild = Guild & {
+export interface SignedGuild extends Guild {
   signature: string;
-  attestationId?: string;
-};
+  attestationId?: Hex;
+}
 
-interface DecodedPayload {
+export interface DecodedPayload {
   guildId: bigint;
 }

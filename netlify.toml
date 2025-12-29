@@ -1,0 +1,7 @@
+[build]
+  publish = "packages/frontend/dist"
+  command = "pnpm --filter @discord-attestation/frontend build"
+
+[functions]
+  directory = "packages/functions"
+  node_bundler = "esbuild"

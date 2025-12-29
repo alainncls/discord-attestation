@@ -1,20 +1,18 @@
 .main-content {
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--space-lg);
   flex: 1;
   display: flex;
   flex-direction: column;
-  position: relative;
-  min-height: 80vh; /* Increase container height */
 }
 
 .connect-button-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 30px;
-  padding: 10px 5px;
-  width: 100%;
+  margin-bottom: var(--space-xl);
+  padding: var(--space-md);
 }
 
 .centered-content {
@@ -22,6 +20,11 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  min-height: calc(100vh - 300px); /* Reduce height to move button up */
-  margin-top: -80px; /* Increase negative margin to move higher */
+  min-height: 50vh;
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding: var(--space-md);
+  }
 }

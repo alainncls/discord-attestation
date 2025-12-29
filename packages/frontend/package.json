@@ -1,42 +1,43 @@
 {
-  "name": "discord-attestation",
+  "name": "@discord-attestation/frontend",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -b && vite build",
+    "build": "tsc && vite build",
     "dev": "vite",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "prettier": "prettier --list-different '**/*.ts' '**/*.css' '**/*.json'",
-    "prettier:fix": "prettier --write '**/*.ts' '**/*.css' '**/*.json'",
-    "preview": "vite preview"
+    "prettier": "prettier --check 'src/**/*.ts' 'src/**/*.tsx' 'src/**/*.css' '*.json'",
+    "prettier:fix": "prettier --write 'src/**/*.ts' 'src/**/*.tsx' 'src/**/*.css' '*.json'",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@reown/appkit": "^1.6.8",
-    "@reown/appkit-adapter-wagmi": "^1.6.8",
-    "@tanstack/react-query": "^5.66.9",
+    "@reown/appkit": "^1.8.0",
+    "@reown/appkit-adapter-wagmi": "^1.8.0",
+    "@tanstack/react-query": "^5.90.0",
     "@verax-attestation-registry/verax-sdk": "2.2.2",
-    "axios": "^1.7.9",
+    "axios": "catalog:",
     "date-fns": "^4.1.0",
-    "dotenv": "^16.4.7",
-    "react": "19.0.3",
-    "react-dom": "19.0.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",
-    "viem": "^2.23.5",
-    "wagmi": "^2.14.12"
+    "viem": "catalog:",
+    "wagmi": "^2.19.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
-    "@types/react": "19.0.14",
-    "@types/react-dom": "19.0.6",
-    "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.21.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^15.15.0",
-    "typescript": "~5.7.2",
-    "typescript-eslint": "^8.24.1",
-    "vite": "^6.4.1"
+    "@eslint/js": "catalog:",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^4.4.0",
+    "eslint": "catalog:",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vite": "^6.4.0"
   }
 }

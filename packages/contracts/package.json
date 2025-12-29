@@ -1,5 +1,5 @@
 {
-  "name": "discord-attestation-contracts",
+  "name": "@discord-attestation/contracts",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -7,28 +7,33 @@
     "deploy": "npx hardhat run scripts/deployDiscord.ts --network",
     "lint": "eslint . && pnpm run solhint",
     "lint:fix": "eslint --fix .",
-    "prettier": "prettier --list-different '**/*.sol' '**/*.ts' '**/*.json'",
+    "prettier": "prettier --check '**/*.sol' '**/*.ts' '**/*.json'",
     "prettier:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json'",
     "solhint": "solhint **/*.sol -c .solhint.json",
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.6",
     "@openzeppelin/contracts-upgradeable": "^4.9.6"
   },
   "devDependencies": {
+    "@eslint/js": "catalog:",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@types/node": "^22.13.1",
+    "@types/node": "^22.15.0",
     "@verax-attestation-registry/verax-contracts": "^10.0.0",
     "@verax-attestation-registry/verax-sdk": "2.2.2",
-    "dotenv": "^16.4.7",
-    "ethers": "^6.13.5",
-    "hardhat": "^2.22.18",
-    "prettier": "^3.5.2",
+    "dotenv": "^16.4.0",
+    "eslint": "catalog:",
+    "ethers": "^6.14.0",
+    "hardhat": "^2.23.0",
+    "prettier": "catalog:",
     "prettier-plugin-solidity": "^1.4.2",
     "solhint": "^5.0.5",
     "solhint-plugin-prettier": "^0.1.0",
-    "viem": "^2.23.0"
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "viem": "catalog:"
   }
 }

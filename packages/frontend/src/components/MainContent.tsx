@@ -1,11 +1,11 @@
-import { SignedGuild } from '../types';
+import type { SignedGuild } from '../types';
 import GuildList from './GuildList';
 import LoginWithDiscord from './LoginWithDiscord';
 import Spinner from './Spinner';
 import TransactionStatus from './TransactionStatus';
 import ConnectButton from './ConnectButton';
 import { truncateHexString } from '../utils/helpers';
-import { Hex } from 'viem';
+import type { Hex } from 'viem';
 import './MainContent.css';
 
 interface MainContentProps {
@@ -21,21 +21,25 @@ interface MainContentProps {
 }
 
 const MainContent = ({
-                       isLoggedIn,
-                       isLoading,
-                       guilds,
-                       txHash,
-                       attestationId,
-                       pendingGuildId,
-                       chainId,
-                       onAttest,
-                       onCheck,
-                     }: MainContentProps) => {
+  isLoggedIn,
+  isLoading,
+  guilds,
+  txHash,
+  attestationId,
+  pendingGuildId,
+  chainId,
+  onAttest,
+  onCheck,
+}: MainContentProps) => {
   return (
     <div className="main-content">
       <ConnectButton />
 
-      {isLoading && <Spinner />}
+      {isLoading && (
+        <div className="centered-content">
+          <Spinner />
+        </div>
+      )}
 
       {!isLoggedIn && !isLoading && (
         <div className="centered-content">
@@ -51,11 +55,11 @@ const MainContent = ({
             chainId={chainId}
             truncateHexString={truncateHexString}
           />
-          <GuildList 
-            guilds={guilds} 
+          <GuildList
+            guilds={guilds}
             pendingGuildId={pendingGuildId}
-            onAttest={onAttest} 
-            onCheck={onCheck} 
+            onAttest={onAttest}
+            onCheck={onCheck}
           />
         </>
       )}

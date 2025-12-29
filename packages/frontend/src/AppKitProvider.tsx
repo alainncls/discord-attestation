@@ -29,7 +29,7 @@ createAppKit({
     history: false,
   },
   coinbasePreference: 'eoaOnly',
-  themeMode: 'light',
+  themeMode: 'dark',
   chainImages: {
     59141: LineaSepoliaIcon,
     59144: LineaMainnetIcon,

@@ -1,16 +1,10 @@
-import { HardhatUserConfig } from 'hardhat/config';
-import '@nomicfoundation/hardhat-toolbox';
-import dotenv from 'dotenv';
+import { defineConfig, configVariable } from 'hardhat/config';
+import type { SensitiveString } from 'hardhat/types/config';
+import HardhatViem from '@nomicfoundation/hardhat-viem';
+import HardhatVerify from '@nomicfoundation/hardhat-verify';
 
-dotenv.config({ path: '.env' });
-
-const { INFURA_KEY, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
-
-if (INFURA_KEY === undefined || PRIVATE_KEY === undefined || ETHERSCAN_API_KEY === undefined) {
-  throw new Error('INFURA_KEY, PRIVATE_KEY or ETHERSCAN_API_KEY is not set in .env file');
-}
-
-const config: HardhatUserConfig = {
+export default defineConfig({
+  plugins: [HardhatViem, HardhatVerify],
   solidity: {
     compilers: [
       {
@@ -25,41 +19,26 @@ const config: HardhatUserConfig = {
       },
     ],
   },
-  defaultNetwork: 'linea-sepolia',
   networks: {
     'linea-sepolia': {
-      url: `https://linea-sepolia.infura.io/v3/${INFURA_KEY}`,
-      accounts: [PRIVATE_KEY],
+      type: 'http',
+      url: configVariable('INFURA_KEY', 'https://linea-sepolia.infura.io/v3/{variable}'),
+      accounts: [configVariable('PRIVATE_KEY') as SensitiveString],
+      chainId: 59141,
     },
     linea: {
-      url: `https://linea-mainnet.infura.io/v3/${INFURA_KEY}`,
-      accounts: [PRIVATE_KEY],
+      type: 'http',
+      url: configVariable('INFURA_KEY', 'https://linea-mainnet.infura.io/v3/{variable}'),
+      accounts: [configVariable('PRIVATE_KEY') as SensitiveString],
+      chainId: 59144,
     },
   },
   paths: {
     sources: './src',
   },
-  etherscan: {
-    apiKey: ETHERSCAN_API_KEY,
-    customChains: [
-      {
-        network: 'linea-sepolia',
-        chainId: 59141,
-        urls: {
-          apiURL: 'https://api.etherscan.io/v2/api',
-          browserURL: 'https://sepolia.lineascan.build',
-        },
-      },
-      {
-        network: 'linea',
-        chainId: 59144,
-        urls: {
-          apiURL: 'https://api.etherscan.io/v2/api',
-          browserURL: 'https://lineascan.build',
-        },
-      },
-    ],
+  verify: {
+    etherscan: {
+      apiKey: configVariable('ETHERSCAN_API_KEY'),
+    },
   },
-};
-
-export default config;
+});

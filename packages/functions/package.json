@@ -10,15 +10,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@netlify/functions": "^3.0.0",
+    "@netlify/functions": "catalog:",
     "axios": "catalog:",
     "viem": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/node": "^22.15.0",
+    "@types/node": "catalog:",
     "eslint": "catalog:",
-    "netlify-cli": "^20.0.0",
+    "netlify-cli": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   }

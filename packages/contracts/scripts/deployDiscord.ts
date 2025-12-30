@@ -1,54 +1,82 @@
-import { ethers, network, run } from 'hardhat';
-import dotenv from 'dotenv';
+import hre, { network } from 'hardhat';
 import { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
-import { Address, Hex } from 'viem';
+import { verifyContract } from '@nomicfoundation/hardhat-verify/verify';
+import { isAddress, isHex } from 'viem';
 
-dotenv.config({ path: '.env' });
+function getEnvAddress(key: string): `0x${string}` {
+  const value = process.env[key];
+  if (!value || !isAddress(value)) {
+    throw new Error(`${key} is not set or is not a valid address`);
+  }
+  return value;
+}
+
+function getEnvHex(key: string): `0x${string}` {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`${key} is not set`);
+  }
+  const hexValue = value.startsWith('0x') ? value : `0x${value}`;
+  if (!isHex(hexValue)) {
+    throw new Error(`${key} is not a valid hex string`);
+  }
+  return hexValue;
+}
 
 async function main() {
   console.log(`START DISCORD SCRIPT`);
 
-  const { ROUTER_ADDRESS, PRIVATE_KEY } = process.env;
-
-  if (!ROUTER_ADDRESS || ROUTER_ADDRESS === '') {
-    throw new Error('ROUTER_ADDRESS is not set in .env file');
-  }
-
-  if (!PRIVATE_KEY || PRIVATE_KEY === '') {
-    throw new Error('PRIVATE_KEY is not set in .env file');
-  }
+  const routerAddress = getEnvAddress('ROUTER_ADDRESS');
+  const privateKey = getEnvHex('PRIVATE_KEY');
 
   console.log('Deploying DiscordPortal.sol...');
 
-  const constructorArguments = [[], ROUTER_ADDRESS];
+  const constructorArguments: [`0x${string}`[], `0x${string}`] = [[], routerAddress];
 
-  const discordPortal = await ethers.deployContract('DiscordPortal', constructorArguments);
-  await discordPortal.waitForDeployment();
-  const discordPortalAddress = (await discordPortal.getAddress()) as Address;
+  const { viem } = await network.connect();
+
+  const discordPortal = await viem.deployContract('DiscordPortal', constructorArguments);
+  const discordPortalAddress = discordPortal.address;
+
+  console.log(`DiscordPortal deployed at ${discordPortalAddress}`);
 
   await new Promise((resolve) => setTimeout(resolve, 3000));
 
-  await run('verify:verify', {
-    address: discordPortalAddress,
-    constructorArguments: constructorArguments,
-  });
+  console.log('Verifying contract...');
+
+  await verifyContract(
+    {
+      address: discordPortalAddress,
+      constructorArgs: constructorArguments,
+    },
+    hre,
+  );
 
   console.log(`DiscordPortal successfully deployed and verified!`);
   console.log(`DiscordPortal is at ${discordPortalAddress}`);
 
   console.log('Registering DiscordPortal.sol...');
 
-  const signers = await ethers.getSigners();
-  const signer = signers[0];
+  const walletClients = await viem.getWalletClients();
+  const walletClient = walletClients[0];
 
-  if (!signer) {
-    throw new Error('No signer available');
+  if (!walletClient) {
+    throw new Error('No wallet client available');
   }
 
+  const signerAddress = walletClient.account.address;
+  const networkConfig = hre.config.networks[hre.globalOptions.network ?? 'linea-sepolia'];
+
+  const isLinea =
+    networkConfig &&
+    'chainId' in networkConfig &&
+    typeof networkConfig.chainId === 'number' &&
+    networkConfig.chainId === 59144;
+
   const veraxSdk = new VeraxSdk(
-    network.name === 'linea' ? VeraxSdk.DEFAULT_LINEA_MAINNET : VeraxSdk.DEFAULT_LINEA_SEPOLIA,
-    signer.address as Address,
-    PRIVATE_KEY as Hex,
+    isLinea ? VeraxSdk.DEFAULT_LINEA_MAINNET : VeraxSdk.DEFAULT_LINEA_SEPOLIA,
+    signerAddress,
+    privateKey,
   );
 
   await veraxSdk.portal.register(
@@ -65,8 +93,6 @@ async function main() {
   console.log(`END DISCORD SCRIPT`);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

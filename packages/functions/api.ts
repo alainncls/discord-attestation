@@ -105,11 +105,12 @@ export default async (req: Request, context: Context) => {
 
     const { searchParams } = context.url;
     const code = searchParams.get('code');
+    const existingToken = searchParams.get('accessToken');
     const isDev = searchParams.get('isDev') === 'true';
     const subject = searchParams.get('subject');
     const rawChainId = searchParams.get('chainId');
 
-    if (!code || !subject || !rawChainId) {
+    if ((!code && !existingToken) || !subject || !rawChainId) {
       return new Response(JSON.stringify({ error: 'Missing parameters' }), {
         status: 400,
         headers,
@@ -118,8 +119,22 @@ export default async (req: Request, context: Context) => {
 
     const chainId = parseInt(rawChainId, 10);
 
-    const accessToken = await getToken(code, isDev);
-    const guilds = await getGuilds(accessToken);
+    // Use existing token or exchange OAuth code for a new one
+    const accessToken = existingToken ?? (await getToken(code as string, isDev));
+
+    let guilds: Guild[];
+    try {
+      guilds = await getGuilds(accessToken);
+    } catch (error) {
+      // Token expired or invalid - clear it on client side
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        return new Response(JSON.stringify({ error: 'Token expired', tokenExpired: true }), {
+          status: 401,
+          headers,
+        });
+      }
+      throw error;
+    }
 
     const walletClient = createWalletClient({
       account: privateKeyToAccount(SIGNER_PRIVATE_KEY as Hex),
@@ -128,7 +143,7 @@ export default async (req: Request, context: Context) => {
 
     const signedGuilds = await signGuilds(walletClient, guilds, subject, chainId);
 
-    return new Response(JSON.stringify({ signedGuilds }), {
+    return new Response(JSON.stringify({ signedGuilds, accessToken }), {
       status: 200,
       headers,
     });

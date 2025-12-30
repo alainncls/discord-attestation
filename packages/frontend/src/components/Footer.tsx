@@ -1,6 +1,7 @@
 import './Footer.css';
 import { FaGithub } from 'react-icons/fa';
 import LogoVerax from '../assets/logo-verax.svg';
+import { BsTwitterX } from 'react-icons/bs';
 
 const Footer = () => {
   return (
@@ -20,7 +21,7 @@ const Footer = () => {
             className="footer-link"
             aria-label="Visit Verax website"
           >
-            <img src={LogoVerax} alt="Verax logo" height={24} />
+            <img src={LogoVerax} alt="Verax logo" height={24} width={24} />
           </a>
           <a
             href="https://github.com/alainncls/discord-attestation"
@@ -30,6 +31,15 @@ const Footer = () => {
             aria-label="View source code on GitHub"
           >
             <FaGithub size={24} aria-hidden="true" />
+          </a>
+          <a
+            href="https://x.com/Alain_Ncls"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-link"
+            aria-label="View my X profile"
+          >
+            <BsTwitterX size={24} aria-hidden="true" />
           </a>
         </nav>
       </div>

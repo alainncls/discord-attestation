@@ -21,7 +21,7 @@
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--color-discord) 0%, var(--color-verax-light) 100%);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-secondary));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

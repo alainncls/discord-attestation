@@ -28,9 +28,8 @@
     "eslint": "catalog:",
     "hardhat": "catalog:",
     "prettier": "catalog:",
-    "prettier-plugin-solidity": "^2.2.1",
-    "solhint": "^6.0.2",
-    "solhint-plugin-prettier": "^0.1.0",
+    "prettier-plugin-solidity": "^2.3.1",
+    "solhint": "^6.2.1",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "viem": "catalog:"

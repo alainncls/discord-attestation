@@ -2,34 +2,58 @@ packages:
   - packages/*
 
 catalog:
-  '@eslint/js': ^9.39.0
-  '@netlify/functions': ^5.1.2
-  '@nomicfoundation/hardhat-verify': ^3.0.8
-  '@nomicfoundation/hardhat-viem': ^3.0.1
-  '@tanstack/react-query': ^5.90.15
-  '@types/node': ^22.19.3
-  '@types/react': ^19.2.7
+  '@eslint/js': ^9.39.4
+  '@netlify/functions': ^5.2.0
+  '@nomicfoundation/hardhat-verify': 3.0.15
+  '@nomicfoundation/hardhat-viem': ^3.0.6
+  '@tanstack/react-query': 5.100.6
+  '@types/node': ^22.19.17
+  '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
-  '@verax-attestation-registry/verax-sdk': 5.0.0
-  '@vitejs/plugin-react': ^5.1.2
-  axios: ^1.13.5
-  eslint: ^9.39.0
+  '@verax-attestation-registry/verax-sdk': 5.4.0
+  '@vitejs/plugin-react': ^5.2.0
+  '@wagmi/core': 3.0.1
+  axios: ^1.15.2
+  eslint: ^9.39.4
   globals: ^16.5.0
-  hardhat: ^3.1.1
-  netlify-cli: ^23.13.0
-  prettier: ^3.7.0
-  react: ^19.2.3
-  react-dom: ^19.2.3
+  hardhat: 3.4.2
+  netlify-cli: ^23.15.1
+  prettier: ^3.8.3
+  react: ^19.2.5
+  react-dom: ^19.2.5
   typescript: ^5.9.3
-  typescript-eslint: ^8.50.0
-  viem: ^2.43.0
+  typescript-eslint: ^8.59.1
+  viem: 2.48.4
   vite: ^7.3.2
-  wagmi: ^3.1.3
+  wagmi: 3.1.3
 
 overrides:
+  '@fastify/static@>=8.0.0 <=9.1.0': 9.1.1
+  ajv@>=7.0.0-alpha.0 <8.18.0: 8.20.0
   bl@<0.9.5: '>=0.9.5'
   bl@<1.2.3: '>=1.2.3'
+  brace-expansion@<1.1.13: 1.1.13
+  brace-expansion@>=2.0.0 <2.0.3: 2.1.0
+  defu@<=6.1.4: 6.1.7
+  diff@>=4.0.0 <4.0.4: 4.0.4
+  fastify@>=5.3.2 <=5.8.4: 5.8.5
+  flatted@<3.4.2: 3.4.2
+  follow-redirects@<=1.15.11: 1.16.0
+  h3@<1.15.11: 1.15.11
+  lodash@>=4.0.0 <=4.17.23: 4.18.1
+  minimatch@>=5.0.0 <5.1.8: 5.1.8
+  minimatch@>=9.0.0 <9.0.9: 9.0.9
   nanoid@>=4.0.0 <5.0.9: '>=5.0.9'
+  node-forge@<1.4.0: 1.4.0
   parse-duration@<2.1.3: '>=2.1.3'
+  picomatch@<2.3.2: 2.3.2
+  picomatch@>=4.0.0 <4.0.4: 4.0.4
+  postcss@<8.5.10: 8.5.13
+  rollup@>=4.0.0 <4.59.0: 4.60.2
   semver@<4.3.2: '>=4.3.2'
   semver@<5.7.2: '>=5.7.2'
+  svgo@4.0.0: 4.0.1
+  tar@>=7.0.0 <7.5.13: 7.5.13
+  undici@>=6.0.0 <6.25.0: 6.25.0
+  unstorage@<1.17.5: 1.17.5
+  yaml@>=2.0.0 <2.8.3: 2.8.3

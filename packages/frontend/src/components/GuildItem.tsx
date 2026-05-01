@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { SignedGuild } from '../types';
 import { useAccount } from 'wagmi';
 import LogoVerax from '../assets/logo-verax.svg';
@@ -51,4 +52,4 @@ const GuildItem = ({ guild, isPending, onAttest, onCheck }: GuildItemProps) => {
   );
 };
 
-export default GuildItem;
+export default memo(GuildItem);

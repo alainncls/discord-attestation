@@ -1,5 +1,6 @@
 import { FaDiscord } from 'react-icons/fa';
 import './LoginWithDiscord.css';
+import { setLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
 
 const CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URL;
@@ -8,7 +9,7 @@ const DISCORD_OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${
 
 const LoginWithDiscord = () => {
   const handleLogin = () => {
-    localStorage.setItem('discord_oauth_started', 'true');
+    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
     window.location.href = DISCORD_OAUTH_URL;
   };
 

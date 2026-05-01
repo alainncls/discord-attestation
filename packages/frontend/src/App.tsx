@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { useAccount } from 'wagmi';
 import Header from './components/Header';
@@ -13,6 +13,7 @@ import { useAttestationManager } from './hooks/useAttestationManager';
 import { useToast } from './hooks/useToast';
 import type { Hex } from 'viem';
 import type { SignedGuild } from './types';
+import { getLocalStorageValue, STORAGE_KEYS } from './utils/storage';
 
 function App() {
   const { address, chainId } = useAccount();
@@ -20,9 +21,9 @@ function App() {
   const { toasts, removeToast, showError } = useToast();
 
   // Get OAuth code from URL (only once on mount)
-  const oauthCode = useMemo(() => {
+  const [oauthCode] = useState(() => {
     return new URLSearchParams(window.location.search).get('code');
-  }, []);
+  });
 
   const { isLoggedIn, isLoading, guilds, setIsLoading, setGuilds } = useFetchGuilds(
     veraxSdk,
@@ -35,19 +36,25 @@ function App() {
     useAttestationManager(veraxSdk, chainId, showError);
 
   useEffect(() => {
-    if (localStorage.getItem('discord_oauth_started') === 'true') {
+    if (getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED) === 'true') {
       setIsLoading(true);
     }
   }, [setIsLoading]);
 
-  const handleAttestAndUpdateGuilds = async (guild: SignedGuild) => {
-    await handleAttest(guild, (guildId: string, attestId: Hex) => {
-      const updatedGuilds = guilds.map((g) =>
-        g.id === guildId ? { ...g, attestationId: attestId } : g,
-      );
-      setGuilds(updatedGuilds);
-    });
-  };
+  const handleAttestAndUpdateGuilds = useCallback(
+    async (guild: SignedGuild) => {
+      await handleAttest(guild, (guildId: string, attestId: Hex) => {
+        setGuilds((currentGuilds) =>
+          currentGuilds.map((currentGuild) =>
+            currentGuild.id === guildId
+              ? { ...currentGuild, attestationId: attestId }
+              : currentGuild,
+          ),
+        );
+      });
+    },
+    [handleAttest, setGuilds],
+  );
 
   return (
     <div className="app-container">

@@ -22,8 +22,8 @@ catalogs:
       specifier: 5.100.6
       version: 5.100.6
     '@types/node':
-      specifier: ^22.19.17
-      version: 22.19.17
+      specifier: ^24.12.2
+      version: 24.12.2
     '@types/react':
       specifier: ^19.2.14
       version: 19.2.14
@@ -119,7 +119,7 @@ importers:
         version: 9.39.4
       '@types/node':
         specifier: 'catalog:'
-        version: 22.19.17
+        version: 24.12.2
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.6.1)
@@ -159,13 +159,13 @@ importers:
         version: 3.0.6(hardhat@3.4.2(bufferutil@4.1.0)(utf-8-validate@5.0.10))(viem@2.48.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))
       '@types/node':
         specifier: 'catalog:'
-        version: 22.19.17
+        version: 24.12.2
       '@verax-attestation-registry/verax-contracts':
         specifier: ^10.0.0
         version: 10.0.0
       '@verax-attestation-registry/verax-sdk':
         specifier: 'catalog:'
-        version: 5.4.0(@types/node@22.19.17)(bufferutil@4.1.0)(crossws@0.3.5)(graphql-yoga@5.21.0(graphql@16.13.2))(utf-8-validate@5.0.10)(viem@2.48.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))
+        version: 5.4.0(@types/node@24.12.2)(bufferutil@4.1.0)(crossws@0.3.5)(graphql-yoga@5.21.0(graphql@16.13.2))(utf-8-validate@5.0.10)(viem@2.48.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.6.1)
@@ -204,7 +204,7 @@ importers:
         version: 5.100.6(react@19.2.5)
       '@verax-attestation-registry/verax-sdk':
         specifier: 'catalog:'
-        version: 5.4.0(@types/node@22.19.17)(bufferutil@4.1.0)(crossws@0.3.5)(graphql-yoga@5.21.0(graphql@16.13.2))(utf-8-validate@5.0.10)(viem@2.48.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))
+        version: 5.4.0(@types/node@24.12.2)(bufferutil@4.1.0)(crossws@0.3.5)(graphql-yoga@5.21.0(graphql@16.13.2))(utf-8-validate@5.0.10)(viem@2.48.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))
       '@wagmi/core':
         specifier: 'catalog:'
         version: 3.0.1(@tanstack/query-core@5.100.7)(@types/react@19.2.14)(react@19.2.5)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.5))(viem@2.48.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))
@@ -241,7 +241,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       '@vitejs/plugin-react':
         specifier: 'catalog:'
-        version: 5.2.0(vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 5.2.0(vite@7.3.2(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.6.1)
@@ -265,7 +265,7 @@ importers:
         version: 8.59.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
       vite:
         specifier: 'catalog:'
-        version: 7.3.2(@types/node@22.19.17)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
+        version: 7.3.2(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
 
   packages/functions:
     dependencies:
@@ -284,13 +284,13 @@ importers:
         version: 9.39.4
       '@types/node':
         specifier: 'catalog:'
-        version: 22.19.17
+        version: 24.12.2
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.6.1)
       netlify-cli:
         specifier: 'catalog:'
-        version: 23.15.1(@types/node@22.19.17)(bufferutil@4.1.0)(encoding@0.1.13)(idb-keyval@6.2.2)(picomatch@4.0.4)(rollup@4.60.2)(utf-8-validate@5.0.10)
+        version: 23.15.1(@types/node@24.12.2)(bufferutil@4.1.0)(encoding@0.1.13)(idb-keyval@6.2.2)(picomatch@4.0.4)(rollup@4.60.2)(utf-8-validate@5.0.10)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -2586,8 +2586,8 @@ packages:
   '@types/node@22.19.17':
     resolution: {integrity: sha512-wGdMcf+vPYM6jikpS/qhg6WiqSV/OhG+jeeHT/KlVqxYfD40iYJf9/AE1uQxVWFvU7MipKRkRv8NSHiCGgPr8Q==}
 
-  '@types/node@22.19.3':
-    resolution: {integrity: sha512-1N9SBnWYOJTrNZCdh/yJE+t910Y128BoyY+zBLWhL3r0TYzlTmFdXrPwHL9DyFZmlEXNQQolTZh3KHV31QDhyA==}
+  '@types/node@24.12.2':
+    resolution: {integrity: sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -7709,7 +7709,7 @@ snapshots:
       graphql: 16.13.2
       path-browserify: 1.0.1
 
-  '@graphql-mesh/graphql@0.104.39(@types/node@22.19.17)(bufferutil@4.1.0)(crossws@0.3.5)(graphql@16.13.2)(utf-8-validate@5.0.10)':
+  '@graphql-mesh/graphql@0.104.39(@types/node@24.12.2)(bufferutil@4.1.0)(crossws@0.3.5)(graphql@16.13.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@graphql-mesh/cross-helpers': 0.4.14(graphql@16.13.2)
       '@graphql-mesh/store': 0.104.38(graphql@16.13.2)
@@ -7717,9 +7717,9 @@ snapshots:
       '@graphql-mesh/types': 0.104.28(graphql@16.13.2)
       '@graphql-mesh/utils': 0.104.36(graphql@16.13.2)
       '@graphql-tools/delegate': 12.0.15(graphql@16.13.2)
-      '@graphql-tools/federation': 4.4.0(@types/node@22.19.17)(graphql@16.13.2)
+      '@graphql-tools/federation': 4.4.0(@types/node@24.12.2)(graphql@16.13.2)
       '@graphql-tools/merge': 9.1.9(graphql@16.13.2)
-      '@graphql-tools/url-loader': 9.1.2(@types/node@22.19.17)(bufferutil@4.1.0)(crossws@0.3.5)(graphql@16.13.2)(utf-8-validate@5.0.10)
+      '@graphql-tools/url-loader': 9.1.2(@types/node@24.12.2)(bufferutil@4.1.0)(crossws@0.3.5)(graphql@16.13.2)(utf-8-validate@5.0.10)
       '@graphql-tools/utils': 11.1.0(graphql@16.13.2)
       '@whatwg-node/promise-helpers': 1.3.2
       graphql: 16.13.2
@@ -7914,7 +7914,7 @@ snapshots:
       - uWebSockets.js
       - utf-8-validate
 
-  '@graphql-tools/executor-http@3.2.1(@types/node@22.19.17)(graphql@16.13.2)':
+  '@graphql-tools/executor-http@3.2.1(@types/node@24.12.2)(graphql@16.13.2)':
     dependencies:
       '@graphql-hive/signal': 2.0.0
       '@graphql-tools/executor-common': 1.0.6(graphql@16.13.2)
@@ -7924,7 +7924,7 @@ snapshots:
       '@whatwg-node/fetch': 0.10.13
       '@whatwg-node/promise-helpers': 1.3.2
       graphql: 16.13.2
-      meros: 1.3.2(@types/node@22.19.17)
+      meros: 1.3.2(@types/node@24.12.2)
       tslib: 2.8.1
     transitivePeerDependencies:
       - '@types/node'
@@ -7961,11 +7961,11 @@ snapshots:
       graphql: 16.13.2
       tslib: 2.8.1
 
-  '@graphql-tools/federation@4.4.0(@types/node@22.19.17)(graphql@16.13.2)':
+  '@graphql-tools/federation@4.4.0(@types/node@24.12.2)(graphql@16.13.2)':
     dependencies:
       '@graphql-tools/delegate': 12.0.15(graphql@16.13.2)
       '@graphql-tools/executor': 1.5.0(graphql@16.13.2)
-      '@graphql-tools/executor-http': 3.2.1(@types/node@22.19.17)(graphql@16.13.2)
+      '@graphql-tools/executor-http': 3.2.1(@types/node@24.12.2)(graphql@16.13.2)
       '@graphql-tools/merge': 9.1.9(graphql@16.13.2)
       '@graphql-tools/schema': 10.0.30(graphql@16.13.2)
       '@graphql-tools/stitch': 10.1.18(graphql@16.13.2)
@@ -8020,10 +8020,10 @@ snapshots:
       graphql: 16.13.2
       tslib: 2.8.1
 
-  '@graphql-tools/url-loader@9.1.2(@types/node@22.19.17)(bufferutil@4.1.0)(crossws@0.3.5)(graphql@16.13.2)(utf-8-validate@5.0.10)':
+  '@graphql-tools/url-loader@9.1.2(@types/node@24.12.2)(bufferutil@4.1.0)(crossws@0.3.5)(graphql@16.13.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@graphql-tools/executor-graphql-ws': 3.1.5(bufferutil@4.1.0)(crossws@0.3.5)(graphql@16.13.2)(utf-8-validate@5.0.10)
-      '@graphql-tools/executor-http': 3.2.1(@types/node@22.19.17)(graphql@16.13.2)
+      '@graphql-tools/executor-http': 3.2.1(@types/node@24.12.2)(graphql@16.13.2)
       '@graphql-tools/executor-legacy-ws': 1.1.28(bufferutil@4.1.0)(graphql@16.13.2)(utf-8-validate@5.0.10)
       '@graphql-tools/utils': 11.1.0(graphql@16.13.2)
       '@graphql-tools/wrap': 11.1.2(graphql@16.13.2)
@@ -8216,12 +8216,12 @@ snapshots:
 
   '@import-maps/resolve@2.0.0': {}
 
-  '@inquirer/external-editor@1.0.3(@types/node@22.19.17)':
+  '@inquirer/external-editor@1.0.3(@types/node@24.12.2)':
     dependencies:
       chardet: 2.1.1
       iconv-lite: 0.7.1
     optionalDependencies:
-      '@types/node': 22.19.17
+      '@types/node': 24.12.2
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -8326,7 +8326,7 @@ snapshots:
       yaml: 2.8.3
       yargs: 17.7.2
 
-  '@netlify/build@35.5.14(@opentelemetry/api@1.8.0)(@types/node@22.19.17)(encoding@0.1.13)(picomatch@4.0.4)(rollup@4.60.2)':
+  '@netlify/build@35.5.14(@opentelemetry/api@1.8.0)(@types/node@24.12.2)(encoding@0.1.13)(picomatch@4.0.4)(rollup@4.60.2)':
     dependencies:
       '@bugsnag/js': 8.6.0
       '@netlify/blobs': 10.5.0(supports-color@10.2.2)
@@ -8374,7 +8374,7 @@ snapshots:
       string-width: 7.2.0
       supports-color: 10.2.2
       terminal-link: 4.0.0
-      ts-node: 10.9.2(@types/node@22.19.17)(typescript@5.9.3)
+      ts-node: 10.9.2(@types/node@24.12.2)(typescript@5.9.3)
       typescript: 5.9.3
       uuid: 11.1.0
       yaml: 2.8.3
@@ -10141,7 +10141,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 22.19.3
+      '@types/node': 22.19.17
     optional: true
 
   '@types/estree@1.0.8': {}
@@ -10150,7 +10150,7 @@ snapshots:
 
   '@types/http-proxy@1.17.17':
     dependencies:
-      '@types/node': 22.19.17
+      '@types/node': 24.12.2
 
   '@types/json-schema@7.0.15': {}
 
@@ -10160,10 +10160,11 @@ snapshots:
   '@types/node@22.19.17':
     dependencies:
       undici-types: 6.21.0
+    optional: true
 
-  '@types/node@22.19.3':
+  '@types/node@24.12.2':
     dependencies:
-      undici-types: 6.21.0
+      undici-types: 7.16.0
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -10186,16 +10187,16 @@ snapshots:
 
   '@types/ws@7.4.7':
     dependencies:
-      '@types/node': 22.19.3
+      '@types/node': 22.19.17
     optional: true
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.19.3
+      '@types/node': 24.12.2
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 22.19.17
+      '@types/node': 24.12.2
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.59.1(@typescript-eslint/parser@8.59.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)':
@@ -10329,11 +10330,11 @@ snapshots:
       '@openzeppelin/contracts': 4.9.6
       '@openzeppelin/contracts-upgradeable': 4.9.6
 
-  '@verax-attestation-registry/verax-sdk@5.4.0(@types/node@22.19.17)(bufferutil@4.1.0)(crossws@0.3.5)(graphql-yoga@5.21.0(graphql@16.13.2))(utf-8-validate@5.0.10)(viem@2.48.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))':
+  '@verax-attestation-registry/verax-sdk@5.4.0(@types/node@24.12.2)(bufferutil@4.1.0)(crossws@0.3.5)(graphql-yoga@5.21.0(graphql@16.13.2))(utf-8-validate@5.0.10)(viem@2.48.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))':
     dependencies:
       '@graphql-mesh/cache-inmemory-lru': 0.8.37(graphql@16.13.2)
       '@graphql-mesh/cross-helpers': 0.4.14(graphql@16.13.2)
-      '@graphql-mesh/graphql': 0.104.39(@types/node@22.19.17)(bufferutil@4.1.0)(crossws@0.3.5)(graphql@16.13.2)(utf-8-validate@5.0.10)
+      '@graphql-mesh/graphql': 0.104.39(@types/node@24.12.2)(bufferutil@4.1.0)(crossws@0.3.5)(graphql@16.13.2)(utf-8-validate@5.0.10)
       '@graphql-mesh/http': 0.106.42(graphql@16.13.2)
       '@graphql-mesh/merger-bare': 0.105.38(graphql@16.13.2)
       '@graphql-mesh/runtime': 0.106.38(graphql@16.13.2)
@@ -10377,7 +10378,7 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vitejs/plugin-react@5.2.0(vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))':
+  '@vitejs/plugin-react@5.2.0(vite@7.3.2(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.0)
@@ -10385,7 +10386,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-rc.3
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
-      vite: 7.3.2(@types/node@22.19.17)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
+      vite: 7.3.2(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -12671,18 +12672,18 @@ snapshots:
 
   ini@4.1.1: {}
 
-  inquirer-autocomplete-prompt@1.4.0(inquirer@8.2.7(@types/node@22.19.17)):
+  inquirer-autocomplete-prompt@1.4.0(inquirer@8.2.7(@types/node@24.12.2)):
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       figures: 3.2.0
-      inquirer: 8.2.7(@types/node@22.19.17)
+      inquirer: 8.2.7(@types/node@24.12.2)
       run-async: 2.4.1
       rxjs: 6.6.7
 
-  inquirer@8.2.7(@types/node@22.19.17):
+  inquirer@8.2.7(@types/node@24.12.2):
     dependencies:
-      '@inquirer/external-editor': 1.0.3(@types/node@22.19.17)
+      '@inquirer/external-editor': 1.0.3(@types/node@24.12.2)
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       cli-cursor: 3.1.0
@@ -13191,9 +13192,9 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  meros@1.3.2(@types/node@22.19.17):
+  meros@1.3.2(@types/node@24.12.2):
     optionalDependencies:
-      '@types/node': 22.19.17
+      '@types/node': 24.12.2
 
   micro-eth-signer@0.14.0:
     dependencies:
@@ -13316,13 +13317,13 @@ snapshots:
 
   negotiator@1.0.0: {}
 
-  netlify-cli@23.15.1(@types/node@22.19.17)(bufferutil@4.1.0)(encoding@0.1.13)(idb-keyval@6.2.2)(picomatch@4.0.4)(rollup@4.60.2)(utf-8-validate@5.0.10):
+  netlify-cli@23.15.1(@types/node@24.12.2)(bufferutil@4.1.0)(encoding@0.1.13)(idb-keyval@6.2.2)(picomatch@4.0.4)(rollup@4.60.2)(utf-8-validate@5.0.10):
     dependencies:
       '@fastify/static': 9.1.1
       '@netlify/ai': 0.3.4(@netlify/api@14.0.13)
       '@netlify/api': 14.0.13
       '@netlify/blobs': 10.1.0
-      '@netlify/build': 35.5.14(@opentelemetry/api@1.8.0)(@types/node@22.19.17)(encoding@0.1.13)(picomatch@4.0.4)(rollup@4.60.2)
+      '@netlify/build': 35.5.14(@opentelemetry/api@1.8.0)(@types/node@24.12.2)(encoding@0.1.13)(picomatch@4.0.4)(rollup@4.60.2)
       '@netlify/build-info': 10.3.0
       '@netlify/config': 24.3.0
       '@netlify/dev-utils': 4.3.2
@@ -13374,8 +13375,8 @@ snapshots:
       http-proxy: 1.18.1(debug@4.4.3)
       http-proxy-middleware: 3.0.5
       https-proxy-agent: 7.0.6(supports-color@10.2.2)
-      inquirer: 8.2.7(@types/node@22.19.17)
-      inquirer-autocomplete-prompt: 1.4.0(inquirer@8.2.7(@types/node@22.19.17))
+      inquirer: 8.2.7(@types/node@24.12.2)
+      inquirer-autocomplete-prompt: 1.4.0(inquirer@8.2.7(@types/node@24.12.2))
       is-docker: 3.0.0
       is-stream: 4.0.1
       is-wsl: 3.1.0
@@ -14708,14 +14709,14 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
-  ts-node@10.9.2(@types/node@22.19.17)(typescript@5.9.3):
+  ts-node@10.9.2(@types/node@24.12.2)(typescript@5.9.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.12
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 22.19.17
+      '@types/node': 24.12.2
       acorn: 8.15.0
       acorn-walk: 8.3.4
       arg: 4.1.3
@@ -14791,10 +14792,10 @@ snapshots:
 
   uncrypto@0.1.3: {}
 
-  undici-types@6.21.0: {}
-
-  undici-types@7.16.0:
+  undici-types@6.21.0:
     optional: true
+
+  undici-types@7.16.0: {}
 
   undici@6.25.0: {}
 
@@ -14970,7 +14971,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3):
+  vite@7.3.2(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3):
     dependencies:
       esbuild: 0.27.2
       fdir: 6.5.0(picomatch@4.0.4)
@@ -14979,7 +14980,7 @@ snapshots:
       rollup: 4.60.2
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 22.19.17
+      '@types/node': 24.12.2
       fsevents: 2.3.3
       jiti: 2.6.1
       tsx: 4.21.0

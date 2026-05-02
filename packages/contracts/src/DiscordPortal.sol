@@ -35,7 +35,7 @@ contract DiscordPortal is AbstractPortalV2, Ownable, EIP712 {
     constructor(
         address[] memory modules,
         address router
-    ) AbstractPortalV2(modules, router) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {}
+    ) AbstractPortalV2(modules, router) Ownable(msg.sender) EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION) {}
 
     /**
      * @inheritdoc AbstractPortalV2

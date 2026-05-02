@@ -142,11 +142,11 @@ importers:
   packages/contracts:
     dependencies:
       '@openzeppelin/contracts':
-        specifier: ^4.9.6
-        version: 4.9.6
+        specifier: 5.0.2
+        version: 5.0.2
       '@openzeppelin/contracts-upgradeable':
-        specifier: ^4.9.6
-        version: 4.9.6
+        specifier: 5.0.2
+        version: 5.0.2(@openzeppelin/contracts@5.0.2)
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -1870,8 +1870,16 @@ packages:
   '@openzeppelin/contracts-upgradeable@4.9.6':
     resolution: {integrity: sha512-m4iHazOsOCv1DgM7eD7GupTJ+NFVujRZt1wzddDPSVGpWdKq1SKkla5htKG7+IS4d2XOCtzkUNwRZ7Vq5aEUMA==}
 
+  '@openzeppelin/contracts-upgradeable@5.0.2':
+    resolution: {integrity: sha512-0MmkHSHiW2NRFiT9/r5Lu4eJq5UJ4/tzlOgYXNAIj/ONkQTVnz22pLxDvp4C4uZ9he7ZFvGn3Driptn1/iU7tQ==}
+    peerDependencies:
+      '@openzeppelin/contracts': 5.0.2
+
   '@openzeppelin/contracts@4.9.6':
     resolution: {integrity: sha512-xSmezSupL+y9VkHZJGDoCBpmnB2ogM13ccaYDWqJTfS3dbuHkgjuwDFUmaFauBCboQMGB/S5UqUl2y54X99BmA==}
+
+  '@openzeppelin/contracts@5.0.2':
+    resolution: {integrity: sha512-ytPc6eLGcHHnapAZ9S+5qsdomhjo6QBHTDRRBFfTxXIpsicMhVPouPgmUPebZZZGX7vt9USA+Z+0M0dSVtSUEA==}
 
   '@oxc-project/types@0.127.0':
     resolution: {integrity: sha512-aIYXQBo4lCbO4z0R3FHeucQHpF46l2LbMdxRvqvuRuW2OxdnSkcng5B8+K12spgLDj93rtN3+J2Vac/TIO+ciQ==}
@@ -9064,7 +9072,13 @@ snapshots:
 
   '@openzeppelin/contracts-upgradeable@4.9.6': {}
 
+  '@openzeppelin/contracts-upgradeable@5.0.2(@openzeppelin/contracts@5.0.2)':
+    dependencies:
+      '@openzeppelin/contracts': 5.0.2
+
   '@openzeppelin/contracts@4.9.6': {}
+
+  '@openzeppelin/contracts@5.0.2': {}
 
   '@oxc-project/types@0.127.0': {}
 

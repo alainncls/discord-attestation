@@ -108,6 +108,7 @@ overrides:
   tar@>=7.0.0 <7.5.13: 7.5.13
   undici@>=6.0.0 <6.25.0: 6.25.0
   unstorage@<1.17.5: 1.17.5
+  uuid@<14.0.0: 14.0.0
   yaml@>=2.0.0 <2.8.3: 2.8.3
 
 importers:
@@ -6671,17 +6672,8 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
-  uuid@11.1.0:
-    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
-    hasBin: true
-
-  uuid@13.0.0:
-    resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
-    hasBin: true
-
-  uuid@8.3.2:
-    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+  uuid@14.0.0:
+    resolution: {integrity: sha512-Qo+uWgilfSmAhXCMav1uYFynlQO7fMFiMVZsQqZRMIXp0O7rR7qjkj+cPvBHLgBqi960QCoo/PH2/6ZtVqKvrg==}
     hasBin: true
 
   v8-compile-cache-lib@3.0.1:
@@ -8351,7 +8343,7 @@ snapshots:
       terminal-link: 4.0.0
       ts-node: 10.9.2(@types/node@24.12.2)(typescript@5.9.3)
       typescript: 5.9.3
-      uuid: 11.1.0
+      uuid: 14.0.0
       yaml: 2.8.3
       yargs: 17.7.2
       zod: 3.25.76
@@ -8427,7 +8419,7 @@ snapshots:
       parse-gitignore: 2.0.0
       semver: 7.7.4
       tmp-promise: 3.0.3
-      uuid: 13.0.0
+      uuid: 14.0.0
       write-file-atomic: 5.0.1
 
   '@netlify/dev-utils@4.4.3':
@@ -8445,7 +8437,7 @@ snapshots:
       parse-gitignore: 2.0.0
       semver: 7.7.4
       tmp-promise: 3.0.3
-      uuid: 13.0.0
+      uuid: 14.0.0
       write-file-atomic: 5.0.1
 
   '@netlify/dev@4.18.0(encoding@0.1.13)(idb-keyval@6.2.2)(rollup@4.60.2)':
@@ -8511,7 +8503,7 @@ snapshots:
       tar: 7.5.13
       tmp-promise: 3.0.3
       urlpattern-polyfill: 8.0.2
-      uuid: 11.1.0
+      uuid: 14.0.0
 
   '@netlify/edge-functions-bootstrap@2.16.0': {}
 
@@ -12888,7 +12880,7 @@ snapshots:
       isomorphic-ws: 4.0.1(ws@7.5.10(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       json-stringify-safe: 5.0.1
       stream-json: 1.9.1
-      uuid: 8.3.2
+      uuid: 14.0.0
       ws: 7.5.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
@@ -13461,7 +13453,7 @@ snapshots:
       tomlify-j0.4: 3.0.0
       ulid: 3.0.1
       update-notifier: 7.3.1
-      uuid: 13.0.0
+      uuid: 14.0.0
       write-file-atomic: 5.0.1
       ws: 8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
@@ -14330,7 +14322,7 @@ snapshots:
       '@types/ws': 8.18.1
       buffer: 6.0.3
       eventemitter3: 5.0.1
-      uuid: 8.3.2
+      uuid: 14.0.0
       ws: 8.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     optionalDependencies:
       bufferutil: 4.1.0
@@ -14977,12 +14969,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  uuid@11.1.0: {}
-
-  uuid@13.0.0: {}
-
-  uuid@8.3.2:
-    optional: true
+  uuid@14.0.0: {}
 
   v8-compile-cache-lib@3.0.1: {}
 

@@ -2,7 +2,7 @@ import './Spinner.css';
 import { TbLoader3 } from 'react-icons/tb';
 
 const Spinner = () => {
-  return <TbLoader3 className={'loading-icon'} />;
+  return <TbLoader3 className="loading-icon" role="status" aria-label="Loading" />;
 };
 
 export default Spinner;

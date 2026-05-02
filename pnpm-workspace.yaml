@@ -21,7 +21,7 @@ catalog:
   prettier: ^3.8.3
   react: ^19.2.5
   react-dom: ^19.2.5
-  typescript: ^5.9.3
+  typescript: ^6.0.3
   typescript-eslint: ^8.59.1
   viem: 2.48.4
   vite: ^7.3.2

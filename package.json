@@ -11,6 +11,7 @@
     "lint:fix": "eslint --fix updateReadme.ts && pnpm -r --parallel run lint:fix && prettier --write 'updateReadme.ts' '*.json' && pnpm -r --parallel run prettier:fix",
     "prepare": "husky",
     "test": "pnpm -r --parallel run test",
+    "test:e2e": "pnpm --filter @discord-attestation/frontend run test:e2e",
     "typecheck": "tsc --noEmit && pnpm -r --parallel run typecheck",
     "update-readme": "tsx updateReadme.ts"
   },

@@ -5,11 +5,18 @@ import GuildItem from './GuildItem';
 interface GuildListProps {
   guilds: SignedGuild[];
   pendingGuildId?: string | null;
+  isWalletConnected: boolean;
   onAttest: (guild: SignedGuild) => void;
   onCheck: (guild: SignedGuild) => void;
 }
 
-const GuildList = ({ guilds, pendingGuildId, onAttest, onCheck }: GuildListProps) => {
+const GuildList = ({
+  guilds,
+  pendingGuildId,
+  isWalletConnected,
+  onAttest,
+  onCheck,
+}: GuildListProps) => {
   return (
     <div className="guild-list-container">
       <h1>You are part of {guilds.length} Discord Servers</h1>
@@ -19,6 +26,7 @@ const GuildList = ({ guilds, pendingGuildId, onAttest, onCheck }: GuildListProps
             key={guild.id}
             guild={guild}
             isPending={pendingGuildId === guild.id}
+            isWalletConnected={isWalletConnected}
             onAttest={onAttest}
             onCheck={onCheck}
           />

@@ -1,8 +1,8 @@
 import './Spinner.css';
-import { TbLoader3 } from 'react-icons/tb';
+import { SpinnerIcon } from './icons';
 
 const Spinner = () => {
-  return <TbLoader3 className="loading-icon" role="status" aria-label="Loading" />;
+  return <SpinnerIcon className="loading-icon" role="status" aria-label="Loading" />;
 };
 
 export default Spinner;

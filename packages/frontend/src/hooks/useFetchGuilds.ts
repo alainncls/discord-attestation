@@ -19,6 +19,19 @@ const getApiBaseUrl = () =>
     ? 'http://localhost:8888'
     : 'https://discord.alainnicolas.fr';
 
+const getInitialOAuthLoadingState = (code?: string | null) => {
+  if (!code) {
+    return false;
+  }
+
+  return (
+    migrateLocalStorageValue(
+      LEGACY_DISCORD_OAUTH_STARTED_KEY,
+      STORAGE_KEYS.DISCORD_OAUTH_STARTED,
+    ) === 'true'
+  );
+};
+
 export const useFetchGuilds = (
   veraxSdk?: VeraxSdk,
   address?: Address,
@@ -26,7 +39,7 @@ export const useFetchGuilds = (
   chainId?: number,
 ) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(() => getInitialOAuthLoadingState(code));
   const [guilds, setGuilds] = useState<SignedGuild[]>([]);
   const hasRestoredSession = useRef(false);
 
@@ -143,10 +156,6 @@ export const useFetchGuilds = (
   }, [veraxSdk, address, chainId, isLoggedIn, fetchGuildsFromApi, enrichGuildsWithAttestations]);
 
   useEffect(() => {
-    migrateLocalStorageValue(LEGACY_DISCORD_OAUTH_STARTED_KEY, STORAGE_KEYS.DISCORD_OAUTH_STARTED);
-  }, []);
-
-  useEffect(() => {
     if (!isLoading || !code || !veraxSdk) {
       return;
     }
@@ -176,5 +185,5 @@ export const useFetchGuilds = (
     };
   }, [isLoading, code, veraxSdk, fetchGuildsFromApi, enrichGuildsWithAttestations]);
 
-  return { isLoggedIn, isLoading, guilds, setGuilds, setIsLoading };
+  return { isLoggedIn, isLoading, guilds, setGuilds };
 };

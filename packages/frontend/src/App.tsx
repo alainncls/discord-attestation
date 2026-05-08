@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import './App.css';
 import { useAccount } from 'wagmi';
 import Header from './components/Header';
@@ -13,10 +13,9 @@ import { useAttestationManager } from './hooks/useAttestationManager';
 import { useToast } from './hooks/useToast';
 import type { Hex } from 'viem';
 import type { SignedGuild } from './types';
-import { getLocalStorageValue, STORAGE_KEYS } from './utils/storage';
 
 function App() {
-  const { address, chainId } = useAccount();
+  const { address, chainId, isConnected } = useAccount();
   const { veraxSdk } = useVeraxSdk(chainId, address);
   const { toasts, removeToast, showError } = useToast();
 
@@ -25,7 +24,7 @@ function App() {
     return new URLSearchParams(window.location.search).get('code');
   });
 
-  const { isLoggedIn, isLoading, guilds, setIsLoading, setGuilds } = useFetchGuilds(
+  const { isLoggedIn, isLoading, guilds, setGuilds } = useFetchGuilds(
     veraxSdk,
     address,
     oauthCode,
@@ -34,12 +33,6 @@ function App() {
 
   const { txHash, attestationId, pendingGuildId, handleAttest, handleCheck } =
     useAttestationManager(veraxSdk, chainId, showError);
-
-  useEffect(() => {
-    if (getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED) === 'true') {
-      setIsLoading(true);
-    }
-  }, [setIsLoading]);
 
   const handleAttestAndUpdateGuilds = useCallback(
     async (guild: SignedGuild) => {
@@ -71,6 +64,7 @@ function App() {
           attestationId={attestationId}
           pendingGuildId={pendingGuildId}
           chainId={chainId}
+          isWalletConnected={isConnected}
           onAttest={handleAttestAndUpdateGuilds}
           onCheck={handleCheck}
         />

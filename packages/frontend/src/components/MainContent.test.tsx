@@ -8,11 +8,13 @@ const guilds: SignedGuild[] = [
     id: '101',
     name: 'Linea Builders',
     signature: '0xsignature',
+    expirationDate: 1_769_459_200,
   },
   {
     id: '202',
     name: 'Verax Members',
     signature: '0xsignature',
+    expirationDate: 1_769_459_200,
     attestationId: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
   },
 ];

@@ -7,6 +7,7 @@ export interface Guild {
 
 export interface SignedGuild extends Guild {
   signature: string;
+  expirationDate: number;
   attestationId?: Hex;
 }
 

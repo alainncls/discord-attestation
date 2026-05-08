@@ -2,7 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Address, Hex } from 'viem';
 import { useFetchGuilds } from './useFetchGuilds';
-import { setLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
+import { removeLocalStorageValue, setLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
 
 vi.mock('@verax-attestation-registry/verax-sdk', () => ({
   VeraxSdk: class VeraxSdk {},
@@ -37,16 +37,47 @@ describe('useFetchGuilds', () => {
   beforeEach(() => {
     fetchMock.mockReset();
     vi.stubGlobal('fetch', fetchMock);
+    window.history.pushState({}, '', '/');
+    window.localStorage.clear();
+    removeLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN);
+    removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED);
+    removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
   });
 
-  it('restores a legacy Discord session and enriches guilds with existing attestations', async () => {
-    const { sdk, findBy } = createSdk();
+  it('clears stored Discord tokens without restoring a session', async () => {
+    const { sdk } = createSdk();
     window.localStorage.setItem('discord_access_token', 'legacy-token');
-    mockApiResponse({
-      signedGuilds: [{ id: '101', name: 'Linea Builders', signature: '0xsignature' }],
-    });
+    setLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN, 'stored-token');
 
     const { result } = renderHook(() => useFetchGuilds(sdk, address, null, 59144));
+
+    await waitFor(() =>
+      expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN)).toBeNull(),
+    );
+
+    expect(result.current.isLoggedIn).toBe(false);
+    expect(result.current.guilds).toEqual([]);
+    expect(window.localStorage.getItem('discord_access_token')).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('exchanges an OAuth code, enriches guilds, and clears OAuth state without storing a token', async () => {
+    const { sdk, findBy } = createSdk();
+    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
+    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE, 'oauth-state');
+    window.history.pushState({}, '', '/?code=oauth-code&state=oauth-state');
+    mockApiResponse({
+      signedGuilds: [
+        {
+          id: '101',
+          name: 'Linea Builders',
+          signature: '0xsignature',
+          expirationDate: 1_769_459_200,
+        },
+      ],
+    });
+
+    const { result } = renderHook(() => useFetchGuilds(sdk, address, 'oauth-code', 59141));
 
     await waitFor(() => expect(result.current.isLoggedIn).toBe(true));
 
@@ -55,6 +86,7 @@ describe('useFetchGuilds', () => {
         id: '101',
         name: 'Linea Builders',
         signature: '0xsignature',
+        expirationDate: 1_769_459_200,
         attestationId: '0xattestation',
       },
     ]);
@@ -63,48 +95,6 @@ describe('useFetchGuilds', () => {
       portal: expect.any(String),
       subject: address,
     });
-    expect(window.localStorage.getItem('discord_access_token')).toBeNull();
-
-    expect(fetchMock).toHaveBeenCalledWith('/.netlify/functions/api', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        isDev: 'false',
-        subject: address,
-        chainId: '59144',
-        accessToken: 'legacy-token',
-      }),
-    });
-  });
-
-  it('clears expired Discord tokens without logging the user in', async () => {
-    const { sdk } = createSdk();
-    window.localStorage.setItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN, 'expired-token');
-    mockApiResponse({ tokenExpired: true });
-
-    const { result } = renderHook(() => useFetchGuilds(sdk, address, null, 59144));
-
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-
-    expect(result.current.isLoggedIn).toBe(false);
-    expect(result.current.guilds).toEqual([]);
-    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN)).toBeNull();
-  });
-
-  it('exchanges an OAuth code, stores the returned token, and clears the OAuth marker', async () => {
-    const { sdk } = createSdk();
-    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
-    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE, 'oauth-state');
-    window.history.pushState({}, '', '/?code=oauth-code&state=oauth-state');
-    mockApiResponse({
-      accessToken: 'fresh-token',
-      signedGuilds: [{ id: '101', name: 'Linea Builders', signature: '0xsignature' }],
-    });
-
-    const { result } = renderHook(() => useFetchGuilds(sdk, address, 'oauth-code', 59141));
-
-    await waitFor(() => expect(result.current.isLoggedIn).toBe(true));
-
     expect(fetchMock).toHaveBeenCalledWith('/.netlify/functions/api', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -115,9 +105,26 @@ describe('useFetchGuilds', () => {
         code: 'oauth-code',
       }),
     });
-    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN)).toBe('fresh-token');
+    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN)).toBeNull();
     expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STARTED)).toBeNull();
     expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STATE)).toBeNull();
     expect(window.location.search).toBe('');
+  });
+
+  it('does not exchange an OAuth code when state does not match', async () => {
+    const { sdk } = createSdk();
+    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
+    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE, 'expected-state');
+    window.history.pushState({}, '', '/?code=oauth-code&state=attacker-state');
+
+    const { result } = renderHook(() => useFetchGuilds(sdk, address, 'oauth-code', 59141));
+
+    await waitFor(() => expect(window.location.search).toBe(''));
+
+    expect(result.current.isLoggedIn).toBe(false);
+    expect(result.current.guilds).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STARTED)).toBeNull();
+    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STATE)).toBeNull();
   });
 });

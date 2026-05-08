@@ -6,12 +6,15 @@ import LineaSepoliaIcon from './assets/linea-sepolia.svg';
 import LineaMainnetIcon from './assets/linea-mainnet.svg';
 
 const queryClient = new QueryClient();
+const siteUrl =
+  import.meta.env.VITE_PUBLIC_SITE_URL ??
+  (typeof window !== 'undefined' ? window.location.origin : 'https://discord.alainnicolas.fr');
 
 const metadata = {
   name: 'Discord Attestation',
   description: 'Issue attestation of your presence in a Discord server',
-  url: 'https://discord.alainnicolas.fr',
-  icons: ['https://discord.alainnicolas.fr/verax-logo-circle.svg'],
+  url: siteUrl,
+  icons: [`${siteUrl}/verax-logo-circle.svg`],
 };
 
 createAppKit({
@@ -21,7 +24,7 @@ createAppKit({
   projectId,
   metadata,
   features: {
-    analytics: true,
+    analytics: false,
     email: false,
     socials: false,
     swaps: false,

@@ -33,7 +33,7 @@ const Toast = memo(function Toast({ id, message, type, duration = 5000, onRemove
   return (
     <div
       className={`toast toast-${type} ${isVisible ? 'toast-visible' : 'toast-hidden'}`}
-      role="alert"
+      role={type === 'error' ? 'alert' : 'status'}
     >
       <span className="toast-message">{message}</span>
       <button

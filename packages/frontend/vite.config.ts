@@ -5,9 +5,24 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
+    sourcemap: true,
+    cssCodeSplit: false,
+    modulePreload: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes('vite/preload-helper')) {
+            return 'preload-helper';
+          }
+
+          if (
+            id.includes('/node_modules/react/') ||
+            id.includes('/node_modules/react-dom/') ||
+            id.includes('/node_modules/scheduler/')
+          ) {
+            return 'react-vendor';
+          }
+
           // Keep wallet packages that share viem internals in stable chunks.
           if (
             id.includes('/node_modules/viem/') ||

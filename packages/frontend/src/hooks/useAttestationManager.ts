@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { addMonths } from 'date-fns/addMonths';
 import { useCallback, useState } from 'react';
-import { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
+import type { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
 import type { SignedGuild } from '../types';
 import { PORTAL_ID, PORTAL_ID_TESTNET, SCHEMA_ID } from '../utils/constants';
 import { wagmiAdapter } from '../wagmiConfig';
@@ -107,7 +107,7 @@ export const useAttestationManager = (
           chainId === linea.id
             ? 'https://explorer.ver.ax/linea/attestations/'
             : 'https://explorer.ver.ax/linea-sepolia/attestations/';
-        window.open(`${baseUrl}${signedGuild.attestationId}`, '_blank');
+        window.open(`${baseUrl}${signedGuild.attestationId}`, '_blank', 'noopener,noreferrer');
       }
     },
     [chainId],

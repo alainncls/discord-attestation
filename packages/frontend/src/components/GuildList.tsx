@@ -19,7 +19,7 @@ const GuildList = ({
 }: GuildListProps) => {
   return (
     <div className="guild-list-container">
-      <h1>You are part of {guilds.length} Discord Servers</h1>
+      <h2>You are part of {guilds.length} Discord Servers</h2>
       <div className="guild-list">
         {guilds.map((guild) => (
           <GuildItem

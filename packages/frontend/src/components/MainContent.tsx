@@ -60,6 +60,12 @@ const MainContent = ({
           />
         </>
       )}
+
+      {isLoggedIn && guilds.length === 0 && !isLoading && (
+        <div className="centered-content" role="status">
+          No Discord servers are available for attestation.
+        </div>
+      )}
     </div>
   );
 };

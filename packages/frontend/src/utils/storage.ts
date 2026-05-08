@@ -3,6 +3,7 @@ const storageCache = new Map<string, string | null>();
 export const STORAGE_KEYS = {
   DISCORD_ACCESS_TOKEN: 'discord-attestation:discord-access-token:v1',
   DISCORD_OAUTH_STARTED: 'discord-attestation:oauth-started:v1',
+  DISCORD_OAUTH_STATE: 'discord-attestation:oauth-state:v1',
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

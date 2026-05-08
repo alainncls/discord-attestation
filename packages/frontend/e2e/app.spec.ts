@@ -13,7 +13,10 @@ test.describe('production build smoke', () => {
     await page.goto('/');
 
     await expect(page.getByRole('heading', { name: 'Discord Attestation' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Connect Wallet' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Login with Discord' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Connect Wallet' }).click();
     await expect(page.locator('appkit-button')).toBeVisible();
     await expect(page.locator('body')).not.toHaveText('');
     expect(runtimeErrors).toEqual([]);
@@ -36,15 +39,20 @@ test.describe('production build smoke', () => {
 
     await expect(page).toHaveURL(/discord\.com\/api\/oauth2\/authorize/);
     expect(new URL(page.url()).searchParams.get('client_id')).toBeTruthy();
+    expect(new URL(page.url()).searchParams.get('state')).toBeTruthy();
 
     const storageState = await context.storageState();
     const appStorage = storageState.origins.find(
-      (origin) => origin.origin === 'http://127.0.0.1:4173',
+      (origin) => origin.origin === 'http://127.0.0.1:51973',
     );
     expect(
       appStorage?.localStorage.find(
         (entry) => entry.name === 'discord-attestation:oauth-started:v1',
       )?.value,
     ).toBe('true');
+    expect(
+      appStorage?.localStorage.find((entry) => entry.name === 'discord-attestation:oauth-state:v1')
+        ?.value,
+    ).toBeTruthy();
   });
 });

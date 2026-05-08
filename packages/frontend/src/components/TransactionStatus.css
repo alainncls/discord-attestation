@@ -44,3 +44,9 @@
 .transaction-status .message a:hover {
   color: var(--color-primary);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .transaction-status .message.pending {
+    animation: none;
+  }
+}

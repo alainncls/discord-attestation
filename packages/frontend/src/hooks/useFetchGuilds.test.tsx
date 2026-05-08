@@ -65,11 +65,16 @@ describe('useFetchGuilds', () => {
     });
     expect(window.localStorage.getItem('discord_access_token')).toBeNull();
 
-    const calledUrl = new URL(String(fetchMock.mock.calls[0]?.[0]));
-    expect(calledUrl.origin).toBe('https://discord.alainnicolas.fr');
-    expect(calledUrl.searchParams.get('accessToken')).toBe('legacy-token');
-    expect(calledUrl.searchParams.get('subject')).toBe(address);
-    expect(calledUrl.searchParams.get('chainId')).toBe('59144');
+    expect(fetchMock).toHaveBeenCalledWith('/.netlify/functions/api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        isDev: 'false',
+        subject: address,
+        chainId: '59144',
+        accessToken: 'legacy-token',
+      }),
+    });
   });
 
   it('clears expired Discord tokens without logging the user in', async () => {
@@ -89,6 +94,8 @@ describe('useFetchGuilds', () => {
   it('exchanges an OAuth code, stores the returned token, and clears the OAuth marker', async () => {
     const { sdk } = createSdk();
     setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
+    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE, 'oauth-state');
+    window.history.pushState({}, '', '/?code=oauth-code&state=oauth-state');
     mockApiResponse({
       accessToken: 'fresh-token',
       signedGuilds: [{ id: '101', name: 'Linea Builders', signature: '0xsignature' }],
@@ -98,10 +105,19 @@ describe('useFetchGuilds', () => {
 
     await waitFor(() => expect(result.current.isLoggedIn).toBe(true));
 
-    const calledUrl = new URL(String(fetchMock.mock.calls[0]?.[0]));
-    expect(calledUrl.searchParams.get('code')).toBe('oauth-code');
-    expect(calledUrl.searchParams.get('chainId')).toBe('59141');
+    expect(fetchMock).toHaveBeenCalledWith('/.netlify/functions/api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        isDev: 'false',
+        subject: address,
+        chainId: '59141',
+        code: 'oauth-code',
+      }),
+    });
     expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN)).toBe('fresh-token');
     expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STARTED)).toBeNull();
+    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STATE)).toBeNull();
+    expect(window.location.search).toBe('');
   });
 });

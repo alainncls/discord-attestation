@@ -1,0 +1,18 @@
+.landing-summary {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto var(--space-xl);
+  text-align: center;
+}
+
+.landing-summary h2 {
+  margin: 0 0 var(--space-sm);
+  color: var(--color-text);
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+.landing-summary p {
+  margin: 0;
+  color: var(--color-text-muted);
+}

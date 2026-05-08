@@ -21,6 +21,7 @@
     "eslint": "catalog:",
     "husky": "^9.1.7",
     "prettier": "catalog:",
+    "sort-package-json": "^3.6.1",
     "tsx": "^4.21.0",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"

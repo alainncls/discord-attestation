@@ -18,6 +18,14 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
+interface ApiPayload {
+  code?: string;
+  accessToken?: string;
+  isDev?: boolean | string;
+  subject?: string;
+  chainId?: number | string;
+}
+
 const checkConfig = () => {
   if (
     !VITE_DISCORD_CLIENT_ID ||
@@ -47,6 +55,22 @@ const getGuilds = async (accessToken: string) => {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   return response.data as Guild[];
+};
+
+const getRequestPayload = async (req: Request, context: Context): Promise<ApiPayload> => {
+  if (req.method === 'POST') {
+    return (await req.json()) as ApiPayload;
+  }
+
+  const { searchParams } = context.url;
+
+  return {
+    code: searchParams.get('code') ?? undefined,
+    accessToken: searchParams.get('accessToken') ?? undefined,
+    isDev: searchParams.get('isDev') ?? undefined,
+    subject: searchParams.get('subject') ?? undefined,
+    chainId: searchParams.get('chainId') ?? undefined,
+  };
 };
 
 const signGuilds = async (
@@ -100,15 +124,22 @@ export default async (req: Request, context: Context) => {
     return new Response('', { status: 204, headers });
   }
 
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers,
+    });
+  }
+
   try {
     checkConfig();
 
-    const { searchParams } = context.url;
-    const code = searchParams.get('code');
-    const existingToken = searchParams.get('accessToken');
-    const isDev = searchParams.get('isDev') === 'true';
-    const subject = searchParams.get('subject');
-    const rawChainId = searchParams.get('chainId');
+    const payload = await getRequestPayload(req, context);
+    const code = payload.code;
+    const existingToken = payload.accessToken;
+    const isDev = payload.isDev === true || payload.isDev === 'true';
+    const subject = payload.subject;
+    const rawChainId = payload.chainId;
 
     if ((!code && !existingToken) || !subject || !rawChainId) {
       return new Response(JSON.stringify({ error: 'Missing parameters' }), {
@@ -117,7 +148,7 @@ export default async (req: Request, context: Context) => {
       });
     }
 
-    const chainId = parseInt(rawChainId, 10);
+    const chainId = parseInt(String(rawChainId), 10);
 
     // Use existing token or exchange OAuth code for a new one
     const accessToken = existingToken ?? (await getToken(code as string, isDev));

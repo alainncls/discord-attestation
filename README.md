@@ -221,12 +221,12 @@ pnpm --filter @discord-attestation/functions dev
 ### Linea Sepolia (Testnet)
 
 [
-`0xd0fb47ea3960d15425137b2ff83955c3beb6a85c`](https://explorer.ver.ax/linea-sepolia/portals/0xd0fb47ea3960d15425137b2ff83955c3beb6a85c)
+`0xf22f348c9257f418509ec03d6bc0c31a20bd9e46`](https://explorer.ver.ax/linea-sepolia/portals/0xf22f348c9257f418509ec03d6bc0c31a20bd9e46)
 
 ### Linea Mainnet
 
 [
-`0x407e280281b812adef69a91230659c9d738d82cb`](https://explorer.ver.ax/linea/portals/0x407e280281b812adef69a91230659c9d738d82cb)
+`0x6c3ba43a3c4ac6579d44baeb84e9cfc23654964f`](https://explorer.ver.ax/linea/portals/0x6c3ba43a3c4ac6579d44baeb84e9cfc23654964f)
 
 ### Schema
 

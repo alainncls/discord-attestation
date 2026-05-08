@@ -2,7 +2,7 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/48ce283b-7559-462d-8208-a6870f72a9c4/deploy-status)](https://app.netlify.com/sites/discord-attestation/deploys)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Node.js](https://img.shields.io/badge/node-22.21.1-green)
+![Node.js](https://img.shields.io/badge/node-24.14.1-green)
 ![pnpm](https://img.shields.io/badge/pnpm-10.26.2-orange)
 
 An application that allows users to create on-chain attestations of their Discord server memberships using
@@ -82,15 +82,15 @@ packages/
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v22.21.1 (use `nvm use` with `.nvmrc`)
+- [Node.js](https://nodejs.org/) v24.14.1 (use `nvm use` with `.nvmrc`)
 - [pnpm](https://pnpm.io/) v10.26.2
 - [Netlify CLI](https://docs.netlify.com/cli/get-started/) for local development
 - A wallet (MetaMask recommended 🦊)
 - A Discord account
 - Accounts on:
-    - [Reown Cloud](https://cloud.reown.com/) (for WalletConnect project ID)
-    - [Infura](https://infura.io/) (for RPC endpoints)
-    - [Discord Developer Portal](https://discord.com/developers/applications) (for OAuth2)
+  - [Reown Cloud](https://cloud.reown.com/) (for WalletConnect project ID)
+  - [Infura](https://infura.io/) (for RPC endpoints)
+  - [Discord Developer Portal](https://discord.com/developers/applications) (for OAuth2)
 
 ### Installation
 
@@ -131,15 +131,19 @@ Copy the `.env.example` files and fill in your values:
 
 ### Frontend (`packages/frontend/.env`)
 
-| Variable                        | Description                    | Where to get it                         |
-|---------------------------------|--------------------------------|-----------------------------------------|
-| `VITE_WALLETCONNECT_PROJECT_ID` | WalletConnect/Reown project ID | [Reown Cloud](https://cloud.reown.com/) |
-| `VITE_INFURA_API_KEY`           | Infura API key for RPC         | [Infura Dashboard](https://infura.io/)  |
+| Variable                        | Description                    | Where to get it                                                         |
+| ------------------------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| `VITE_WALLETCONNECT_PROJECT_ID` | WalletConnect/Reown project ID | [Reown Cloud](https://cloud.reown.com/)                                 |
+| `VITE_INFURA_API_KEY`           | Infura API key for RPC         | [Infura Dashboard](https://infura.io/)                                  |
+| `VITE_DISCORD_CLIENT_ID`        | Discord OAuth2 Client ID       | [Discord Developer Portal](https://discord.com/developers/applications) |
+| `VITE_REDIRECT_URL`             | OAuth2 redirect URL            | Your app URL (e.g., `https://discord.alainnicolas.fr`)                  |
+| `VITE_PUBLIC_SITE_URL`          | Public deployment URL          | Your frontend domain                                                    |
+| `VITE_INSIGHTS_ID`              | Optional analytics site ID     | Your analytics provider                                                 |
 
 ### Netlify Functions (`packages/functions/.env`)
 
 | Variable                 | Description                    | Where to get it                                                         |
-|--------------------------|--------------------------------|-------------------------------------------------------------------------|
+| ------------------------ | ------------------------------ | ----------------------------------------------------------------------- |
 | `VITE_DISCORD_CLIENT_ID` | Discord OAuth2 Client ID       | [Discord Developer Portal](https://discord.com/developers/applications) |
 | `DISCORD_CLIENT_SECRET`  | Discord OAuth2 Client Secret   | Same as above                                                           |
 | `VITE_REDIRECT_URL`      | OAuth2 redirect URL            | Your app URL (e.g., `https://discord.alainnicolas.fr`)                  |
@@ -148,7 +152,7 @@ Copy the `.env.example` files and fill in your values:
 ### Contracts (`packages/contracts/.env`)
 
 | Variable            | Description                | Where to get it                        |
-|---------------------|----------------------------|----------------------------------------|
+| ------------------- | -------------------------- | -------------------------------------- |
 | `PRIVATE_KEY`       | Private key for deployment | Your deployer wallet                   |
 | `INFURA_KEY`        | Infura API key             | [Infura Dashboard](https://infura.io/) |
 | `ETHERSCAN_API_KEY` | Lineascan API key          | [Lineascan](https://lineascan.build/)  |
@@ -161,8 +165,8 @@ Copy the `.env.example` files and fill in your values:
 3. Go to "OAuth2" → "General"
 4. Copy the **Client ID** and **Client Secret**
 5. Add redirect URIs:
-    - Development: `http://localhost:5173`
-    - Production: `https://your-domain.com`
+   - Development: `http://localhost:5173`
+   - Production: `https://your-domain.com`
 6. Go to "OAuth2" → "URL Generator"
 7. Select scopes: `identify`, `guilds`
 
@@ -171,7 +175,7 @@ Copy the `.env.example` files and fill in your values:
 From the root of the monorepo:
 
 | Script           | Description                     |
-|------------------|---------------------------------|
+| ---------------- | ------------------------------- |
 | `pnpm dev`       | Start frontend dev server       |
 | `pnpm build`     | Build all packages              |
 | `pnpm lint`      | Run ESLint + Prettier + Solhint |
@@ -232,9 +236,9 @@ pnpm --filter @discord-attestation/functions dev
 ## 🛠 Tech Stack
 
 | Layer               | Technologies                           |
-|---------------------|----------------------------------------|
+| ------------------- | -------------------------------------- |
 | **Frontend**        | React 19, TypeScript, Vite             |
-| **Wallet**          | Reown AppKit, wagmi v2, viem v2        |
+| **Wallet**          | Reown AppKit, wagmi v3, viem v2        |
 | **Backend**         | Netlify Functions, Node.js             |
 | **Smart Contracts** | Solidity 0.8.21, Hardhat, OpenZeppelin |
 | **Authentication**  | Discord OAuth2                         |
@@ -246,8 +250,8 @@ pnpm --filter @discord-attestation/functions dev
 1. Configure `packages/contracts/.env` with required variables
 
 2. Get the Verax Router address for your target network:
-    - Linea Sepolia: `0x736c78b2f2cBf4F921E8551b2acB6A5Edc9177D5`
-    - Linea Mainnet: `0x4d3a380A03f3a18A5dC44b01119839D8674a552E`
+   - Linea Sepolia: `0x736c78b2f2cBf4F921E8551b2acB6A5Edc9177D5`
+   - Linea Mainnet: `0x4d3a380A03f3a18A5dC44b01119839D8674a552E`
 
 3. Deploy and register the portal:
 

@@ -4,7 +4,6 @@ import LoginWithDiscord from './LoginWithDiscord';
 import Spinner from './Spinner';
 import TransactionStatus from './TransactionStatus';
 import ConnectButton from './ConnectButton';
-import { truncateHexString } from '../utils/helpers';
 import type { Hex } from 'viem';
 import './MainContent.css';
 
@@ -16,6 +15,7 @@ interface MainContentProps {
   attestationId?: Hex;
   pendingGuildId?: string | null;
   chainId?: number;
+  isWalletConnected: boolean;
   onAttest: (guild: SignedGuild) => void;
   onCheck: (guild: SignedGuild) => void;
 }
@@ -28,6 +28,7 @@ const MainContent = ({
   attestationId,
   pendingGuildId,
   chainId,
+  isWalletConnected,
   onAttest,
   onCheck,
 }: MainContentProps) => {
@@ -49,15 +50,11 @@ const MainContent = ({
 
       {isLoggedIn && guilds.length > 0 && (
         <>
-          <TransactionStatus
-            txHash={txHash}
-            attestationId={attestationId}
-            chainId={chainId}
-            truncateHexString={truncateHexString}
-          />
+          <TransactionStatus txHash={txHash} attestationId={attestationId} chainId={chainId} />
           <GuildList
             guilds={guilds}
             pendingGuildId={pendingGuildId}
+            isWalletConnected={isWalletConnected}
             onAttest={onAttest}
             onCheck={onCheck}
           />

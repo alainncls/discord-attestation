@@ -1,20 +1,15 @@
 import type { Hex } from 'viem';
 import { linea } from 'wagmi/chains';
+import { truncateHexString } from '../utils/helpers';
 import './TransactionStatus.css';
 
 interface TransactionStatusProps {
   txHash?: Hex;
   attestationId?: Hex;
   chainId?: number;
-  truncateHexString: (hexString: string) => string;
 }
 
-const TransactionStatus = ({
-  txHash,
-  attestationId,
-  chainId,
-  truncateHexString,
-}: TransactionStatusProps) => {
+const TransactionStatus = ({ txHash, attestationId, chainId }: TransactionStatusProps) => {
   if (!txHash) return null;
 
   const explorerBaseUrl =
@@ -34,13 +29,11 @@ const TransactionStatus = ({
         </a>
       </div>
 
-      {!attestationId && (
+      {!attestationId ? (
         <div className="message pending" aria-busy="true">
           Transaction pending...
         </div>
-      )}
-
-      {attestationId && (
+      ) : (
         <div className="message success">
           Attestation ID:{' '}
           <a href={`${veraxBaseUrl}${attestationId}`} target="_blank" rel="noopener noreferrer">

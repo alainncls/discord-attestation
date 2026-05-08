@@ -1,8 +1,8 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Address, Hex } from 'viem';
 import { useFetchGuilds } from './useFetchGuilds';
-import { STORAGE_KEYS } from '../utils/storage';
+import { setLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
 
 vi.mock('@verax-attestation-registry/verax-sdk', () => ({
   VeraxSdk: class VeraxSdk {},
@@ -88,17 +88,13 @@ describe('useFetchGuilds', () => {
 
   it('exchanges an OAuth code, stores the returned token, and clears the OAuth marker', async () => {
     const { sdk } = createSdk();
-    window.localStorage.setItem(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
+    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
     mockApiResponse({
       accessToken: 'fresh-token',
       signedGuilds: [{ id: '101', name: 'Linea Builders', signature: '0xsignature' }],
     });
 
     const { result } = renderHook(() => useFetchGuilds(sdk, address, 'oauth-code', 59141));
-
-    act(() => {
-      result.current.setIsLoading(true);
-    });
 
     await waitFor(() => expect(result.current.isLoggedIn).toBe(true));
 

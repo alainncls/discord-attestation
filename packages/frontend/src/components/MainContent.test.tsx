@@ -1,15 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import MainContent from './MainContent';
 import type { SignedGuild } from '../types';
-
-const wagmiState = vi.hoisted(() => ({
-  isConnected: false,
-}));
-
-vi.mock('wagmi', () => ({
-  useAccount: () => ({ isConnected: wagmiState.isConnected }),
-}));
 
 const guilds: SignedGuild[] = [
   {
@@ -26,16 +18,13 @@ const guilds: SignedGuild[] = [
 ];
 
 describe('MainContent', () => {
-  beforeEach(() => {
-    wagmiState.isConnected = false;
-  });
-
   it('renders the wallet and Discord login actions for logged-out users', () => {
     render(
       <MainContent
         isLoggedIn={false}
         isLoading={false}
         guilds={[]}
+        isWalletConnected={false}
         onAttest={vi.fn()}
         onCheck={vi.fn()}
       />,
@@ -47,7 +36,14 @@ describe('MainContent', () => {
 
   it('renders a loading status while Discord guilds are being fetched', () => {
     render(
-      <MainContent isLoggedIn={false} isLoading guilds={[]} onAttest={vi.fn()} onCheck={vi.fn()} />,
+      <MainContent
+        isLoggedIn={false}
+        isLoading
+        guilds={[]}
+        isWalletConnected={false}
+        onAttest={vi.fn()}
+        onCheck={vi.fn()}
+      />,
     );
 
     expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
@@ -55,7 +51,6 @@ describe('MainContent', () => {
   });
 
   it('renders guild attestation actions for authenticated users', () => {
-    wagmiState.isConnected = true;
     const onAttest = vi.fn();
     const onCheck = vi.fn();
 
@@ -64,6 +59,7 @@ describe('MainContent', () => {
         isLoggedIn
         isLoading={false}
         guilds={guilds}
+        isWalletConnected
         onAttest={onAttest}
         onCheck={onCheck}
       />,

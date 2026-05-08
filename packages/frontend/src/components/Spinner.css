@@ -1,6 +1,7 @@
 .loading-icon {
   color: var(--color-discord);
-  font-size: 4rem;
+  width: 4rem;
+  height: 4rem;
   animation: animate 2s infinite;
 }
 

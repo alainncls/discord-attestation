@@ -1,6 +1,6 @@
-import { FaDiscord } from 'react-icons/fa';
 import './LoginWithDiscord.css';
 import { setLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
+import { DiscordIcon } from './icons';
 
 const CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URL;
@@ -16,7 +16,7 @@ const LoginWithDiscord = () => {
   return (
     <div className="login-container">
       <button type="button" className="discord-btn" onClick={handleLogin}>
-        <FaDiscord size={24} aria-hidden="true" />
+        <DiscordIcon size={24} aria-hidden="true" />
         <span>Login with Discord</span>
       </button>
     </div>

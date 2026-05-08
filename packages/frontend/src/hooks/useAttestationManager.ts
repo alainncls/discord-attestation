@@ -1,7 +1,7 @@
 import type { Hex } from 'viem';
 import { useAccount } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
-import { add } from 'date-fns';
+import { addMonths } from 'date-fns/addMonths';
 import { useCallback, useState } from 'react';
 import { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
 import type { SignedGuild } from '../types';
@@ -50,7 +50,7 @@ export const useAttestationManager = (
           chainId === linea.id ? PORTAL_ID : PORTAL_ID_TESTNET,
           {
             schemaId: SCHEMA_ID,
-            expirationDate: Math.floor(add(new Date(), { months: 1 }).getTime() / 1000),
+            expirationDate: Math.floor(addMonths(new Date(), 1).getTime() / 1000),
             subject: address,
             attestationData: [{ guildId: signedGuild.id, guildName: signedGuild.name }],
           },

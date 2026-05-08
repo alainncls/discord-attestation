@@ -2,6 +2,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 64px;
   padding: var(--space-md);
   background: var(--color-bg-card);
   border-radius: var(--radius-lg);

@@ -1,19 +1,18 @@
 import { memo } from 'react';
 import type { SignedGuild } from '../types';
-import { useAccount } from 'wagmi';
 import LogoVerax from '../assets/logo-verax.svg';
 import './GuildItem.css';
 
 interface GuildItemProps {
   guild: SignedGuild;
   isPending?: boolean;
+  isWalletConnected: boolean;
   onAttest: (guild: SignedGuild) => void;
   onCheck: (guild: SignedGuild) => void;
 }
 
-const GuildItem = ({ guild, isPending, onAttest, onCheck }: GuildItemProps) => {
-  const { isConnected } = useAccount();
-  const isDisabled = !isConnected || isPending;
+const GuildItem = ({ guild, isPending, isWalletConnected, onAttest, onCheck }: GuildItemProps) => {
+  const isDisabled = !isWalletConnected || Boolean(isPending);
 
   return (
     <div className="guild-item">

@@ -6,7 +6,7 @@ Skill used: `.agents/skills/seo-audit`
 
 ## Executive Summary
 
-The live site had strong basic Lighthouse SEO checks, but several important SEO and performance issues were present outside Lighthouse's automated SEO score:
+The live site had strong basic Lighthouse SEO checks, but several important SEO, performance, and security issues were present outside Lighthouse's automated SEO score:
 
 - `robots.txt` and `sitemap.xml` returned `404`.
 - The page had no canonical URL and no rendered structured data.
@@ -14,8 +14,11 @@ The live site had strong basic Lighthouse SEO checks, but several important SEO 
 - Mobile performance was poor because the first page load eagerly downloaded wallet/AppKit chunks and Google Fonts.
 - Hashed static assets were served with `max-age=0,must-revalidate`.
 - OAuth codes and access tokens were sent to the Netlify function through query strings.
+- Discord attestation signatures did not bind every stored attestation field, and the contract did not require the submitting wallet to match the attestation subject.
 
 The local fixed build now scores `100/100/100/100` on mobile and desktop Lighthouse, with the initial transfer reduced from about `1,444 KiB` to `71 KiB` in the local Lighthouse run.
+
+Deployment status as of 2026-05-08 19:24 CEST: the fixes are merged to `origin/main`, but `https://discord.alainnicolas.fr/` still serves the previous build. `robots.txt` still returns `404`, the HTML still has wallet module preloads, and the canonical URL plus JSON-LD are still absent. A valid production-after Lighthouse comparison cannot be completed until the host deploys the merged commit.
 
 ## Lighthouse Baseline
 
@@ -91,7 +94,7 @@ Fix:
 
 - Moved the full wallet runtime behind a dynamic `AppRuntime` import.
 - Rendered a lightweight public shell first.
-- Loaded Reown/AppKit/Wagmi runtime only when the user clicks `Connect Wallet`, returns from OAuth, or has a stored session.
+- Loaded Reown/AppKit/Wagmi runtime only when the user clicks `Connect Wallet` or returns from OAuth.
 - Split React into a separate vendor chunk so the initial public entry no longer imports wallet chunks.
 - Disabled module preload and CSS code splitting to prevent Vite from eagerly pulling wallet chunks through preload helpers.
 
@@ -143,10 +146,12 @@ Evidence: the frontend sent `code` and `accessToken` to the Netlify function as 
 Fix:
 
 - Changed the frontend API call to `POST` with a JSON body.
-- Kept GET support in the function for backward compatibility.
 - Added OAuth `state` generation and validation.
 - Cleared `code` and `state` from the browser URL after exchange.
 - Switched production API calls to same-origin `/.netlify/functions/api` instead of a hardcoded production URL.
+- Stopped returning Discord access tokens to the browser.
+- Removed stored-token session restoration and clear legacy client-side token keys.
+- Restricted the function to `POST`/`OPTIONS`, added `Cache-Control: no-store`, and narrowed CORS to configured application origins.
 
 ### 11. Preview deployment metadata hardcoded to production
 
@@ -196,21 +201,46 @@ Fix:
 
 - Added `noopener,noreferrer` to the `window.open` call.
 
+### 16. Attestation subject was not enforced by the contract
+
+Impact: High
+Evidence: the backend signed guild membership for a caller-provided `subject`, and `DiscordPortal._onAttest` verified the backend signature without checking that the transaction sender controlled that subject.
+
+Fix:
+
+- Added a `subject == msg.sender` check in `DiscordPortal._onAttest`.
+- Added validation that exactly one backend signature is supplied.
+- Added request-side subject and chain ID validation in the Netlify function.
+
+### 17. Backend signatures did not bind all stored attestation fields
+
+Impact: Medium
+Evidence: the backend signed only Discord guild ID and subject, while the contract stored caller-supplied guild name and expiration date.
+
+Fix:
+
+- Expanded the EIP-712 payload to sign Discord guild ID, guild name, subject, and expiration date.
+- Moved expiration generation to the backend signing response.
+- Updated the frontend attestation submission to use the backend-signed expiration date.
+
 ## Validation
 
 Completed locally:
 
 - `pnpm --filter @discord-attestation/frontend typecheck`
 - `pnpm --filter @discord-attestation/functions typecheck`
+- `pnpm --filter @discord-attestation/contracts exec hardhat compile --force`
+- `pnpm --filter @discord-attestation/contracts test`
 - `pnpm --filter @discord-attestation/frontend test`
 - `pnpm --filter @discord-attestation/frontend build`
 - `pnpm --filter @discord-attestation/frontend test:e2e`
+- `pnpm lint`
 - Lighthouse mobile and desktop against `http://127.0.0.1:51973/`
 - Rendered DOM check for canonical, JSON-LD, heading structure, and wallet deferral
 
 ## Follow-up After Deployment
 
-After Netlify deploys the committed changes:
+After the host deploys the committed changes:
 
 1. Re-run Lighthouse mobile and desktop against `https://discord.alainnicolas.fr/`.
 2. Re-check `robots.txt`, `sitemap.xml`, canonical, JSON-LD, cache headers, and initial network requests in production.

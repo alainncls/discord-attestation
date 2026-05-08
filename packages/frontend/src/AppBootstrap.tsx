@@ -13,9 +13,7 @@ const shouldLoadRuntimeImmediately = () => {
   const searchParams = new URLSearchParams(window.location.search);
 
   return (
-    searchParams.has('code') ||
-    getLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN) !== null ||
-    getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED) === 'true'
+    searchParams.has('code') || getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED) === 'true'
   );
 };
 

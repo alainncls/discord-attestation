@@ -1,29 +1,40 @@
 import axios from 'axios';
 import type { Guild } from './lib/types';
-import { createWalletClient, http } from 'viem';
-import type { Hex, WalletClient } from 'viem';
+import { createWalletClient, getAddress, http, isAddress } from 'viem';
+import type { Address, Hex, WalletClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { linea } from 'viem/chains';
+import { linea, lineaSepolia } from 'viem/chains';
 import { PORTAL_ID, PORTAL_ID_TESTNET } from './lib/constants';
-import type { Context } from '@netlify/functions';
 
 const { VITE_DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, VITE_REDIRECT_URL, SIGNER_PRIVATE_KEY } =
   process.env;
 const DEV_REDIRECT_URL = 'http://localhost:5173';
+const ATTESTATION_VALIDITY_SECONDS = 30 * 24 * 60 * 60;
+const SUPPORTED_CHAIN_IDS: ReadonlySet<number> = new Set([linea.id, lineaSepolia.id]);
 
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Content-Type': 'application/json',
+const getHeaders = (req: Request) => {
+  const origin = req.headers.get('origin');
+  const allowedOrigins = new Set(
+    [VITE_REDIRECT_URL, DEV_REDIRECT_URL, 'http://127.0.0.1:5173'].filter(Boolean),
+  );
+  const allowedOrigin =
+    origin && allowedOrigins.has(origin) ? origin : (VITE_REDIRECT_URL ?? DEV_REDIRECT_URL);
+
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Cache-Control': 'no-store',
+    'Content-Type': 'application/json',
+    Vary: 'Origin',
+  };
 };
 
 interface ApiPayload {
-  code?: string;
-  accessToken?: string;
-  isDev?: boolean | string;
-  subject?: string;
-  chainId?: number | string;
+  code?: unknown;
+  isDev?: unknown;
+  subject?: unknown;
+  chainId?: unknown;
 }
 
 const checkConfig = () => {
@@ -57,41 +68,62 @@ const getGuilds = async (accessToken: string) => {
   return response.data as Guild[];
 };
 
-const getRequestPayload = async (req: Request, context: Context): Promise<ApiPayload> => {
-  if (req.method === 'POST') {
-    return (await req.json()) as ApiPayload;
+const getRequestPayload = async (req: Request): Promise<ApiPayload | null> => {
+  try {
+    const payload = (await req.json()) as unknown;
+    return payload && typeof payload === 'object' ? (payload as ApiPayload) : null;
+  } catch {
+    return null;
+  }
+};
+
+const parseCode = (value: unknown) =>
+  typeof value === 'string' && value.length > 0 ? value : null;
+
+const parseSubject = (value: unknown): Address | null => {
+  if (typeof value !== 'string' || !isAddress(value)) {
+    return null;
   }
 
-  const { searchParams } = context.url;
+  return getAddress(value);
+};
 
-  return {
-    code: searchParams.get('code') ?? undefined,
-    accessToken: searchParams.get('accessToken') ?? undefined,
-    isDev: searchParams.get('isDev') ?? undefined,
-    subject: searchParams.get('subject') ?? undefined,
-    chainId: searchParams.get('chainId') ?? undefined,
-  };
+const parseSupportedChainId = (value: unknown) => {
+  if (typeof value !== 'string' && typeof value !== 'number') {
+    return null;
+  }
+
+  const chainIdValue = String(value);
+  if (!/^\d+$/.test(chainIdValue)) {
+    return null;
+  }
+
+  const chainId = Number(chainIdValue);
+  return SUPPORTED_CHAIN_IDS.has(chainId) ? chainId : null;
 };
 
 const signGuilds = async (
   walletClient: WalletClient,
   guilds: Guild[],
-  subject: string,
+  subject: Address,
   chainId: number,
+  expirationDate: bigint,
 ) => {
   const domain = {
     name: 'VerifyDiscord',
     version: '1',
-    chainId: chainId,
+    chainId,
     verifyingContract: chainId === linea.id ? PORTAL_ID : PORTAL_ID_TESTNET,
   } as const;
 
   const types = {
     Discord: [
       { name: 'id', type: 'uint256' },
+      { name: 'name', type: 'string' },
       { name: 'subject', type: 'address' },
+      { name: 'expirationDate', type: 'uint64' },
     ],
-  };
+  } as const;
 
   const account = walletClient.account;
 
@@ -103,7 +135,9 @@ const signGuilds = async (
     guilds.map(async (guild) => {
       const message = {
         id: BigInt(guild.id),
+        name: guild.name,
         subject,
+        expirationDate,
       };
 
       const signature = await walletClient.signTypedData({
@@ -114,17 +148,24 @@ const signGuilds = async (
         message,
       });
 
-      return { id: guild.id, name: guild.name, signature };
+      return {
+        id: guild.id,
+        name: guild.name,
+        signature,
+        expirationDate: Number(expirationDate),
+      };
     }),
   );
 };
 
-export default async (req: Request, context: Context) => {
+export default async (req: Request) => {
+  const headers = getHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response('', { status: 204, headers });
   }
 
-  if (req.method !== 'GET' && req.method !== 'POST') {
+  if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
       headers,
@@ -134,24 +175,27 @@ export default async (req: Request, context: Context) => {
   try {
     checkConfig();
 
-    const payload = await getRequestPayload(req, context);
-    const code = payload.code;
-    const existingToken = payload.accessToken;
-    const isDev = payload.isDev === true || payload.isDev === 'true';
-    const subject = payload.subject;
-    const rawChainId = payload.chainId;
+    const payload = await getRequestPayload(req);
+    if (!payload) {
+      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+        status: 400,
+        headers,
+      });
+    }
 
-    if ((!code && !existingToken) || !subject || !rawChainId) {
+    const code = parseCode(payload.code);
+    const isDev = payload.isDev === true || payload.isDev === 'true';
+    const subject = parseSubject(payload.subject);
+    const chainId = parseSupportedChainId(payload.chainId);
+
+    if (!code || !subject || !chainId) {
       return new Response(JSON.stringify({ error: 'Missing parameters' }), {
         status: 400,
         headers,
       });
     }
 
-    const chainId = parseInt(String(rawChainId), 10);
-
-    // Use existing token or exchange OAuth code for a new one
-    const accessToken = existingToken ?? (await getToken(code as string, isDev));
+    const accessToken = await getToken(code, isDev);
 
     let guilds: Guild[];
     try {
@@ -167,14 +211,16 @@ export default async (req: Request, context: Context) => {
       throw error;
     }
 
+    const expirationDate = BigInt(Math.floor(Date.now() / 1000) + ATTESTATION_VALIDITY_SECONDS);
+
     const walletClient = createWalletClient({
       account: privateKeyToAccount(SIGNER_PRIVATE_KEY as Hex),
       transport: http('https://rpc.linea.build'),
     });
 
-    const signedGuilds = await signGuilds(walletClient, guilds, subject, chainId);
+    const signedGuilds = await signGuilds(walletClient, guilds, subject, chainId, expirationDate);
 
-    return new Response(JSON.stringify({ signedGuilds, accessToken }), {
+    return new Response(JSON.stringify({ signedGuilds }), {
       status: 200,
       headers,
     });

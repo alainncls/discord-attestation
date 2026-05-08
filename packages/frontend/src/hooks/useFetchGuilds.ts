@@ -1,19 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { DecodedPayload, SignedGuild } from '../types';
 import type { Address, Hex } from 'viem';
 import type { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
 import { PORTAL_ID, PORTAL_ID_TESTNET, SCHEMA_ID } from '../utils/constants';
 import { linea } from 'wagmi/chains';
-import {
-  getLocalStorageValue,
-  migrateLocalStorageValue,
-  removeLocalStorageValue,
-  setLocalStorageValue,
-  STORAGE_KEYS,
-} from '../utils/storage';
+import { getLocalStorageValue, removeLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
 
 const LEGACY_DISCORD_TOKEN_KEY = 'discord_access_token';
-const LEGACY_DISCORD_OAUTH_STARTED_KEY = 'discord_oauth_started';
 
 const getApiBaseUrl = () => {
   const isLocalViteDevServer = import.meta.env.DEV && window.location.port === '5173';
@@ -44,12 +37,17 @@ const getInitialOAuthLoadingState = (code?: string | null) => {
     return false;
   }
 
-  return (
-    migrateLocalStorageValue(
-      LEGACY_DISCORD_OAUTH_STARTED_KEY,
-      STORAGE_KEYS.DISCORD_OAUTH_STARTED,
-    ) === 'true' && isValidOAuthState()
-  );
+  return getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED) === 'true' && isValidOAuthState();
+};
+
+const clearStoredDiscordTokens = () => {
+  removeLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN);
+
+  try {
+    window.localStorage.removeItem(LEGACY_DISCORD_TOKEN_KEY);
+  } catch {
+    // Ignore unavailable storage.
+  }
 };
 
 export const useFetchGuilds = (
@@ -61,7 +59,6 @@ export const useFetchGuilds = (
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(() => getInitialOAuthLoadingState(code));
   const [guilds, setGuilds] = useState<SignedGuild[]>([]);
-  const hasRestoredSession = useRef(false);
 
   const enrichGuildsWithAttestations = useCallback(
     async (signedGuilds: SignedGuild[], sdk: VeraxSdk): Promise<SignedGuild[]> => {
@@ -88,7 +85,7 @@ export const useFetchGuilds = (
   );
 
   const fetchGuildsFromApi = useCallback(
-    async (params: { code?: string; accessToken?: string }) => {
+    async (params: { code: string }) => {
       const baseUrl = getApiBaseUrl();
       const isDev = baseUrl !== '';
 
@@ -96,8 +93,7 @@ export const useFetchGuilds = (
         isDev: String(isDev),
         subject: address as string,
         chainId: String(chainId),
-        ...(params.code ? { code: params.code } : {}),
-        ...(params.accessToken ? { accessToken: params.accessToken } : {}),
+        code: params.code,
       };
 
       try {
@@ -108,27 +104,12 @@ export const useFetchGuilds = (
         });
         const data = await res.json();
 
-        if (data.tokenExpired) {
-          removeLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN);
-          return null;
-        }
-
         if (data.error || data.message) {
-          if (params.accessToken) {
-            removeLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN);
-          }
           return null;
-        }
-
-        if (data.accessToken) {
-          setLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN, data.accessToken);
         }
 
         return data.signedGuilds as SignedGuild[];
       } catch {
-        if (params.accessToken) {
-          removeLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN);
-        }
         return null;
       }
     },
@@ -136,43 +117,8 @@ export const useFetchGuilds = (
   );
 
   useEffect(() => {
-    if (hasRestoredSession.current || !veraxSdk || !address || !chainId || isLoggedIn) {
-      return;
-    }
-
-    const storedToken = migrateLocalStorageValue(
-      LEGACY_DISCORD_TOKEN_KEY,
-      STORAGE_KEYS.DISCORD_ACCESS_TOKEN,
-    );
-    if (!storedToken) {
-      return;
-    }
-
-    hasRestoredSession.current = true;
-    let isCurrent = true;
-
-    const restoreSession = async () => {
-      setIsLoading(true);
-      try {
-        const signedGuilds = await fetchGuildsFromApi({ accessToken: storedToken });
-        if (signedGuilds && isCurrent) {
-          const enrichedGuilds = await enrichGuildsWithAttestations(signedGuilds, veraxSdk);
-          setGuilds(enrichedGuilds);
-          setIsLoggedIn(true);
-        }
-      } finally {
-        if (isCurrent) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void restoreSession();
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [veraxSdk, address, chainId, isLoggedIn, fetchGuildsFromApi, enrichGuildsWithAttestations]);
+    clearStoredDiscordTokens();
+  }, []);
 
   useEffect(() => {
     if (!isLoading || !code || !veraxSdk) {

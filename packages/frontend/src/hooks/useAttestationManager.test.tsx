@@ -38,6 +38,7 @@ const guild: SignedGuild = {
   id: '101',
   name: 'Linea Builders',
   signature: '0xsignature',
+  expirationDate: 1_769_459_200,
 };
 
 describe('useAttestationManager', () => {
@@ -73,6 +74,7 @@ describe('useAttestationManager', () => {
       expect.any(String),
       expect.objectContaining({
         schemaId: expect.any(String),
+        expirationDate: guild.expirationDate,
         subject: mocks.account.address,
         attestationData: [{ guildId: guild.id, guildName: guild.name }],
       }),

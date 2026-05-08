@@ -18,6 +18,9 @@ contract DiscordPortal is AbstractPortalV2, Ownable, EIP712 {
     bytes32 public constant SCHEMA_ID = 0xefa96ce61912c5bb59cb4c26645ea193fc03a234fe09a6b2c8b85aaa51a382d6;
     string private constant SIGNING_DOMAIN = "VerifyDiscord";
     string private constant SIGNATURE_VERSION = "1";
+    bytes32 private constant DISCORD_TYPEHASH = keccak256(
+        "Discord(uint256 id,string name,address subject,uint64 expirationDate)"
+    );
 
     error InvalidSchema();
     error InvalidSubject();
@@ -52,12 +55,22 @@ contract DiscordPortal is AbstractPortalV2, Ownable, EIP712 {
     ) internal view override {
         if (attestationPayload.subject.length != 20) revert InvalidSubject();
         address subject = address(uint160(bytes20(attestationPayload.subject)));
+        if (subject != msg.sender) revert SenderIsNotSubject();
 
         if (value < fee) revert InsufficientFee();
         if (attestationPayload.schemaId != SCHEMA_ID) revert InvalidSchema();
+        if (validationPayloads.length != 1) revert InvalidSignatureLength();
 
         GuildPayload memory payload = abi.decode(attestationPayload.attestationData, (GuildPayload));
-        if (!verifySignature(validationPayloads[0], payload.guildId, subject)) revert InvalidSignature();
+        if (
+            !verifySignature(
+                validationPayloads[0],
+                payload.guildId,
+                payload.guildName,
+                subject,
+                attestationPayload.expirationDate
+            )
+        ) revert InvalidSignature();
     }
 
     /**
@@ -118,9 +131,15 @@ contract DiscordPortal is AbstractPortalV2, Ownable, EIP712 {
         fee = attestationFee;
     }
 
-    function verifySignature(bytes memory signature, uint256 guildId, address subject) internal view returns (bool) {
+    function verifySignature(
+        bytes memory signature,
+        uint256 guildId,
+        string memory guildName,
+        address subject,
+        uint64 expirationDate
+    ) internal view returns (bool) {
         bytes32 digest = _hashTypedDataV4(
-            keccak256(abi.encode(keccak256("Discord(uint256 id,address subject)"), guildId, subject))
+            keccak256(abi.encode(DISCORD_TYPEHASH, guildId, keccak256(bytes(guildName)), subject, expirationDate))
         );
         address signer = ECDSA.recover(digest, signature);
         return signer == SIGNER_ADDRESS;

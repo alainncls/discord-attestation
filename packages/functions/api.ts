@@ -162,7 +162,7 @@ export default async (req: Request) => {
   const headers = getHeaders(req);
 
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers });
+    return new Response(null, { status: 200, headers });
   }
 
   if (req.method !== 'POST') {

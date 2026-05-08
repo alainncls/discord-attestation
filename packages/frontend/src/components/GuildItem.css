@@ -2,6 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-md);
   content-visibility: auto;
   contain-intrinsic-size: auto 64px;
   padding: var(--space-md);
@@ -15,9 +16,11 @@
 }
 
 .guild-name {
+  min-width: 0;
   font-weight: 500;
   font-size: 1rem;
   color: var(--color-text);
+  overflow-wrap: anywhere;
 }
 
 /* Green tint for attested icon */
@@ -36,4 +39,15 @@
 .verax-button img {
   width: 16px;
   height: 16px;
+}
+
+@media (max-width: 480px) {
+  .guild-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .verax-button {
+    width: 100%;
+  }
 }

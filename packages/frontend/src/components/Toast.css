@@ -76,6 +76,16 @@
   opacity: 1;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: none;
+  }
+
+  .toast-hidden {
+    transform: none;
+  }
+}
+
 @media (max-width: 480px) {
   .toast-container {
     left: var(--space-md);

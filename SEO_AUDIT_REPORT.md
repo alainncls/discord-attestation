@@ -16,9 +16,9 @@ The live site had strong basic Lighthouse SEO checks, but several important SEO,
 - OAuth codes and access tokens were sent to the Netlify function through query strings.
 - Discord attestation signatures did not bind every stored attestation field, and the contract did not require the submitting wallet to match the attestation subject.
 
-The local fixed build now scores `100/100/100/100` on mobile and desktop Lighthouse, with the initial transfer reduced from about `1,444 KiB` to `71 KiB` in the local Lighthouse run.
+The local fixed build scored `100/100/100/100` on mobile and desktop Lighthouse, with the initial transfer reduced from about `1,444 KiB` to `71 KiB` in the local Lighthouse run.
 
-Deployment status as of 2026-05-08 19:24 CEST: the fixes are merged to `origin/main`, but `https://discord.alainnicolas.fr/` still serves the previous build. `robots.txt` still returns `404`, the HTML still has wallet module preloads, and the canonical URL plus JSON-LD are still absent. A valid production-after Lighthouse comparison cannot be completed until the host deploys the merged commit.
+Deployment status as of 2026-05-08 19:35 CEST: the fixes are deployed on `https://discord.alainnicolas.fr/`. Production now serves `robots.txt`, includes the canonical URL and JSON-LD, and no longer preloads wallet chunks before user intent.
 
 ## Lighthouse Baseline
 
@@ -38,10 +38,16 @@ Local fixed build before deployment:
 
 Production fixed build after deployment:
 
-| Mode    |        Performance |      Accessibility |     Best Practices |                SEO |                FCP |                LCP |        Speed Index |                TBT |                CLS |           Transfer |
-| ------- | -----------------: | -----------------: | -----------------: | -----------------: | -----------------: | -----------------: | -----------------: | -----------------: | -----------------: | -----------------: |
-| Mobile  | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment |
-| Desktop | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment | Pending deployment |
+| Mode    | Performance | Accessibility | Best Practices | SEO |   FCP |   LCP | Speed Index |  TBT | CLS | Transfer |
+| ------- | ----------: | ------------: | -------------: | --: | ----: | ----: | ----------: | ---: | --: | -------: |
+| Mobile  |          97 |           100 |            100 | 100 | 1.3 s | 2.1 s |       3.8 s | 0 ms |   0 |   73 KiB |
+| Desktop |         100 |           100 |            100 | 100 | 0.3 s | 0.4 s |       0.5 s | 0 ms |   0 |   73 KiB |
+
+Residual Lighthouse observations after deployment:
+
+- Mobile Speed Index is still the lowest remaining metric at `3.8 s`, but overall mobile Performance is now `97`.
+- Lighthouse still reports about `29 KiB` of unused React runtime JavaScript on first paint. This is the remaining cost of a React-rendered app shell, not the previous wallet/AppKit payload.
+- Lighthouse still lists the single `2.9 KiB` stylesheet as render-blocking. This is a small residual cost after removing Google Fonts and wallet preloads.
 
 ## Findings and Fixes
 
@@ -238,10 +244,13 @@ Completed locally:
 - Lighthouse mobile and desktop against `http://127.0.0.1:51973/`
 - Rendered DOM check for canonical, JSON-LD, heading structure, and wallet deferral
 
-## Follow-up After Deployment
+Completed against production after deployment:
 
-After the host deploys the committed changes:
+- Verified `https://discord.alainnicolas.fr/robots.txt` returns `200`.
+- Verified production HTML includes the canonical URL and JSON-LD.
+- Verified production HTML no longer includes wallet/AppKit module preloads.
+- Re-ran Lighthouse mobile and desktop against `https://discord.alainnicolas.fr/`.
 
-1. Re-run Lighthouse mobile and desktop against `https://discord.alainnicolas.fr/`.
-2. Re-check `robots.txt`, `sitemap.xml`, canonical, JSON-LD, cache headers, and initial network requests in production.
-3. Replace the pending production comparison table above with the deployed metrics.
+## Follow-up
+
+No deployment follow-up remains for the audited items. Future optimization work, if desired, should focus on reducing the remaining React app-shell cost or inlining the tiny critical stylesheet, but those are low-priority after the measured production scores above.

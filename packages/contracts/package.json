@@ -15,20 +15,20 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.9.6"
+    "@openzeppelin/contracts": "4.9.6"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@nomicfoundation/hardhat-verify": "catalog:",
     "@nomicfoundation/hardhat-viem": "catalog:",
     "@types/node": "catalog:",
-    "@verax-attestation-registry/verax-contracts": "^10.0.0",
+    "@verax-attestation-registry/verax-contracts": "10.0.0",
     "@verax-attestation-registry/verax-sdk": "catalog:",
     "eslint": "catalog:",
     "hardhat": "catalog:",
     "prettier": "catalog:",
-    "prettier-plugin-solidity": "^2.3.1",
-    "solhint": "^6.2.1",
+    "prettier-plugin-solidity": "2.4.1",
+    "solhint": "6.2.4",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "viem": "catalog:"

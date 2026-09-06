@@ -1,72 +1,136 @@
 #!/usr/bin/env node
 
-const { execFileSync } = require("node:child_process");
-const { existsSync, readFileSync } = require("node:fs");
-const { join } = require("node:path");
+const { execFileSync } = require('node:child_process');
+const { existsSync, readFileSync } = require('node:fs');
+const { join } = require('node:path');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MINUTE_MS = 60 * 1000;
 
 function parseArgs(argv) {
-  const args = { manager: "auto", days: 3, minutes: null };
+  const args = {
+    manager: 'auto',
+    days: 3,
+    minutes: null,
+    holds: DEFAULT_HOLDS_PATH,
+  };
   for (let index = 2; index < argv.length; index += 1) {
     const arg = argv[index];
     const next = argv[index + 1];
-    if (arg === "--manager" && next) {
+    if (arg === '--manager' && next) {
       args.manager = next;
       index += 1;
-    } else if (arg === "--days" && next) {
+    } else if (arg === '--days' && next) {
       args.days = Number(next);
       index += 1;
-    } else if (arg === "--minutes" && next) {
+    } else if (arg === '--minutes' && next) {
       args.minutes = Number(next);
       index += 1;
-    } else if (arg === "--help") {
-      console.error("Usage: eligible-updates [--manager auto|npm|pnpm] [--days N | --minutes N]");
+    } else if (arg === '--holds' && next) {
+      args.holds = next;
+      index += 1;
+    } else if (arg === '--help') {
+      console.error(
+        'Usage: eligible-updates [--manager auto|npm|pnpm] [--days N | --minutes N] [--holds <file>]',
+      );
       process.exit(0);
     }
   }
   return args;
 }
 
-function detectManager() {
-  if (existsSync("pnpm-lock.yaml")) return "pnpm";
-  if (existsSync("package-lock.json")) return "npm";
-  if (existsSync("package.json")) {
-    const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-    if (String(pkg.packageManager ?? "").startsWith("pnpm@")) return "pnpm";
-    if (String(pkg.packageManager ?? "").startsWith("npm@")) return "npm";
+// A hold is a version ceiling for a package with releases known broken for this
+// repo. Held versions are filtered out of the inventory and surfaced as
+// `heldAt` so the agent does not chase a bump the policy gate would reject.
+// `@types/foo` follows the `foo` ceiling at the major level.
+const DEFAULT_HOLDS_PATH = '.github/dependency-holds.json';
+
+// A malformed holds file must fail closed with a clear error: silently
+// un-holding every package would feed the refresh a wrong inventory.
+function loadHolds(path) {
+  if (!existsSync(path)) return new Map();
+  let parsed;
+  try {
+    parsed = JSON.parse(readFileSync(path, 'utf8'));
+  } catch (error) {
+    throw new Error(`${path}: could not be parsed (${error.message})`);
   }
-  return "npm";
+  if (!Array.isArray(parsed?.holds)) {
+    throw new Error(`${path}: expected a "holds" array`);
+  }
+  const ceilings = new Map();
+  for (const entry of parsed.holds) {
+    if (!Array.isArray(entry?.packages) || !parseVersion(entry?.maxVersion)) {
+      throw new Error(
+        `${path}: entry is missing a valid "packages" list or "maxVersion"`,
+      );
+    }
+    for (const name of entry.packages) ceilings.set(name, entry.maxVersion);
+  }
+  return ceilings;
+}
+
+// `@types/foo` tracks the `foo` ceiling. DefinitelyTyped encodes a scoped
+// runtime package as `scope__name` (`@types/babel__core` → `@babel/core`).
+function typesRuntimeFor(name) {
+  const types = String(name).match(/^@types\/(.+)$/);
+  if (!types) return null;
+  const inner = types[1];
+  const separator = inner.indexOf('__');
+  if (separator === -1) return inner;
+  return `@${inner.slice(0, separator)}/${inner.slice(separator + 2)}`;
+}
+
+// The runtime ceiling applies to the types package at the major level only.
+function heldCeiling(ceilings, name) {
+  const direct = ceilings.get(name);
+  if (direct) return { max: direct, majorOnly: false };
+  const runtime = typesRuntimeFor(name);
+  const inherited = runtime ? ceilings.get(runtime) : undefined;
+  if (inherited) return { max: inherited, majorOnly: true };
+  return null;
+}
+
+function detectManager() {
+  if (existsSync('pnpm-lock.yaml')) return 'pnpm';
+  if (existsSync('package-lock.json')) return 'npm';
+  if (existsSync('package.json')) {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+    if (String(pkg.packageManager ?? '').startsWith('pnpm@')) return 'pnpm';
+    if (String(pkg.packageManager ?? '').startsWith('npm@')) return 'npm';
+  }
+  return 'npm';
 }
 
 function runOutdated(manager) {
   const command =
-    manager === "pnpm" ? ["pnpm", ["outdated", "-r", "--format", "json"]] : ["npm", ["outdated", "--json"]];
+    manager === 'pnpm'
+      ? ['pnpm', ['outdated', '-r', '--format', 'json']]
+      : ['npm', ['outdated', '--json']];
 
   try {
     return execFileSync(command[0], command[1], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
   } catch (error) {
     if (error.stdout) return String(error.stdout);
-    return "{}";
+    return '{}';
   }
 }
 
 function parseVersion(version) {
-  const match = String(version ?? "")
+  const match = String(version ?? '')
     .trim()
-    .replace(/^v/, "")
+    .replace(/^v/, '')
     .match(/(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?/);
   if (!match) return null;
   return {
-    raw: `${match[1]}.${match[2]}.${match[3]}${match[4] ? `-${match[4]}` : ""}`,
+    raw: `${match[1]}.${match[2]}.${match[3]}${match[4] ? `-${match[4]}` : ''}`,
     major: Number(match[1]),
     minor: Number(match[2]),
     patch: Number(match[3]),
-    prerelease: match[4] ?? "",
+    prerelease: match[4] ?? '',
   };
 }
 
@@ -74,7 +138,7 @@ function compareVersions(a, b) {
   const parsedA = parseVersion(a);
   const parsedB = parseVersion(b);
   if (!parsedA || !parsedB) return 0;
-  for (const key of ["major", "minor", "patch"]) {
+  for (const key of ['major', 'minor', 'patch']) {
     if (parsedA[key] !== parsedB[key]) return parsedA[key] - parsedB[key];
   }
   if (parsedA.prerelease && !parsedB.prerelease) return -1;
@@ -90,7 +154,8 @@ function normalizeOutdated(raw) {
   if (Array.isArray(parsed)) {
     for (const item of parsed) rows.push(item);
   } else {
-    for (const [name, details] of Object.entries(parsed)) rows.push({ name, ...details });
+    for (const [name, details] of Object.entries(parsed))
+      rows.push({ name, ...details });
   }
 
   return rows
@@ -106,13 +171,15 @@ function normalizeOutdated(raw) {
 }
 
 async function fetchMetadata(name) {
-  if (typeof fetch !== "function") {
-    throw new Error("This helper requires Node.js with global fetch support.");
+  if (typeof fetch !== 'function') {
+    throw new Error('This helper requires Node.js with global fetch support.');
   }
-  const encoded = encodeURIComponent(name).replace("%40", "@");
+  const encoded = encodeURIComponent(name).replace('%40', '@');
   const response = await fetch(`https://registry.npmjs.org/${encoded}`);
   if (!response.ok) {
-    throw new Error(`Could not fetch npm metadata for ${name}: ${response.status}`);
+    throw new Error(
+      `Could not fetch npm metadata for ${name}: ${response.status}`,
+    );
   }
   return response.json();
 }
@@ -120,21 +187,24 @@ async function fetchMetadata(name) {
 function classify(current, target) {
   const currentParsed = parseVersion(current);
   const targetParsed = parseVersion(target);
-  if (!currentParsed || !targetParsed) return "unknown";
-  if (targetParsed.major !== currentParsed.major) return "major";
-  if (targetParsed.minor !== currentParsed.minor) return "minor";
-  if (targetParsed.patch !== currentParsed.patch) return "patch";
-  return "same";
+  if (!currentParsed || !targetParsed) return 'unknown';
+  if (targetParsed.major !== currentParsed.major) return 'major';
+  if (targetParsed.minor !== currentParsed.minor) return 'minor';
+  if (targetParsed.patch !== currentParsed.patch) return 'patch';
+  return 'same';
 }
 
 async function main() {
   const args = parseArgs(process.argv);
-  const manager = args.manager === "auto" ? detectManager() : args.manager;
-  if (!["npm", "pnpm"].includes(manager)) throw new Error("--manager must be auto, npm, or pnpm");
+  const holds = loadHolds(args.holds);
+  const manager = args.manager === 'auto' ? detectManager() : args.manager;
+  if (!['npm', 'pnpm'].includes(manager))
+    throw new Error('--manager must be auto, npm, or pnpm');
 
-  const windowMs = args.minutes != null ? args.minutes * MINUTE_MS : args.days * DAY_MS;
+  const windowMs =
+    args.minutes != null ? args.minutes * MINUTE_MS : args.days * DAY_MS;
   if (!Number.isFinite(windowMs) || windowMs < 0) {
-    throw new Error("Release-age window must be a positive number");
+    throw new Error('Release-age window must be a positive number');
   }
 
   const now = new Date();
@@ -151,30 +221,45 @@ async function main() {
       .filter((version) => !parseVersion(version)?.prerelease)
       .sort(compareVersions);
 
+    const hold = heldCeiling(holds, item.name);
+    const heldAt = hold?.max ?? '';
     const newerEligible = versions
       .filter((version) => compareVersions(version, current) > 0)
-      .filter((version) => times[version] && new Date(times[version]) <= cutoff);
+      .filter((version) => times[version] && new Date(times[version]) <= cutoff)
+      .filter((version) => {
+        if (!hold) return true;
+        if (hold.majorOnly)
+          return parseVersion(version).major <= parseVersion(hold.max).major;
+        return compareVersions(version, hold.max) <= 0;
+      });
 
-    const sameMajor = newerEligible.filter((version) => parseVersion(version).major === parseVersion(current).major);
-    const eligibleSameMajor = sameMajor.at(-1) ?? "";
-    const eligibleAny = newerEligible.at(-1) ?? "";
-    const latest = item.latest ?? metadata["dist-tags"]?.latest ?? "";
+    const sameMajor = newerEligible.filter(
+      (version) => parseVersion(version).major === parseVersion(current).major,
+    );
+    const eligibleSameMajor = sameMajor.at(-1) ?? '';
+    const eligibleAny = newerEligible.at(-1) ?? '';
+    const latest = item.latest ?? metadata['dist-tags']?.latest ?? '';
 
     rows.push({
       name: item.name,
-      dependent: item.dependent ?? "",
-      type: item.type ?? "",
+      dependent: item.dependent ?? '',
+      type: item.type ?? '',
       current: item.current,
-      wanted: item.wanted ?? "",
+      wanted: item.wanted ?? '',
       latest,
-      latestPublished: latest ? (times[latest] ?? "") : "",
+      latestPublished: latest ? (times[latest] ?? '') : '',
       eligibleSameMajor,
-      eligibleSameMajorPublished: eligibleSameMajor ? times[eligibleSameMajor] : "",
-      eligibleSameMajorType: eligibleSameMajor ? classify(current, eligibleSameMajor) : "",
+      eligibleSameMajorPublished: eligibleSameMajor
+        ? times[eligibleSameMajor]
+        : '',
+      eligibleSameMajorType: eligibleSameMajor
+        ? classify(current, eligibleSameMajor)
+        : '',
       eligibleAny,
-      eligibleAnyPublished: eligibleAny ? times[eligibleAny] : "",
-      eligibleAnyType: eligibleAny ? classify(current, eligibleAny) : "",
-      latestIsMajor: latest ? classify(current, latest) === "major" : false,
+      eligibleAnyPublished: eligibleAny ? times[eligibleAny] : '',
+      eligibleAnyType: eligibleAny ? classify(current, eligibleAny) : '',
+      latestIsMajor: latest ? classify(current, latest) === 'major' : false,
+      heldAt,
     });
   }
 
@@ -185,6 +270,7 @@ async function main() {
         cwd: join(process.cwd()),
         now: now.toISOString(),
         cutoff: cutoff.toISOString(),
+        holds: Object.fromEntries(holds),
         rows,
       },
       null,

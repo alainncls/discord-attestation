@@ -45,6 +45,6 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vite": "catalog:",
-    "vitest": "4.1.5"
+    "vitest": "4.1.11"
   }
 }

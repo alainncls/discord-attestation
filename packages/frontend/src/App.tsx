@@ -31,7 +31,7 @@ function App() {
     chainId,
   );
 
-  const { txHash, attestationId, pendingGuildId, handleAttest, handleCheck } =
+  const { txHash, attestationId, pendingGuildId, transactionChainId, handleAttest, handleCheck } =
     useAttestationManager(veraxSdk, chainId, showError);
 
   const handleAttestAndUpdateGuilds = useCallback(
@@ -63,7 +63,7 @@ function App() {
           txHash={txHash}
           attestationId={attestationId}
           pendingGuildId={pendingGuildId}
-          chainId={chainId}
+          chainId={transactionChainId ?? chainId}
           isWalletConnected={isConnected}
           onAttest={handleAttestAndUpdateGuilds}
           onCheck={handleCheck}

@@ -27,13 +27,22 @@ function captureRuntimeErrors(page: Page) {
 }
 
 async function mockWalletDiscovery(page: Page) {
-  const calls = { wallets: 0, images: 0 };
+  const calls: Array<{ url: string; status: number }> = [];
+  await page.route('https://api.web3modal.org/appkit/v1/config?*', async (route) => {
+    calls.push({ url: route.request().url(), status: 200 });
+    await route.fulfill({ json: {} });
+  });
+  await page.route('https://api.web3modal.org/appkit/v1/project-limits?*', async (route) => {
+    calls.push({ url: route.request().url(), status: 200 });
+    await route.fulfill({ json: {} });
+  });
   await page.route('https://api.web3modal.org/getWallets?*', async (route) => {
-    calls.wallets++;
-    await route.fulfill({ json: { data: [], count: 0 } });
+    const response = { json: { data: [], count: 0 } };
+    calls.push({ url: route.request().url(), status: 200 });
+    await route.fulfill(response);
   });
   await page.route('https://api.web3modal.org/public/getAssetImage/*', async (route) => {
-    calls.images++;
+    calls.push({ url: route.request().url(), status: 200 });
     await route.fulfill({
       contentType: 'image/svg+xml',
       body: '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>',
@@ -56,7 +65,12 @@ test.describe('production build smoke', () => {
     await page.getByRole('button', { name: 'Connect Wallet' }).click();
     await expect(page.locator('appkit-button')).toBeVisible();
     await expect(page.locator('body')).not.toHaveText('');
-    await expect.poll(() => mockedRequests.wallets).toBeGreaterThan(0);
+    await expect.poll(() => mockedRequests.length).toBeGreaterThan(0);
+    expect(
+      mockedRequests.every(
+        ({ url, status }) => url.startsWith('https://api.web3modal.org/') && status === 200,
+      ),
+    ).toBe(true);
     expect(runtimeErrors).toEqual([]);
   });
 
@@ -64,6 +78,8 @@ test.describe('production build smoke', () => {
     context,
     page,
   }) => {
+    const runtimeErrors = captureRuntimeErrors(page);
+    await mockWalletDiscovery(page);
     await page.route('https://discord.com/**', async (route) => {
       await route.fulfill({
         status: 200,
@@ -92,11 +108,13 @@ test.describe('production build smoke', () => {
       appStorage?.localStorage.find((entry) => entry.name === 'discord-attestation:oauth-state:v1')
         ?.value,
     ).toBeTruthy();
+    expect(runtimeErrors).toEqual([]);
   });
 });
 
 test('runtime monitor detects an unexpected application exception', async ({ page }) => {
   const errors = captureRuntimeErrors(page);
+  await mockWalletDiscovery(page);
   await page.goto('/');
   await page.evaluate(() => {
     setTimeout(() => {
@@ -106,10 +124,12 @@ test('runtime monitor detects an unexpected application exception', async ({ pag
   await expect
     .poll(() => errors.some((error) => error.includes('deliberate-regression-probe')))
     .toBe(true);
+  expect(errors.filter((error) => !error.includes('deliberate-regression-probe'))).toEqual([]);
 });
 
 test('runtime monitor detects a missing first-party asset', async ({ page }) => {
   const errors = captureRuntimeErrors(page);
+  await mockWalletDiscovery(page);
   await page.route('**/assets/regression-probe.js', (route) =>
     route.fulfill({ status: 404, body: 'Not found' }),
   );
@@ -122,4 +142,5 @@ test('runtime monitor detects a missing first-party asset', async ({ page }) => 
       ),
     )
     .toBe(true);
+  expect(errors.filter((error) => !error.includes('/assets/regression-probe.js'))).toEqual([]);
 });

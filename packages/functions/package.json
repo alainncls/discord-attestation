@@ -7,6 +7,9 @@
     "dev": "netlify functions:serve --functions . --port 8888",
     "lint": "eslint --config lib/eslint.config.js .",
     "lint:fix": "eslint --config lib/eslint.config.js --fix .",
+    "prettier": "prettier --check 'api.ts' 'test/**/*.ts' '*.json'",
+    "prettier:fix": "prettier --write 'api.ts' 'test/**/*.ts' '*.json'",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -20,6 +23,7 @@
     "eslint": "catalog:",
     "netlify-cli": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "vitest": "4.1.11"
   }
 }

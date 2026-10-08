@@ -11,7 +11,7 @@
     "prettier": "prettier --check '**/*.sol' '**/*.ts' '**/*.json'",
     "prettier:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json'",
     "solhint": "solhint **/*.sol -c .solhint.json",
-    "test": "hardhat test",
+    "test": "hardhat test solidity && hardhat test nodejs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@nomicfoundation/hardhat-node-test-runner": "3.0.17",
     "@nomicfoundation/hardhat-verify": "catalog:",
     "@nomicfoundation/hardhat-viem": "catalog:",
     "@types/node": "catalog:",

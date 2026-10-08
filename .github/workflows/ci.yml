@@ -34,3 +34,9 @@ jobs:
 
       - name: Validate
         run: pnpm lint && pnpm typecheck && pnpm test && pnpm build
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @discord-attestation/frontend exec playwright install --with-deps chromium
+
+      - name: Run deterministic browser smoke
+        run: pnpm test:e2e

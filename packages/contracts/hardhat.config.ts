@@ -1,5 +1,6 @@
 import { defineConfig, configVariable } from 'hardhat/config';
 import type { SensitiveString } from 'hardhat/types/config';
+import HardhatNodeTestRunner from '@nomicfoundation/hardhat-node-test-runner';
 import HardhatViem from '@nomicfoundation/hardhat-viem';
 import HardhatVerify from '@nomicfoundation/hardhat-verify';
 
@@ -7,7 +8,7 @@ const getRpcUrl = (envKey: string, fallback: SensitiveString) =>
   process.env[envKey] ? process.env[envKey] : fallback;
 
 export default defineConfig({
-  plugins: [HardhatViem, HardhatVerify],
+  plugins: [HardhatNodeTestRunner, HardhatViem, HardhatVerify],
   solidity: {
     compilers: [
       {
@@ -23,6 +24,10 @@ export default defineConfig({
     ],
   },
   networks: {
+    hardhat: {
+      type: 'edr-simulated',
+      chainType: 'l1',
+    },
     'linea-sepolia': {
       type: 'http',
       url: getRpcUrl(

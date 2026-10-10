@@ -19,6 +19,9 @@ const SUPPORTED_CHAIN_IDS: ReadonlySet<number> = new Set([linea.id, lineaSepolia
 const MAX_REQUEST_BODY_BYTES = 8 * 1024;
 const MAX_PROVIDER_BODY_BYTES = 2 * 1024 * 1024;
 const PROVIDER_TIMEOUT_MS = 5_000;
+const REQUEST_BUDGET_MS = 8_000;
+const REQUEST_BODY_TIMEOUT_MS = 5_000;
+const MAX_CONCURRENT_FLOWS_PER_INSTANCE = 4;
 const PAGE_SIZE = 200;
 const MAX_GUILDS = 1_000;
 const SIGNING_CONCURRENCY = 10;
@@ -29,6 +32,7 @@ const OAUTH_STATE_TTL_MS = 5 * 60_000;
 const OAUTH_COOKIE = 'discord_oauth_';
 const OAUTH_COOKIE_PATH = '/.netlify/functions/api';
 const DEVELOPMENT_ORIGINS = new Set(['http://localhost:5173', 'http://127.0.0.1:5173']);
+let activeFlows = 0;
 
 interface RuntimeConfig {
   VITE_DISCORD_CLIENT_ID?: string;
@@ -44,6 +48,9 @@ interface ApiDependencies {
   config: () => RuntimeConfig;
   oauthStateStore?: (environment: string) => OAuthStateStore;
   now?: () => number;
+  requestBodyTimeoutMs?: number;
+  requestBudgetMs?: number;
+  monotonicNow?: () => number;
 }
 
 interface RateLimitEntry {
@@ -195,7 +202,10 @@ const jsonResponse = (
     },
   });
 
-const readRequestJson = async (req: Request): Promise<Record<string, unknown>> => {
+const readRequestJson = async (
+  req: Request,
+  timeoutMs = REQUEST_BODY_TIMEOUT_MS,
+): Promise<Record<string, unknown>> => {
   const declaredLength = req.headers.get('content-length');
   if (declaredLength !== null) {
     if (!/^\d+$/.test(declaredLength) || !Number.isSafeInteger(Number(declaredLength))) {
@@ -212,9 +222,15 @@ const readRequestJson = async (req: Request): Promise<Record<string, unknown>> =
   const reader = req.body.getReader();
   const chunks: Uint8Array[] = [];
   let byteLength = 0;
+  let timedOut = false;
+  const timeout = setTimeout(() => {
+    timedOut = true;
+    void reader.cancel().catch(() => undefined);
+  }, timeoutMs);
   try {
     while (true) {
       const { done, value } = await reader.read();
+      if (timedOut) throw new ApiError(408, 'Request body timed out');
       if (done) break;
       if (!value || value.byteLength === 0) continue;
       byteLength += value.byteLength;
@@ -225,6 +241,7 @@ const readRequestJson = async (req: Request): Promise<Record<string, unknown>> =
       chunks.push(value);
     }
   } finally {
+    clearTimeout(timeout);
     try {
       reader.releaseLock();
     } catch {
@@ -249,6 +266,36 @@ const readRequestJson = async (req: Request): Promise<Record<string, unknown>> =
     throw new ApiError(400, 'Invalid JSON body');
   }
   return value as Record<string, unknown>;
+};
+
+const acquireFlowCapacity = (): (() => void) => {
+  if (activeFlows >= MAX_CONCURRENT_FLOWS_PER_INSTANCE) {
+    throw new ApiError(503, 'Signing capacity reached', '1');
+  }
+  activeFlows += 1;
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    activeFlows = Math.max(0, activeFlows - 1);
+  };
+};
+
+const createRequestBudget = (
+  budgetMs: number,
+  monotonicNow: () => number,
+  requestStartedAt = monotonicNow(),
+) => {
+  const deadline = requestStartedAt + budgetMs;
+  const assertRemaining = (): number => {
+    const remaining = Math.floor(deadline - monotonicNow());
+    if (remaining <= 0) throw new ApiError(504, 'Request budget exceeded');
+    return remaining;
+  };
+  return {
+    assertRemaining,
+    timeoutMs: () => Math.min(PROVIDER_TIMEOUT_MS, assertRemaining()),
+  };
 };
 
 const getProviderStatus = (error: unknown): number | undefined => {
@@ -368,6 +415,7 @@ const getToken = async (
   },
   code: string,
   isDev: boolean,
+  timeoutMs: number,
 ): Promise<string> => {
   const params = new URLSearchParams({
     client_id: config.VITE_DISCORD_CLIENT_ID,
@@ -380,7 +428,7 @@ const getToken = async (
   let response;
   try {
     response = await client.post(TOKEN_URL, params, {
-      timeout: PROVIDER_TIMEOUT_MS,
+      timeout: timeoutMs,
       maxBodyLength: MAX_REQUEST_BODY_BYTES,
       maxContentLength: MAX_PROVIDER_BODY_BYTES,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -426,24 +474,27 @@ const validateGuilds = (value: unknown): Guild[] => {
 const getGuilds = async (
   client: ApiDependencies['http'],
   accessToken: string,
+  requestBudget: ReturnType<typeof createRequestBudget>,
 ): Promise<Guild[]> => {
   const guilds: Guild[] = [];
   const seen = new Set<string>();
   let after: string | undefined;
 
   for (let page = 0; page <= Math.ceil(MAX_GUILDS / PAGE_SIZE); page += 1) {
+    const timeoutMs = requestBudget.timeoutMs();
     let response;
     try {
       response = await client.get(GUILDS_URL, {
         headers: { Authorization: `Bearer ${accessToken}` },
         params: { limit: PAGE_SIZE, ...(after ? { after } : {}) },
-        timeout: PROVIDER_TIMEOUT_MS,
+        timeout: timeoutMs,
         maxContentLength: MAX_PROVIDER_BODY_BYTES,
       });
     } catch (error) {
       throw mapProviderError(error);
     }
 
+    requestBudget.assertRemaining();
     const nextPage = validateGuilds(response.data);
     if (nextPage.length > MAX_GUILDS - guilds.length) {
       throw new ApiError(422, 'Guild limit exceeded');
@@ -469,6 +520,7 @@ const signGuilds = async (
   subject: Address,
   chainId: number,
   expirationDate: bigint,
+  requestBudget: ReturnType<typeof createRequestBudget>,
 ): Promise<Array<{ id: string; name: string; signature: Hex; expirationDate: number }>> => {
   const domain = {
     name: 'VerifyDiscord',
@@ -501,6 +553,7 @@ const signGuilds = async (
     while (nextIndex < guilds.length) {
       const index = nextIndex;
       nextIndex += 1;
+      requestBudget.assertRemaining();
       const guild = guilds[index]!;
       const signature = await walletClient.signTypedData({
         account,
@@ -514,6 +567,7 @@ const signGuilds = async (
           expirationDate,
         },
       });
+      requestBudget.assertRemaining();
       signed[index] = {
         id: guild.id,
         name: guild.name,
@@ -538,6 +592,7 @@ const createDefaultConfig = (): RuntimeConfig => ({
 
 export const createApiHandler = (dependencies: ApiDependencies) => {
   const now = dependencies.now ?? Date.now;
+  const monotonicNow = dependencies.monotonicNow ?? (() => performance.now());
   const rateLimit = createRateLimiter(now);
 
   return async (req: Request, context?: Context): Promise<Response> => {
@@ -552,9 +607,11 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
       return jsonResponse({ error: 'Too many requests' }, 429, headers, String(waitSeconds));
     }
 
+    const requestStartedAt = monotonicNow();
     let cookieToClear: string | undefined;
+    let releaseFlow: (() => void) | undefined;
     try {
-      const payload = await readRequestJson(req);
+      const payload = await readRequestJson(req, dependencies.requestBodyTimeoutMs);
       if (payload.action === 'start') {
         checkOAuthConfig(config);
         const oauthContext = getOAuthContext(req.headers.get('origin'), config);
@@ -620,15 +677,30 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
       const chainId = parseSupportedChainId(payload.chainId);
       if (!code || !subject || !chainId) throw new ApiError(400, 'Missing parameters');
       checkConfig(config);
+      releaseFlow = acquireFlowCapacity();
+      const requestBudget = createRequestBudget(
+        dependencies.requestBudgetMs ?? REQUEST_BUDGET_MS,
+        monotonicNow,
+        requestStartedAt,
+      );
 
       let store: OAuthStateStore;
       let entry;
       try {
+        requestBudget.assertRemaining();
         store =
           dependencies.oauthStateStore?.(oauthContext.environment) ??
           createNetlifyOAuthStateStore(oauthContext.environment);
         entry = await store.read(stateHash);
-      } catch {
+        requestBudget.assertRemaining();
+      } catch (error) {
+        if (error instanceof ApiError) throw error;
+        if (
+          monotonicNow() - requestStartedAt >=
+          (dependencies.requestBudgetMs ?? REQUEST_BUDGET_MS)
+        ) {
+          throw new ApiError(504, 'Request budget exceeded');
+        }
         throw new ApiError(503, 'OAuth state storage unavailable');
       }
       if (
@@ -649,24 +721,36 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
 
       let consumed: boolean;
       try {
+        requestBudget.assertRemaining();
         consumed = await store.compareAndSet(stateHash, entry.etag, {
           ...entry.record,
           status: 'consumed',
         });
-      } catch {
+        requestBudget.assertRemaining();
+      } catch (error) {
+        if (error instanceof ApiError) throw error;
+        if (
+          monotonicNow() - requestStartedAt >=
+          (dependencies.requestBudgetMs ?? REQUEST_BUDGET_MS)
+        ) {
+          throw new ApiError(504, 'Request budget exceeded');
+        }
         throw new ApiError(503, 'OAuth state storage unavailable');
       }
       if (!consumed) throw new ApiError(400, 'OAuth state already used');
 
+      const requestTimeoutMs = requestBudget.timeoutMs();
       const accessToken = await getToken(
         dependencies.http,
         config,
         code,
         entry.record.environment === 'dev',
+        requestTimeoutMs,
       );
+      requestBudget.assertRemaining();
       let guilds: Guild[];
       try {
-        guilds = await getGuilds(dependencies.http, accessToken);
+        guilds = await getGuilds(dependencies.http, accessToken, requestBudget);
       } catch (error) {
         if (error instanceof ApiError) throw error;
         throw mapProviderError(error);
@@ -677,7 +761,14 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
         account: privateKeyToAccount(config.SIGNER_PRIVATE_KEY),
         transport: http('https://rpc.linea.build'),
       });
-      const signedGuilds = await signGuilds(walletClient, guilds, subject, chainId, expirationDate);
+      const signedGuilds = await signGuilds(
+        walletClient,
+        guilds,
+        subject,
+        chainId,
+        expirationDate,
+        requestBudget,
+      );
 
       return jsonResponse(
         { signedGuilds },
@@ -695,6 +786,8 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
         );
       }
       return jsonResponse({ error: 'Signing failed' }, 500, responseHeaders);
+    } finally {
+      releaseFlow?.();
     }
   };
 };

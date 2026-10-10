@@ -11,7 +11,7 @@
     "prettier": "prettier --check '**/*.sol' '**/*.ts' '**/*.json'",
     "prettier:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json'",
     "solhint": "solhint **/*.sol -c .solhint.json",
-    "test": "hardhat test solidity && hardhat test nodejs",
+    "test": "hardhat test solidity && node scripts/run-nodejs-tests.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "hardhat": "catalog:",
     "prettier": "catalog:",
     "prettier-plugin-solidity": "2.4.1",
+    "solc": "0.8.21",
     "solhint": "6.2.4",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",

@@ -46,6 +46,7 @@ contract PortalTestModuleRegistry {
 }
 
 contract PortalTestAttestationRegistry {
+    bool public shouldRevert;
     bytes32 public lastSchemaId;
     bytes public lastSubject;
     bytes public lastData;
@@ -53,7 +54,12 @@ contract PortalTestAttestationRegistry {
     address public lastAttester;
     uint256 public attestCount;
 
+    function setShouldRevert(bool shouldRevert_) external {
+        shouldRevert = shouldRevert_;
+    }
+
     function attest(AttestationPayload calldata payload, address attester) external {
+        require(!shouldRevert, "RegistryWriteFailed");
         lastSchemaId = payload.schemaId;
         lastSubject = payload.subject;
         lastData = payload.attestationData;

@@ -185,7 +185,9 @@ describe('Discord signing API', () => {
 
     const responses = await Promise.all(callbacks);
     expect(responses.filter((response) => response.status === 200)).toHaveLength(1);
-    expect(responses.filter((response) => response.status === 400)).toHaveLength(19);
+    expect(
+      responses.filter((response) => response.status === 400 || response.status === 503),
+    ).toHaveLength(19);
     expect(http.post).toHaveBeenCalledTimes(1);
   });
 
@@ -398,6 +400,79 @@ describe('Discord signing API', () => {
     const response = await handler(request, createContext('203.0.113.15'));
     expect(response.status).toBe(413);
     expect(http.post).not.toHaveBeenCalled();
+  });
+
+  it('times out a stalled request body and never enters the provider flow', async () => {
+    const timeoutHandler = createApiHandler({
+      http,
+      config: () => config,
+      oauthStateStore: () => stateStore,
+      now: () => NOW,
+      requestBodyTimeoutMs: 5,
+    });
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('{"action":"exchange"'));
+      },
+    });
+    const request = new Request('https://functions.example.com/api', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+      duplex: 'half',
+    } as RequestInit);
+
+    const response = await timeoutHandler(request, createContext('203.0.113.70'));
+    expect(response.status).toBe(408);
+    expect(await response.json()).toEqual({ error: 'Request body timed out' });
+    expect(http.post).not.toHaveBeenCalled();
+    expect(http.get).not.toHaveBeenCalled();
+  });
+
+  it('enforces one aggregate provider budget and consumes state before starting the exchange', async () => {
+    let monotonicReads = 0;
+    const budgetHandler = createApiHandler({
+      http,
+      config: () => config,
+      oauthStateStore: () => stateStore,
+      now: () => NOW,
+      requestBudgetMs: 10,
+      monotonicNow: () => (monotonicReads++ < 6 ? 0 : 11),
+    });
+    const issued = issueState();
+
+    const response = await budgetHandler(createRequest({}, issued), createContext('203.0.113.71'));
+
+    expect(response.status).toBe(504);
+    expect(await response.json()).toEqual({ error: 'Request budget exceeded' });
+    expect(stateRecords.get(issued.stateHash)?.record.status).toBe('consumed');
+    expect(http.post).toHaveBeenCalledTimes(1);
+    expect(http.get).not.toHaveBeenCalled();
+  });
+
+  it('bounds concurrent provider-and-signing flows per instance without consuming rejected state', async () => {
+    let resolveToken: ((value: { data: { access_token: string } }) => void) | undefined;
+    const tokenGate = new Promise<{ data: { access_token: string } }>((resolve) => {
+      resolveToken = resolve;
+    });
+    vi.mocked(http.post).mockImplementation(() => tokenGate as never);
+    const issued = Array.from({ length: 5 }, () => issueState());
+    const requests = issued
+      .slice(0, 4)
+      .map((state, index) =>
+        handler(createRequest({}, state), createContext(`198.51.100.${index + 1}`)),
+      );
+
+    await vi.waitFor(() => expect(http.post).toHaveBeenCalledTimes(4));
+    const saturated = await handler(createRequest({}, issued[4]), createContext('198.51.100.5'));
+    expect(saturated.status).toBe(503);
+    expect(saturated.headers.get('retry-after')).toBe('1');
+    expect(stateRecords.get(issued[4]!.stateHash)?.record.status).toBe('pending');
+
+    resolveToken?.({ data: { access_token: 'access-token' } });
+    const completed = await Promise.all(requests);
+    expect(completed.every((response) => response.status === 200)).toBe(true);
+    expect(http.post).toHaveBeenCalledTimes(4);
   });
 
   it('accepts a large snowflake and ignores client-selected development redirects', async () => {

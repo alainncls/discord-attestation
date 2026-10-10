@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DecodedPayload, SignedGuild } from '../types';
 import type { Address, Hex } from 'viem';
 import type { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
@@ -7,6 +7,78 @@ import { linea } from 'wagmi/chains';
 import { removeLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
 
 const LEGACY_DISCORD_TOKEN_KEY = 'discord_access_token';
+
+interface OAuthExchangeEntry {
+  identityKey: string;
+  controller: AbortController;
+  promise: Promise<SignedGuild[] | null>;
+  references: number;
+  pending: boolean;
+}
+
+// Keep a callback single-flight across StrictMode's setup/cleanup/setup cycle.
+// State is one-use server-side, so an aborted client request must never be retried.
+const oauthExchanges = new Map<string, OAuthExchangeEntry>();
+
+const acquireOAuthExchange = (
+  state: string,
+  identityKey: string,
+  execute: (signal: AbortSignal) => Promise<SignedGuild[] | null>,
+): { promise: Promise<SignedGuild[] | null>; release: () => void } | null => {
+  const existing = oauthExchanges.get(state);
+  if (existing) {
+    if (existing.identityKey !== identityKey) return null;
+    existing.references += 1;
+    return createOAuthExchangeLease(existing);
+  }
+
+  while (oauthExchanges.size >= 64) {
+    const completed = [...oauthExchanges.entries()].find(([, entry]) => !entry.pending);
+    if (!completed) return null;
+    oauthExchanges.delete(completed[0]);
+  }
+
+  const controller = new AbortController();
+  const entry: OAuthExchangeEntry = {
+    identityKey,
+    controller,
+    promise: Promise.resolve(null),
+    references: 1,
+    pending: true,
+  };
+  entry.promise = execute(controller.signal).finally(() => {
+    entry.pending = false;
+  });
+  oauthExchanges.set(state, entry);
+
+  return createOAuthExchangeLease(entry);
+};
+
+const releaseOAuthExchange = (entry: OAuthExchangeEntry): void => {
+  entry.references = Math.max(0, entry.references - 1);
+  if (!entry.references && entry.pending) {
+    queueMicrotask(() => {
+      if (!entry.references && entry.pending) entry.controller.abort();
+    });
+  }
+};
+
+const createOAuthExchangeLease = (
+  entry: OAuthExchangeEntry,
+): { promise: Promise<SignedGuild[] | null>; release: () => void } => {
+  let released = false;
+  return {
+    promise: entry.promise,
+    release: () => {
+      if (released) return;
+      released = true;
+      releaseOAuthExchange(entry);
+    },
+  };
+};
+
+const getIdentityKey = (address?: Address, chainId?: number): string =>
+  `${address?.toLowerCase() ?? 'disconnected'}:${chainId ?? 'unknown'}`;
 
 const getApiBaseUrl = () => {
   const isLocalViteDevServer = import.meta.env.DEV && window.location.port === '5173';
@@ -48,6 +120,10 @@ export const useFetchGuilds = (
   chainId?: number,
   state?: string | null,
 ) => {
+  const identityKey = getIdentityKey(address, chainId);
+  const currentIdentityRef = useRef(identityKey);
+  const requestEpochRef = useRef(0);
+  const [sessionIdentity, setSessionIdentity] = useState(identityKey);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(() => getInitialOAuthLoadingState(code));
   const [guilds, setGuilds] = useState<SignedGuild[]>([]);
@@ -96,7 +172,9 @@ export const useFetchGuilds = (
           body: JSON.stringify(payload),
           signal,
         });
+        if (signal.aborted) return null;
         const data = await res.json();
+        if (signal.aborted || !res.ok) return null;
 
         if (data.error || data.message) {
           return null;
@@ -115,32 +193,57 @@ export const useFetchGuilds = (
   }, []);
 
   useEffect(() => {
+    currentIdentityRef.current = identityKey;
+    const identityEpoch = (requestEpochRef.current += 1);
+    queueMicrotask(() => {
+      if (requestEpochRef.current !== identityEpoch) return;
+      setSessionIdentity(identityKey);
+      setIsLoggedIn(false);
+      setGuilds([]);
+    });
+  }, [identityKey]);
+
+  useEffect(() => {
     if (!isLoading || !code || !veraxSdk) {
       return;
     }
 
     let isCurrent = true;
-    const controller = new AbortController();
+    const requestEpoch = requestEpochRef.current;
+    const requestIdentity = identityKey;
+    let releaseExchange: (() => void) | undefined;
+    const isRequestCurrent = () =>
+      isCurrent &&
+      requestEpochRef.current === requestEpoch &&
+      currentIdentityRef.current === requestIdentity;
 
     const fetchGuilds = async () => {
-      if (!state) {
+      if (!state || !address || !chainId) {
         clearOAuthCodeFromUrl(code, state ?? null);
         setIsLoading(false);
         return;
       }
 
       try {
-        const signedGuilds = await fetchGuildsFromApi({ code, state }, controller.signal);
-        if (signedGuilds && isCurrent) {
+        const exchange = acquireOAuthExchange(state, requestIdentity, (signal) =>
+          fetchGuildsFromApi({ code, state }, signal),
+        );
+        if (!exchange) return;
+        releaseExchange = exchange.release;
+        const signedGuilds = await exchange.promise;
+        if (!signedGuilds || !isRequestCurrent()) return;
+
+        {
           const enrichedGuilds = await enrichGuildsWithAttestations(signedGuilds, veraxSdk);
-          if (isCurrent) {
-            setGuilds(enrichedGuilds);
-            setIsLoggedIn(true);
-          }
+          if (!isRequestCurrent()) return;
+          setSessionIdentity(requestIdentity);
+          setGuilds(enrichedGuilds);
+          setIsLoggedIn(true);
         }
       } finally {
-        clearOAuthCodeFromUrl(code, state);
-        if (isCurrent) {
+        releaseExchange?.();
+        if (isRequestCurrent()) {
+          clearOAuthCodeFromUrl(code, state);
           setIsLoading(false);
         }
       }
@@ -150,9 +253,25 @@ export const useFetchGuilds = (
 
     return () => {
       isCurrent = false;
-      controller.abort();
+      releaseExchange?.();
     };
-  }, [isLoading, code, state, veraxSdk, fetchGuildsFromApi, enrichGuildsWithAttestations]);
+  }, [
+    isLoading,
+    code,
+    state,
+    identityKey,
+    address,
+    chainId,
+    veraxSdk,
+    fetchGuildsFromApi,
+    enrichGuildsWithAttestations,
+  ]);
 
-  return { isLoggedIn, isLoading, guilds, setGuilds };
+  const isSessionCurrent = sessionIdentity === identityKey;
+  return {
+    isLoggedIn: isSessionCurrent && isLoggedIn,
+    isLoading,
+    guilds: isSessionCurrent ? guilds : [],
+    setGuilds,
+  };
 };

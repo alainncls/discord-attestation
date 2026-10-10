@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, posix, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { beforeEach, describe, it } from 'node:test';
 
 import { network } from 'hardhat';
-import solc from 'solc';
 import {
   encodeAbiParameters,
   getAddress,
@@ -23,7 +23,7 @@ const require = createRequire(import.meta.url);
 const PRODUCTION_SIGNER_DECLARATION =
   'address public constant SIGNER_ADDRESS = 0x6aDD17d22E8753869a3B9E83068Be1f16202046E;';
 
-const compileEphemeralSignerFixture = (signerAddress: Address) => {
+const compileEphemeralSignerFixture = async (signerAddress: Address) => {
   const productionSource = readFileSync(resolve(CONTRACTS_ROOT, 'src/DiscordPortal.sol'), 'utf8');
   assert.equal(productionSource.split(PRODUCTION_SIGNER_DECLARATION).length - 1, 1);
   const fixtureDeclaration = `address public constant SIGNER_ADDRESS = ${signerAddress};`;
@@ -34,26 +34,45 @@ const compileEphemeralSignerFixture = (signerAddress: Address) => {
     'the ephemeral fixture may change only the signer constant',
   );
 
+  const sources: Record<string, { content: string }> = {};
+  const addSource = (sourceKey: string, sourcePath: string): void => {
+    if (sources[sourceKey]) return;
+    const content = readFileSync(sourcePath, 'utf8');
+    sources[sourceKey] = { content };
+    const importPattern = /\bimport\s+(?:[^;"']*?\sfrom\s*)?["']([^"']+)["']\s*;/g;
+    for (const [, importPath] of content.matchAll(importPattern)) {
+      if (!importPath) continue;
+      const dependencyPath = importPath.startsWith('.')
+        ? resolve(dirname(sourcePath), importPath)
+        : require.resolve(importPath, { paths: [dirname(sourcePath), CONTRACTS_ROOT] });
+      const dependencyKey = posix.normalize(
+        importPath.startsWith('.') ? posix.join(posix.dirname(sourceKey), importPath) : importPath,
+      );
+      addSource(dependencyKey, dependencyPath);
+    }
+  };
+  addSource('src/DiscordPortal.sol', resolve(CONTRACTS_ROOT, 'src/DiscordPortal.sol'));
+  sources['src/DiscordPortal.sol'] = { content: fixtureSource };
+
   const input = {
     language: 'Solidity',
-    sources: { 'src/DiscordPortal.sol': { content: fixtureSource } },
+    sources,
     settings: {
       evmVersion: 'shanghai',
       optimizer: { enabled: true, runs: 2000 },
       outputSelection: { '*': { '*': ['abi', 'evm.bytecode.object'] } },
     },
   };
-  const output = JSON.parse(
-    solc.compile(JSON.stringify(input), {
-      import(importPath: string) {
-        try {
-          const dependencyPath = require.resolve(importPath, { paths: [CONTRACTS_ROOT] });
-          return { contents: readFileSync(dependencyPath, 'utf8') };
-        } catch (error) {
-          return { error: `Unable to resolve Solidity import ${importPath}: ${String(error)}` };
-        }
-      },
-    }),
+  const hardhatEntry = require.resolve('hardhat');
+  const compilerModulePath = resolve(
+    dirname(hardhatEntry),
+    'internal/builtin-plugins/solidity/build-system/compiler/index.js',
+  );
+  const { getCompiler } = await import(pathToFileURL(compilerModulePath).href);
+  const compiler = await getCompiler('0.8.21', { preferWasm: false });
+  const compilerOutput = await compiler.compile(input);
+  const output = (
+    typeof compilerOutput === 'string' ? JSON.parse(compilerOutput) : compilerOutput
   ) as {
     errors?: Array<{ severity: string; formattedMessage: string }>;
     contracts?: Record<string, Record<string, { abi: Abi; evm: { bytecode: { object: string } } }>>;
@@ -210,7 +229,7 @@ describe('DiscordPortal public attestation boundary', async function () {
 
   it('accepts a real EIP-712 signature with an ephemeral local signer and exact production source', async () => {
     const ephemeralSigner = privateKeyToAccount(`0x${'77'.repeat(32)}` as Hex);
-    const fixture = compileEphemeralSignerFixture(ephemeralSigner.address);
+    const fixture = await compileEphemeralSignerFixture(ephemeralSigner.address);
     const deploymentHash = await subject.deployContract({
       abi: fixture.abi,
       bytecode: fixture.bytecode,

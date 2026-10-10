@@ -29,7 +29,6 @@
     "hardhat": "catalog:",
     "prettier": "catalog:",
     "prettier-plugin-solidity": "2.4.1",
-    "solc": "0.8.21",
     "solhint": "6.2.4",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",

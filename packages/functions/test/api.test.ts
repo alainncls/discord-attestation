@@ -230,6 +230,143 @@ describe('Discord signing API', () => {
     expect(http.post).not.toHaveBeenCalled();
   });
 
+  it('returns within the total budget when OAuth state creation never resolves', async () => {
+    const stalledStore: OAuthStateStore = {
+      create: () => new Promise(() => undefined),
+      read: async () => null,
+      compareAndSet: async () => false,
+    };
+    const stalledHandler = createApiHandler({
+      http,
+      config: () => config,
+      oauthStateStore: () => stalledStore,
+      now: () => NOW,
+      requestBudgetMs: 10,
+    });
+
+    const response = await stalledHandler(createStartRequest(), createContext('203.0.113.81'));
+
+    expect(response.status).toBe(504);
+    expect(await response.json()).toEqual({ error: 'Request budget exceeded' });
+    expect(response.headers.get('set-cookie')).toBeNull();
+  });
+
+  it('bounds stalled state reads and compare-and-set without starting provider requests', async () => {
+    const issued = issueState();
+    const stalledReadHandler = createApiHandler({
+      http,
+      config: () => config,
+      oauthStateStore: () => ({
+        create: stateStore.create,
+        read: () => new Promise(() => undefined),
+        compareAndSet: stateStore.compareAndSet,
+      }),
+      now: () => NOW,
+      requestBudgetMs: 10,
+    });
+    const readResponse = await stalledReadHandler(
+      createRequest({}, issued),
+      createContext('203.0.113.82'),
+    );
+    expect(readResponse.status).toBe(504);
+
+    const stalledCasHandler = createApiHandler({
+      http,
+      config: () => config,
+      oauthStateStore: () => ({
+        create: stateStore.create,
+        read: async () => stateRecords.get(issued.stateHash) ?? null,
+        compareAndSet: () => new Promise(() => undefined),
+      }),
+      now: () => NOW,
+      requestBudgetMs: 10,
+    });
+    const casResponse = await stalledCasHandler(
+      createRequest({}, issued),
+      createContext('203.0.113.83'),
+    );
+
+    expect(casResponse.status).toBe(504);
+    expect(http.post).not.toHaveBeenCalled();
+    expect(http.get).not.toHaveBeenCalled();
+  });
+
+  it('does not resume into provider exchange when a timed-out CAS resolves late', async () => {
+    const issued = issueState();
+    let resolveCas: ((consumed: boolean) => void) | undefined;
+    const delayedCasHandler = createApiHandler({
+      http,
+      config: () => config,
+      oauthStateStore: () => ({
+        create: stateStore.create,
+        read: async () => stateRecords.get(issued.stateHash) ?? null,
+        compareAndSet: () =>
+          new Promise((resolve) => {
+            resolveCas = resolve;
+          }),
+      }),
+      now: () => NOW,
+      requestBudgetMs: 10,
+    });
+
+    const response = await delayedCasHandler(
+      createRequest({}, issued),
+      createContext('203.0.113.85'),
+    );
+    expect(response.status).toBe(504);
+    resolveCas?.(true);
+    await Promise.resolve();
+    expect(http.post).not.toHaveBeenCalled();
+    expect(http.get).not.toHaveBeenCalled();
+  });
+
+  it('aborts a provider request that ignores its own configured timeout', async () => {
+    let signal: AbortSignal | undefined;
+    let resolveProvider: ((response: { data: { access_token: string } }) => void) | undefined;
+    vi.mocked(http.post).mockImplementation((_url, _data, options) => {
+      signal = options?.signal as AbortSignal;
+      return new Promise((resolve) => {
+        resolveProvider = resolve;
+      }) as never;
+    });
+    const deadlineHandler = createApiHandler({
+      http,
+      config: () => config,
+      oauthStateStore: () => stateStore,
+      now: () => NOW,
+      requestBudgetMs: 50,
+    });
+
+    const response = await deadlineHandler(createRequest(), createContext('203.0.113.84'));
+
+    expect(response.status).toBe(504);
+    expect(signal?.aborted).toBe(true);
+    resolveProvider?.({ data: { access_token: 'late-token' } });
+    await Promise.resolve();
+    expect(http.get).not.toHaveBeenCalled();
+  });
+
+  it('releases every flow slot after timed-out provider requests', async () => {
+    vi.mocked(http.post).mockImplementation(() => new Promise(() => undefined) as never);
+    const deadlineHandler = createApiHandler({
+      http,
+      config: () => config,
+      oauthStateStore: () => stateStore,
+      now: () => NOW,
+      requestBudgetMs: 50,
+    });
+    const timedOut = await Promise.all(
+      Array.from({ length: 4 }, (_, index) =>
+        deadlineHandler(createRequest(), createContext(`203.0.113.${90 + index}`)),
+      ),
+    );
+    expect(timedOut.every((response) => response.status === 504)).toBe(true);
+
+    vi.mocked(http.post).mockResolvedValue({ data: { access_token: 'access-token' } } as never);
+    const recovered = await deadlineHandler(createRequest(), createContext('203.0.113.95'));
+    expect(recovered.status).toBe(200);
+  });
+
   it.each([
     ['unissued state', (issued: IssuedState) => createRequest({ state: 'A'.repeat(43) }, issued)],
     [
@@ -429,7 +566,7 @@ describe('Discord signing API', () => {
     expect(http.get).not.toHaveBeenCalled();
   });
 
-  it('enforces one aggregate provider budget and consumes state before starting the exchange', async () => {
+  it('enforces one total request budget and consumes state before its deadline', async () => {
     let monotonicReads = 0;
     const budgetHandler = createApiHandler({
       http,
@@ -446,7 +583,7 @@ describe('Discord signing API', () => {
     expect(response.status).toBe(504);
     expect(await response.json()).toEqual({ error: 'Request budget exceeded' });
     expect(stateRecords.get(issued.stateHash)?.record.status).toBe('consumed');
-    expect(http.post).toHaveBeenCalledTimes(1);
+    expect(http.post).not.toHaveBeenCalled();
     expect(http.get).not.toHaveBeenCalled();
   });
 

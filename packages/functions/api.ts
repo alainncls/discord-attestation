@@ -287,6 +287,7 @@ const createRequestBudget = (
   requestStartedAt = monotonicNow(),
 ) => {
   const deadline = requestStartedAt + budgetMs;
+  const controller = new AbortController();
   const assertRemaining = (): number => {
     const remaining = Math.floor(deadline - monotonicNow());
     if (remaining <= 0) throw new ApiError(504, 'Request budget exceeded');
@@ -294,7 +295,23 @@ const createRequestBudget = (
   };
   return {
     assertRemaining,
+    signal: controller.signal,
     timeoutMs: () => Math.min(PROVIDER_TIMEOUT_MS, assertRemaining()),
+    async run<T>(operation: Promise<T>): Promise<T> {
+      const remaining = assertRemaining();
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          controller.abort(new ApiError(504, 'Request budget exceeded'));
+          reject(new ApiError(504, 'Request budget exceeded'));
+        }, remaining);
+      });
+      try {
+        return await Promise.race([operation, timeout]);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+    },
   };
 };
 
@@ -415,7 +432,7 @@ const getToken = async (
   },
   code: string,
   isDev: boolean,
-  timeoutMs: number,
+  requestBudget: ReturnType<typeof createRequestBudget>,
 ): Promise<string> => {
   const params = new URLSearchParams({
     client_id: config.VITE_DISCORD_CLIENT_ID,
@@ -427,13 +444,17 @@ const getToken = async (
 
   let response;
   try {
-    response = await client.post(TOKEN_URL, params, {
-      timeout: timeoutMs,
-      maxBodyLength: MAX_REQUEST_BODY_BYTES,
-      maxContentLength: MAX_PROVIDER_BODY_BYTES,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
+    response = await requestBudget.run(
+      client.post(TOKEN_URL, params, {
+        timeout: requestBudget.timeoutMs(),
+        signal: requestBudget.signal,
+        maxBodyLength: MAX_REQUEST_BODY_BYTES,
+        maxContentLength: MAX_PROVIDER_BODY_BYTES,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }),
+    );
   } catch (error) {
+    if (error instanceof ApiError) throw error;
     throw mapProviderError(error);
   }
 
@@ -484,13 +505,17 @@ const getGuilds = async (
     const timeoutMs = requestBudget.timeoutMs();
     let response;
     try {
-      response = await client.get(GUILDS_URL, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params: { limit: PAGE_SIZE, ...(after ? { after } : {}) },
-        timeout: timeoutMs,
-        maxContentLength: MAX_PROVIDER_BODY_BYTES,
-      });
+      response = await requestBudget.run(
+        client.get(GUILDS_URL, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          params: { limit: PAGE_SIZE, ...(after ? { after } : {}) },
+          timeout: timeoutMs,
+          signal: requestBudget.signal,
+          maxContentLength: MAX_PROVIDER_BODY_BYTES,
+        }),
+      );
     } catch (error) {
+      if (error instanceof ApiError) throw error;
       throw mapProviderError(error);
     }
 
@@ -521,6 +546,7 @@ const signGuilds = async (
   chainId: number,
   expirationDate: bigint,
   requestBudget: ReturnType<typeof createRequestBudget>,
+  signal: AbortSignal,
 ): Promise<Array<{ id: string; name: string; signature: Hex; expirationDate: number }>> => {
   const domain = {
     name: 'VerifyDiscord',
@@ -551,6 +577,7 @@ const signGuilds = async (
 
   const worker = async (): Promise<void> => {
     while (nextIndex < guilds.length) {
+      if (signal.aborted) throw signal.reason;
       const index = nextIndex;
       nextIndex += 1;
       requestBudget.assertRemaining();
@@ -608,10 +635,23 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
     }
 
     const requestStartedAt = monotonicNow();
+    const requestBudget = createRequestBudget(
+      dependencies.requestBudgetMs ?? REQUEST_BUDGET_MS,
+      monotonicNow,
+      requestStartedAt,
+    );
     let cookieToClear: string | undefined;
     let releaseFlow: (() => void) | undefined;
     try {
-      const payload = await readRequestJson(req, dependencies.requestBodyTimeoutMs);
+      const payload = await requestBudget.run(
+        readRequestJson(
+          req,
+          Math.min(
+            dependencies.requestBodyTimeoutMs ?? REQUEST_BODY_TIMEOUT_MS,
+            requestBudget.timeoutMs(),
+          ),
+        ),
+      );
       if (payload.action === 'start') {
         checkOAuthConfig(config);
         const oauthContext = getOAuthContext(req.headers.get('origin'), config);
@@ -643,8 +683,9 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
           const store =
             dependencies.oauthStateStore?.(oauthContext.environment) ??
             createNetlifyOAuthStateStore(oauthContext.environment);
-          stored = await store.create(stateHash, record);
-        } catch {
+          stored = await requestBudget.run(store.create(stateHash, record));
+        } catch (error) {
+          if (error instanceof ApiError) throw error;
           throw new ApiError(503, 'OAuth state storage unavailable');
         }
         if (!stored) throw new ApiError(503, 'Could not reserve OAuth state');
@@ -678,12 +719,6 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
       if (!code || !subject || !chainId) throw new ApiError(400, 'Missing parameters');
       checkConfig(config);
       releaseFlow = acquireFlowCapacity();
-      const requestBudget = createRequestBudget(
-        dependencies.requestBudgetMs ?? REQUEST_BUDGET_MS,
-        monotonicNow,
-        requestStartedAt,
-      );
-
       let store: OAuthStateStore;
       let entry;
       try {
@@ -691,16 +726,9 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
         store =
           dependencies.oauthStateStore?.(oauthContext.environment) ??
           createNetlifyOAuthStateStore(oauthContext.environment);
-        entry = await store.read(stateHash);
-        requestBudget.assertRemaining();
+        entry = await requestBudget.run(store.read(stateHash));
       } catch (error) {
         if (error instanceof ApiError) throw error;
-        if (
-          monotonicNow() - requestStartedAt >=
-          (dependencies.requestBudgetMs ?? REQUEST_BUDGET_MS)
-        ) {
-          throw new ApiError(504, 'Request budget exceeded');
-        }
         throw new ApiError(503, 'OAuth state storage unavailable');
       }
       if (
@@ -722,30 +750,24 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
       let consumed: boolean;
       try {
         requestBudget.assertRemaining();
-        consumed = await store.compareAndSet(stateHash, entry.etag, {
-          ...entry.record,
-          status: 'consumed',
-        });
-        requestBudget.assertRemaining();
+        consumed = await requestBudget.run(
+          store.compareAndSet(stateHash, entry.etag, {
+            ...entry.record,
+            status: 'consumed',
+          }),
+        );
       } catch (error) {
         if (error instanceof ApiError) throw error;
-        if (
-          monotonicNow() - requestStartedAt >=
-          (dependencies.requestBudgetMs ?? REQUEST_BUDGET_MS)
-        ) {
-          throw new ApiError(504, 'Request budget exceeded');
-        }
         throw new ApiError(503, 'OAuth state storage unavailable');
       }
       if (!consumed) throw new ApiError(400, 'OAuth state already used');
 
-      const requestTimeoutMs = requestBudget.timeoutMs();
       const accessToken = await getToken(
         dependencies.http,
         config,
         code,
         entry.record.environment === 'dev',
-        requestTimeoutMs,
+        requestBudget,
       );
       requestBudget.assertRemaining();
       let guilds: Guild[];
@@ -761,13 +783,16 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
         account: privateKeyToAccount(config.SIGNER_PRIVATE_KEY),
         transport: http('https://rpc.linea.build'),
       });
-      const signedGuilds = await signGuilds(
-        walletClient,
-        guilds,
-        subject,
-        chainId,
-        expirationDate,
-        requestBudget,
+      const signedGuilds = await requestBudget.run(
+        signGuilds(
+          walletClient,
+          guilds,
+          subject,
+          chainId,
+          expirationDate,
+          requestBudget,
+          requestBudget.signal,
+        ),
       );
 
       return jsonResponse(

@@ -5,6 +5,7 @@ import Spinner from './Spinner';
 import TransactionStatus from './TransactionStatus';
 import ConnectButton from './ConnectButton';
 import type { Hex } from 'viem';
+import type { Address } from 'viem';
 import './MainContent.css';
 
 interface MainContentProps {
@@ -15,6 +16,8 @@ interface MainContentProps {
   attestationId?: Hex;
   pendingGuildId?: string | null;
   chainId?: number;
+  walletAddress?: Address;
+  walletChainId?: number;
   isWalletConnected: boolean;
   onAttest: (guild: SignedGuild) => void;
   onCheck: (guild: SignedGuild) => void;
@@ -28,6 +31,8 @@ const MainContent = ({
   attestationId,
   pendingGuildId,
   chainId,
+  walletAddress,
+  walletChainId,
   isWalletConnected,
   onAttest,
   onCheck,
@@ -44,7 +49,7 @@ const MainContent = ({
 
       {!isLoggedIn && !isLoading && (
         <div className="centered-content">
-          <LoginWithDiscord />
+          <LoginWithDiscord address={walletAddress} chainId={walletChainId} />
         </div>
       )}
 

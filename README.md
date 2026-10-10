@@ -149,6 +149,8 @@ Copy the `.env.example` files and fill in your values:
 | `VITE_REDIRECT_URL`      | OAuth2 redirect URL            | Your app URL (e.g., `https://discord.alainnicolas.fr`)                  |
 | `SIGNER_PRIVATE_KEY`     | Private key for signing guilds | Your wallet (must match `SIGNER_ADDRESS` in contract)                   |
 
+OAuth state is issued by the Netlify Function and stored in Netlify Blobs with strong reads and ETag compare-and-set. Set `VITE_REDIRECT_URL` to the exact app URL for each deploy context; Netlify's `CONTEXT` separates production and deploy-preview state stores. The browser receives only the short-lived OAuth state URL and an `HttpOnly; Secure; SameSite=Lax` binding cookie. A callback without the original cookie, wallet, chain, origin, or deployment context is rejected before Discord is contacted. If the state store is unavailable, login fails closed with HTTP 503.
+
 ### Contracts (`packages/contracts/.env`)
 
 | Variable            | Description                | Where to get it                        |
@@ -215,6 +217,8 @@ pnpm --filter @discord-attestation/functions dev
 - The `SIGNER_PRIVATE_KEY` should **never** be committed to version control
 - In production, use Netlify environment variables
 - The signer's public address must match `SIGNER_ADDRESS` in the contract
+- Discord OAuth state is single-use, expires after five minutes, and is consumed atomically before the token exchange; expired records are pruned after an additional retention margin
+- Start Discord login only after connecting the wallet on Linea or Linea Sepolia; OAuth state binds the callback to that subject and chain but does not prove wallet ownership
 
 ## 🔗 Verax Deployments
 

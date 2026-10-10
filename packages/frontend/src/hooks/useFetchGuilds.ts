@@ -4,7 +4,7 @@ import type { Address, Hex } from 'viem';
 import type { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
 import { PORTAL_ID, PORTAL_ID_TESTNET, SCHEMA_ID } from '../utils/constants';
 import { linea } from 'wagmi/chains';
-import { getLocalStorageValue, removeLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
+import { removeLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
 
 const LEGACY_DISCORD_TOKEN_KEY = 'discord_access_token';
 
@@ -16,29 +16,20 @@ const getApiBaseUrl = () => {
     : '';
 };
 
-const getOAuthStateFromUrl = () => new URLSearchParams(window.location.search).get('state');
-
-const isValidOAuthState = () => {
-  const returnedState = getOAuthStateFromUrl();
-  const storedState = getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
-
-  return Boolean(returnedState && storedState && returnedState === storedState);
-};
-
-const clearOAuthCodeFromUrl = () => {
+const clearOAuthCodeFromUrl = (expectedCode: string, expectedState: string | null) => {
   const url = new URL(window.location.href);
+  if (
+    url.searchParams.get('code') !== expectedCode ||
+    url.searchParams.get('state') !== expectedState
+  ) {
+    return;
+  }
   url.searchParams.delete('code');
   url.searchParams.delete('state');
   window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
 };
 
-const getInitialOAuthLoadingState = (code?: string | null) => {
-  if (!code) {
-    return false;
-  }
-
-  return getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED) === 'true' && isValidOAuthState();
-};
+const getInitialOAuthLoadingState = (code?: string | null) => Boolean(code);
 
 const clearStoredDiscordTokens = () => {
   removeLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN);
@@ -55,6 +46,7 @@ export const useFetchGuilds = (
   address?: Address,
   code?: string | null,
   chainId?: number,
+  state?: string | null,
 ) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(() => getInitialOAuthLoadingState(code));
@@ -85,22 +77,24 @@ export const useFetchGuilds = (
   );
 
   const fetchGuildsFromApi = useCallback(
-    async (params: { code: string }) => {
+    async (params: { code: string; state: string }, signal: AbortSignal) => {
       const baseUrl = getApiBaseUrl();
-      const isDev = baseUrl !== '';
 
       const payload = {
-        isDev: String(isDev),
+        action: 'exchange',
         subject: address as string,
         chainId: String(chainId),
         code: params.code,
+        state: params.state,
       };
 
       try {
         const res = await fetch(`${baseUrl}/.netlify/functions/api`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
+          signal,
         });
         const data = await res.json();
 
@@ -126,27 +120,26 @@ export const useFetchGuilds = (
     }
 
     let isCurrent = true;
+    const controller = new AbortController();
 
     const fetchGuilds = async () => {
-      if (!isValidOAuthState()) {
-        removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED);
-        removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
-        clearOAuthCodeFromUrl();
+      if (!state) {
+        clearOAuthCodeFromUrl(code, state ?? null);
         setIsLoading(false);
         return;
       }
 
-      removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED);
       try {
-        const signedGuilds = await fetchGuildsFromApi({ code });
+        const signedGuilds = await fetchGuildsFromApi({ code, state }, controller.signal);
         if (signedGuilds && isCurrent) {
           const enrichedGuilds = await enrichGuildsWithAttestations(signedGuilds, veraxSdk);
-          setGuilds(enrichedGuilds);
-          setIsLoggedIn(true);
+          if (isCurrent) {
+            setGuilds(enrichedGuilds);
+            setIsLoggedIn(true);
+          }
         }
       } finally {
-        removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
-        clearOAuthCodeFromUrl();
+        clearOAuthCodeFromUrl(code, state);
         if (isCurrent) {
           setIsLoading(false);
         }
@@ -157,16 +150,9 @@ export const useFetchGuilds = (
 
     return () => {
       isCurrent = false;
+      controller.abort();
     };
-  }, [isLoading, code, veraxSdk, fetchGuildsFromApi, enrichGuildsWithAttestations]);
-
-  useEffect(() => {
-    if (code && !isLoading && !isValidOAuthState()) {
-      removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED);
-      removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
-      clearOAuthCodeFromUrl();
-    }
-  }, [code, isLoading]);
+  }, [isLoading, code, state, veraxSdk, fetchGuildsFromApi, enrichGuildsWithAttestations]);
 
   return { isLoggedIn, isLoading, guilds, setGuilds };
 };

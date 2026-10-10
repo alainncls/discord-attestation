@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { AxiosInstance } from 'axios';
 import type { Context } from '@netlify/functions';
 import { createWalletClient, getAddress, http, isAddress } from 'viem';
@@ -7,6 +8,8 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { linea, lineaSepolia } from 'viem/chains';
 import { PORTAL_ID, PORTAL_ID_TESTNET } from './lib/constants';
 import type { Guild } from './lib/types';
+import { createNetlifyOAuthStateStore } from './oauth-state';
+import type { OAuthStateRecord, OAuthStateStore } from './oauth-state';
 
 const TOKEN_URL = 'https://discord.com/api/oauth2/token';
 const GUILDS_URL = 'https://discord.com/api/users/@me/guilds';
@@ -22,6 +25,10 @@ const SIGNING_CONCURRENCY = 10;
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_CLIENTS = 4_096;
+const OAUTH_STATE_TTL_MS = 5 * 60_000;
+const OAUTH_COOKIE = 'discord_oauth_';
+const OAUTH_COOKIE_PATH = '/.netlify/functions/api';
+const DEVELOPMENT_ORIGINS = new Set(['http://localhost:5173', 'http://127.0.0.1:5173']);
 
 interface RuntimeConfig {
   VITE_DISCORD_CLIENT_ID?: string;
@@ -29,11 +36,13 @@ interface RuntimeConfig {
   VITE_REDIRECT_URL?: string;
   SIGNER_PRIVATE_KEY?: string;
   NODE_ENV?: string;
+  CONTEXT?: string;
 }
 
 interface ApiDependencies {
   http: Pick<AxiosInstance, 'get' | 'post'>;
   config: () => RuntimeConfig;
+  oauthStateStore?: (environment: string) => OAuthStateStore;
   now?: () => number;
 }
 
@@ -55,7 +64,14 @@ class ApiError extends Error {
 
 const getHeaders = (req: Request, config: RuntimeConfig): Record<string, string> => {
   const origin = req.headers.get('origin');
-  const configuredOrigin = config.VITE_REDIRECT_URL;
+  let configuredOrigin: string | undefined;
+  try {
+    configuredOrigin = config.VITE_REDIRECT_URL
+      ? new URL(config.VITE_REDIRECT_URL).origin
+      : undefined;
+  } catch {
+    configuredOrigin = undefined;
+  }
   const allowedOrigins = new Set(
     [configuredOrigin, DEV_REDIRECT_URL, 'http://127.0.0.1:5173'].filter(Boolean),
   );
@@ -66,11 +82,104 @@ const getHeaders = (req: Request, config: RuntimeConfig): Record<string, string>
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true',
     'Cache-Control': 'no-store',
     'Content-Type': 'application/json',
     Vary: 'Origin',
   };
 };
+
+const getOAuthContext = (
+  origin: string | null,
+  config: RuntimeConfig,
+): { origin: string; redirectUri: string; environment: string } => {
+  if (!origin) throw new ApiError(400, 'OAuth origin is required');
+
+  if (config.NODE_ENV === 'development' && DEVELOPMENT_ORIGINS.has(origin)) {
+    return {
+      origin: new URL(DEV_REDIRECT_URL).origin,
+      redirectUri: DEV_REDIRECT_URL,
+      environment: 'dev',
+    };
+  }
+
+  if (!config.VITE_REDIRECT_URL) throw new ApiError(500, 'Configuration not set');
+  let configuredOrigin: string;
+  try {
+    configuredOrigin = new URL(config.VITE_REDIRECT_URL).origin;
+  } catch {
+    throw new ApiError(500, 'Configuration is invalid');
+  }
+  if (origin !== configuredOrigin) throw new ApiError(403, 'Invalid OAuth origin');
+
+  const environment = config.CONTEXT;
+  if (!environment || !/^[a-z0-9-]{1,32}$/i.test(environment)) {
+    throw new ApiError(500, 'Configuration is invalid');
+  }
+  return { origin, redirectUri: config.VITE_REDIRECT_URL, environment };
+};
+
+const sha256 = (value: string): string => createHash('sha256').update(value).digest('hex');
+
+const matchesHash = (value: string, expectedHash: string): boolean => {
+  const actual = Buffer.from(sha256(value), 'hex');
+  const expected = Buffer.from(expectedHash, 'hex');
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+};
+
+const cookieNameFor = (stateHash: string): string => `${OAUTH_COOKIE}${stateHash.slice(0, 20)}`;
+
+const getCookie = (request: Request, name: string): string | null => {
+  const cookies = request.headers.get('cookie');
+  if (!cookies) return null;
+  for (const part of cookies.split(';')) {
+    const separator = part.indexOf('=');
+    if (separator < 0 || part.slice(0, separator).trim() !== name) continue;
+    return part.slice(separator + 1).trim() || null;
+  }
+  return null;
+};
+
+const formatOAuthCookie = (name: string, value: string, maxAge: number): string =>
+  `${name}=${value}; HttpOnly; Secure; SameSite=Lax; Path=${OAUTH_COOKIE_PATH}; Max-Age=${maxAge}`;
+
+const validateOAuthStateRecord = (
+  record: OAuthStateRecord,
+  expected: {
+    browserBinding: string;
+    subject: string;
+    chainId: number;
+    origin: string;
+    redirectUri: string;
+    environment: string;
+    now: number;
+  },
+): boolean =>
+  typeof record === 'object' &&
+  record !== null &&
+  record.version === 1 &&
+  record.flow === 'discord' &&
+  record.status === 'pending' &&
+  typeof record.subject === 'string' &&
+  typeof record.chainId === 'number' &&
+  typeof record.origin === 'string' &&
+  typeof record.redirectUri === 'string' &&
+  typeof record.environment === 'string' &&
+  typeof record.issuedAt === 'number' &&
+  typeof record.expiresAt === 'number' &&
+  typeof record.browserBindingHash === 'string' &&
+  Number.isFinite(record.issuedAt) &&
+  Number.isFinite(record.expiresAt) &&
+  record.issuedAt <= expected.now &&
+  record.expiresAt > record.issuedAt &&
+  record.expiresAt > expected.now &&
+  record.expiresAt - record.issuedAt <= OAUTH_STATE_TTL_MS &&
+  record.subject.toLowerCase() === expected.subject.toLowerCase() &&
+  record.chainId === expected.chainId &&
+  record.origin === expected.origin &&
+  record.redirectUri === expected.redirectUri &&
+  record.environment === expected.environment &&
+  matchesHash(expected.browserBinding, record.browserBindingHash);
 
 const jsonResponse = (
   body: unknown,
@@ -238,6 +347,15 @@ const checkConfig: (config: RuntimeConfig) => asserts config is RuntimeConfig & 
   }
   if (!/^0x[0-9a-fA-F]{64}$/.test(config.SIGNER_PRIVATE_KEY)) {
     throw new ApiError(500, 'Configuration is invalid');
+  }
+};
+
+const checkOAuthConfig: (config: RuntimeConfig) => asserts config is RuntimeConfig & {
+  VITE_DISCORD_CLIENT_ID: string;
+  VITE_REDIRECT_URL: string;
+} = (config) => {
+  if (!config.VITE_DISCORD_CLIENT_ID || !config.VITE_REDIRECT_URL) {
+    throw new ApiError(500, 'Configuration not set');
   }
 };
 
@@ -415,6 +533,7 @@ const createDefaultConfig = (): RuntimeConfig => ({
   VITE_REDIRECT_URL: process.env.VITE_REDIRECT_URL,
   SIGNER_PRIVATE_KEY: process.env.SIGNER_PRIVATE_KEY,
   NODE_ENV: process.env.NODE_ENV,
+  CONTEXT: process.env.CONTEXT,
 });
 
 export const createApiHandler = (dependencies: ApiDependencies) => {
@@ -433,19 +552,118 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
       return jsonResponse({ error: 'Too many requests' }, 429, headers, String(waitSeconds));
     }
 
+    let cookieToClear: string | undefined;
     try {
-      checkConfig(config);
       const payload = await readRequestJson(req);
+      if (payload.action === 'start') {
+        checkOAuthConfig(config);
+        const oauthContext = getOAuthContext(req.headers.get('origin'), config);
+        const subject = parseSubject(payload.subject);
+        const chainId = parseSupportedChainId(payload.chainId);
+        if (!subject || !chainId) throw new ApiError(400, 'Missing parameters');
+
+        const state = randomBytes(32).toString('base64url');
+        const browserBinding = randomBytes(32).toString('base64url');
+        const stateHash = sha256(state);
+        const cookieName = cookieNameFor(stateHash);
+        const issuedAt = now();
+        const record: OAuthStateRecord = {
+          version: 1,
+          flow: 'discord',
+          browserBindingHash: sha256(browserBinding),
+          subject,
+          chainId,
+          redirectUri: oauthContext.redirectUri,
+          origin: oauthContext.origin,
+          environment: oauthContext.environment,
+          issuedAt,
+          expiresAt: issuedAt + OAUTH_STATE_TTL_MS,
+          status: 'pending',
+        };
+
+        let stored: boolean;
+        try {
+          const store =
+            dependencies.oauthStateStore?.(oauthContext.environment) ??
+            createNetlifyOAuthStateStore(oauthContext.environment);
+          stored = await store.create(stateHash, record);
+        } catch {
+          throw new ApiError(503, 'OAuth state storage unavailable');
+        }
+        if (!stored) throw new ApiError(503, 'Could not reserve OAuth state');
+
+        const authorizeUrl = new URL('https://discord.com/api/oauth2/authorize');
+        authorizeUrl.searchParams.set('client_id', config.VITE_DISCORD_CLIENT_ID);
+        authorizeUrl.searchParams.set('redirect_uri', oauthContext.redirectUri);
+        authorizeUrl.searchParams.set('response_type', 'code');
+        authorizeUrl.searchParams.set('scope', 'identify guilds');
+        authorizeUrl.searchParams.set('state', state);
+
+        return jsonResponse({ authorizeUrl: authorizeUrl.toString() }, 200, {
+          ...headers,
+          'Set-Cookie': formatOAuthCookie(cookieName, browserBinding, 300),
+        });
+      }
+
+      if (payload.action !== 'exchange') throw new ApiError(400, 'Invalid OAuth action');
+      const oauthState = typeof payload.state === 'string' ? payload.state : '';
+      if (!/^[A-Za-z0-9_-]{40,64}$/.test(oauthState)) {
+        throw new ApiError(400, 'Invalid OAuth state');
+      }
+      const stateHash = sha256(oauthState);
+      const cookieName = cookieNameFor(stateHash);
+      cookieToClear = formatOAuthCookie(cookieName, '', 0);
+      const browserBinding = getCookie(req, cookieName);
+      const oauthContext = getOAuthContext(req.headers.get('origin'), config);
       const code = parseCode(payload.code);
       const subject = parseSubject(payload.subject);
       const chainId = parseSupportedChainId(payload.chainId);
-      const requestedDevRedirect = payload.isDev === true || payload.isDev === 'true';
-      const isDev = requestedDevRedirect && config.NODE_ENV === 'development';
-
       if (!code || !subject || !chainId) throw new ApiError(400, 'Missing parameters');
-      if (requestedDevRedirect && !isDev) throw new ApiError(400, 'Invalid development redirect');
+      checkConfig(config);
 
-      const accessToken = await getToken(dependencies.http, config, code, isDev);
+      let store: OAuthStateStore;
+      let entry;
+      try {
+        store =
+          dependencies.oauthStateStore?.(oauthContext.environment) ??
+          createNetlifyOAuthStateStore(oauthContext.environment);
+        entry = await store.read(stateHash);
+      } catch {
+        throw new ApiError(503, 'OAuth state storage unavailable');
+      }
+      if (
+        !entry ||
+        !browserBinding ||
+        !validateOAuthStateRecord(entry.record, {
+          browserBinding,
+          subject,
+          chainId,
+          origin: oauthContext.origin,
+          redirectUri: oauthContext.redirectUri,
+          environment: oauthContext.environment,
+          now: now(),
+        })
+      ) {
+        throw new ApiError(400, 'Invalid or expired OAuth state');
+      }
+
+      let consumed: boolean;
+      try {
+        consumed = await store.compareAndSet(stateHash, entry.etag, {
+          ...entry.record,
+          status: 'consumed',
+        });
+      } catch {
+        throw new ApiError(503, 'OAuth state storage unavailable');
+      }
+      if (!consumed) throw new ApiError(400, 'OAuth state already used');
+
+      const accessToken = await getToken(
+        dependencies.http,
+        config,
+        code,
+        entry.record.environment === 'dev',
+      );
       let guilds: Guild[];
       try {
         guilds = await getGuilds(dependencies.http, accessToken);
@@ -461,17 +679,22 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
       });
       const signedGuilds = await signGuilds(walletClient, guilds, subject, chainId, expirationDate);
 
-      return jsonResponse({ signedGuilds }, 200, headers);
+      return jsonResponse(
+        { signedGuilds },
+        200,
+        cookieToClear ? { ...headers, 'Set-Cookie': cookieToClear } : headers,
+      );
     } catch (error: unknown) {
+      const responseHeaders = cookieToClear ? { ...headers, 'Set-Cookie': cookieToClear } : headers;
       if (error instanceof ApiError) {
         return jsonResponse(
           { error: error.publicMessage },
           error.status,
-          headers,
+          responseHeaders,
           error.retryAfter,
         );
       }
-      return jsonResponse({ error: 'Signing failed' }, 500, headers);
+      return jsonResponse({ error: 'Signing failed' }, 500, responseHeaders);
     }
   };
 };

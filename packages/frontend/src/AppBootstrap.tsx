@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ComponentType } from 'react';
 import { LandingShell } from './components/LandingShell';
-import { getLocalStorageValue, STORAGE_KEYS } from './utils/storage';
 
 interface AppRuntimeProps {
   openWalletOnReady?: boolean;
@@ -12,9 +11,7 @@ type AppRuntimeComponent = ComponentType<AppRuntimeProps>;
 const shouldLoadRuntimeImmediately = () => {
   const searchParams = new URLSearchParams(window.location.search);
 
-  return (
-    searchParams.has('code') || getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED) === 'true'
-  );
+  return searchParams.has('code') || searchParams.has('error');
 };
 
 export const AppBootstrap = () => {

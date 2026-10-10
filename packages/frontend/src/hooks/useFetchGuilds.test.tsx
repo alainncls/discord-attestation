@@ -40,8 +40,6 @@ describe('useFetchGuilds', () => {
     window.history.pushState({}, '', '/');
     window.localStorage.clear();
     removeLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN);
-    removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED);
-    removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
   });
 
   it('clears stored Discord tokens without restoring a session', async () => {
@@ -61,10 +59,8 @@ describe('useFetchGuilds', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('exchanges an OAuth code, enriches guilds, and clears OAuth state without storing a token', async () => {
+  it('exchanges the server-issued callback state and clears the URL without storing a token', async () => {
     const { sdk, findBy } = createSdk();
-    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
-    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE, 'oauth-state');
     window.history.pushState({}, '', '/?code=oauth-code&state=oauth-state');
     mockApiResponse({
       signedGuilds: [
@@ -77,7 +73,9 @@ describe('useFetchGuilds', () => {
       ],
     });
 
-    const { result } = renderHook(() => useFetchGuilds(sdk, address, 'oauth-code', 59141));
+    const { result } = renderHook(() =>
+      useFetchGuilds(sdk, address, 'oauth-code', 59141, 'oauth-state'),
+    );
 
     await waitFor(() => expect(result.current.isLoggedIn).toBe(true));
 
@@ -97,34 +95,49 @@ describe('useFetchGuilds', () => {
     });
     expect(fetchMock).toHaveBeenCalledWith('/.netlify/functions/api', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        isDev: 'false',
+        action: 'exchange',
         subject: address,
         chainId: '59141',
         code: 'oauth-code',
+        state: 'oauth-state',
       }),
+      signal: expect.any(AbortSignal),
     });
     expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN)).toBeNull();
-    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STARTED)).toBeNull();
-    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STATE)).toBeNull();
     expect(window.location.search).toBe('');
   });
 
-  it('does not exchange an OAuth code when state does not match', async () => {
+  it('sends the callback state to the server and clears a rejected callback URL', async () => {
     const { sdk } = createSdk();
-    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
-    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE, 'expected-state');
     window.history.pushState({}, '', '/?code=oauth-code&state=attacker-state');
+    mockApiResponse({ error: 'Invalid or expired OAuth state' });
 
-    const { result } = renderHook(() => useFetchGuilds(sdk, address, 'oauth-code', 59141));
+    const { result } = renderHook(() =>
+      useFetchGuilds(sdk, address, 'oauth-code', 59141, 'attacker-state'),
+    );
 
     await waitFor(() => expect(window.location.search).toBe(''));
 
     expect(result.current.isLoggedIn).toBe(false);
     expect(result.current.guilds).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+      action: 'exchange',
+      state: 'attacker-state',
+    });
+  });
+
+  it('clears a callback without state without sending the code to the API', async () => {
+    const { sdk } = createSdk();
+    window.history.pushState({}, '', '/?code=oauth-code');
+
+    const { result } = renderHook(() => useFetchGuilds(sdk, address, 'oauth-code', 59141, null));
+
+    await waitFor(() => expect(window.location.search).toBe(''));
+    expect(result.current.isLoading).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STARTED)).toBeNull();
-    expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_OAUTH_STATE)).toBeNull();
   });
 });

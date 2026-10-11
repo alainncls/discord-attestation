@@ -7,12 +7,13 @@
     "dev": "netlify functions:serve --functions . --port 8888",
     "lint": "eslint --config lib/eslint.config.js .",
     "lint:fix": "eslint --config lib/eslint.config.js --fix .",
-    "prettier": "prettier --check 'api.ts' 'test/**/*.ts' '*.json'",
-    "prettier:fix": "prettier --write 'api.ts' 'test/**/*.ts' '*.json'",
+    "prettier": "prettier --check 'api.ts' 'test/**/*.ts' 'verify-netlify-preview.ts' '*.json'",
+    "prettier:fix": "prettier --write 'api.ts' 'test/**/*.ts' 'verify-netlify-preview.ts' '*.json'",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@netlify/blobs": "10.7.13",
     "@netlify/functions": "catalog:",
     "axios": "catalog:",
     "viem": "catalog:"

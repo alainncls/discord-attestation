@@ -19,16 +19,18 @@ function App() {
   const { veraxSdk } = useVeraxSdk(chainId, address);
   const { toasts, removeToast, showError } = useToast();
 
-  // Get OAuth code from URL (only once on mount)
-  const [oauthCode] = useState(() => {
-    return new URLSearchParams(window.location.search).get('code');
+  // Capture the callback once so query cleanup does not change the active request.
+  const [oauthCallback] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return { code: params.get('code'), state: params.get('state') };
   });
 
   const { isLoggedIn, isLoading, guilds, setGuilds } = useFetchGuilds(
     veraxSdk,
     address,
-    oauthCode,
+    oauthCallback.code,
     chainId,
+    oauthCallback.state,
   );
 
   const { txHash, attestationId, pendingGuildId, transactionChainId, handleAttest, handleCheck } =
@@ -64,6 +66,8 @@ function App() {
           attestationId={attestationId}
           pendingGuildId={pendingGuildId}
           chainId={transactionChainId ?? chainId}
+          walletAddress={address}
+          walletChainId={chainId}
           isWalletConnected={isConnected}
           onAttest={handleAttestAndUpdateGuilds}
           onCheck={handleCheck}

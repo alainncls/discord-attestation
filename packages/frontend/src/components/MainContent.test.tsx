@@ -26,6 +26,8 @@ describe('MainContent', () => {
         isLoggedIn={false}
         isLoading={false}
         guilds={[]}
+        walletAddress="0x0000000000000000000000000000000000000001"
+        walletChainId={59144}
         isWalletConnected={false}
         onAttest={vi.fn()}
         onCheck={vi.fn()}
@@ -33,7 +35,7 @@ describe('MainContent', () => {
     );
 
     expect(screen.getByText('Connect Wallet')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Login with Discord' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Login with Discord' })).toBeEnabled();
   });
 
   it('renders a loading status while Discord guilds are being fetched', () => {

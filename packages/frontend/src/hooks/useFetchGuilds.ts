@@ -1,12 +1,84 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DecodedPayload, SignedGuild } from '../types';
 import type { Address, Hex } from 'viem';
 import type { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
 import { PORTAL_ID, PORTAL_ID_TESTNET, SCHEMA_ID } from '../utils/constants';
 import { linea } from 'wagmi/chains';
-import { getLocalStorageValue, removeLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
+import { removeLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
 
 const LEGACY_DISCORD_TOKEN_KEY = 'discord_access_token';
+
+interface OAuthExchangeEntry {
+  identityKey: string;
+  controller: AbortController;
+  promise: Promise<SignedGuild[] | null>;
+  references: number;
+  pending: boolean;
+}
+
+// Keep a callback single-flight across StrictMode's setup/cleanup/setup cycle.
+// State is one-use server-side, so an aborted client request must never be retried.
+const oauthExchanges = new Map<string, OAuthExchangeEntry>();
+
+const acquireOAuthExchange = (
+  state: string,
+  identityKey: string,
+  execute: (signal: AbortSignal) => Promise<SignedGuild[] | null>,
+): { promise: Promise<SignedGuild[] | null>; release: () => void } | null => {
+  const existing = oauthExchanges.get(state);
+  if (existing) {
+    if (existing.identityKey !== identityKey) return null;
+    existing.references += 1;
+    return createOAuthExchangeLease(existing);
+  }
+
+  while (oauthExchanges.size >= 64) {
+    const completed = [...oauthExchanges.entries()].find(([, entry]) => !entry.pending);
+    if (!completed) return null;
+    oauthExchanges.delete(completed[0]);
+  }
+
+  const controller = new AbortController();
+  const entry: OAuthExchangeEntry = {
+    identityKey,
+    controller,
+    promise: Promise.resolve(null),
+    references: 1,
+    pending: true,
+  };
+  entry.promise = execute(controller.signal).finally(() => {
+    entry.pending = false;
+  });
+  oauthExchanges.set(state, entry);
+
+  return createOAuthExchangeLease(entry);
+};
+
+const releaseOAuthExchange = (entry: OAuthExchangeEntry): void => {
+  entry.references = Math.max(0, entry.references - 1);
+  if (!entry.references && entry.pending) {
+    queueMicrotask(() => {
+      if (!entry.references && entry.pending) entry.controller.abort();
+    });
+  }
+};
+
+const createOAuthExchangeLease = (
+  entry: OAuthExchangeEntry,
+): { promise: Promise<SignedGuild[] | null>; release: () => void } => {
+  let released = false;
+  return {
+    promise: entry.promise,
+    release: () => {
+      if (released) return;
+      released = true;
+      releaseOAuthExchange(entry);
+    },
+  };
+};
+
+const getIdentityKey = (address?: Address, chainId?: number): string =>
+  `${address?.toLowerCase() ?? 'disconnected'}:${chainId ?? 'unknown'}`;
 
 const getApiBaseUrl = () => {
   const isLocalViteDevServer = import.meta.env.DEV && window.location.port === '5173';
@@ -16,29 +88,20 @@ const getApiBaseUrl = () => {
     : '';
 };
 
-const getOAuthStateFromUrl = () => new URLSearchParams(window.location.search).get('state');
-
-const isValidOAuthState = () => {
-  const returnedState = getOAuthStateFromUrl();
-  const storedState = getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
-
-  return Boolean(returnedState && storedState && returnedState === storedState);
-};
-
-const clearOAuthCodeFromUrl = () => {
+const clearOAuthCodeFromUrl = (expectedCode: string, expectedState: string | null) => {
   const url = new URL(window.location.href);
+  if (
+    url.searchParams.get('code') !== expectedCode ||
+    url.searchParams.get('state') !== expectedState
+  ) {
+    return;
+  }
   url.searchParams.delete('code');
   url.searchParams.delete('state');
   window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
 };
 
-const getInitialOAuthLoadingState = (code?: string | null) => {
-  if (!code) {
-    return false;
-  }
-
-  return getLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED) === 'true' && isValidOAuthState();
-};
+const getInitialOAuthLoadingState = (code?: string | null) => Boolean(code);
 
 const clearStoredDiscordTokens = () => {
   removeLocalStorageValue(STORAGE_KEYS.DISCORD_ACCESS_TOKEN);
@@ -55,7 +118,12 @@ export const useFetchGuilds = (
   address?: Address,
   code?: string | null,
   chainId?: number,
+  state?: string | null,
 ) => {
+  const identityKey = getIdentityKey(address, chainId);
+  const currentIdentityRef = useRef(identityKey);
+  const requestEpochRef = useRef(0);
+  const [sessionIdentity, setSessionIdentity] = useState(identityKey);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(() => getInitialOAuthLoadingState(code));
   const [guilds, setGuilds] = useState<SignedGuild[]>([]);
@@ -85,24 +153,28 @@ export const useFetchGuilds = (
   );
 
   const fetchGuildsFromApi = useCallback(
-    async (params: { code: string }) => {
+    async (params: { code: string; state: string }, signal: AbortSignal) => {
       const baseUrl = getApiBaseUrl();
-      const isDev = baseUrl !== '';
 
       const payload = {
-        isDev: String(isDev),
+        action: 'exchange',
         subject: address as string,
         chainId: String(chainId),
         code: params.code,
+        state: params.state,
       };
 
       try {
         const res = await fetch(`${baseUrl}/.netlify/functions/api`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
+          signal,
         });
+        if (signal.aborted) return null;
         const data = await res.json();
+        if (signal.aborted || !res.ok) return null;
 
         if (data.error || data.message) {
           return null;
@@ -121,33 +193,57 @@ export const useFetchGuilds = (
   }, []);
 
   useEffect(() => {
+    currentIdentityRef.current = identityKey;
+    const identityEpoch = (requestEpochRef.current += 1);
+    queueMicrotask(() => {
+      if (requestEpochRef.current !== identityEpoch) return;
+      setSessionIdentity(identityKey);
+      setIsLoggedIn(false);
+      setGuilds([]);
+    });
+  }, [identityKey]);
+
+  useEffect(() => {
     if (!isLoading || !code || !veraxSdk) {
       return;
     }
 
     let isCurrent = true;
+    const requestEpoch = requestEpochRef.current;
+    const requestIdentity = identityKey;
+    let releaseExchange: (() => void) | undefined;
+    const isRequestCurrent = () =>
+      isCurrent &&
+      requestEpochRef.current === requestEpoch &&
+      currentIdentityRef.current === requestIdentity;
 
     const fetchGuilds = async () => {
-      if (!isValidOAuthState()) {
-        removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED);
-        removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
-        clearOAuthCodeFromUrl();
+      if (!state || !address || !chainId) {
+        clearOAuthCodeFromUrl(code, state ?? null);
         setIsLoading(false);
         return;
       }
 
-      removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED);
       try {
-        const signedGuilds = await fetchGuildsFromApi({ code });
-        if (signedGuilds && isCurrent) {
+        const exchange = acquireOAuthExchange(state, requestIdentity, (signal) =>
+          fetchGuildsFromApi({ code, state }, signal),
+        );
+        if (!exchange) return;
+        releaseExchange = exchange.release;
+        const signedGuilds = await exchange.promise;
+        if (!signedGuilds || !isRequestCurrent()) return;
+
+        {
           const enrichedGuilds = await enrichGuildsWithAttestations(signedGuilds, veraxSdk);
+          if (!isRequestCurrent()) return;
+          setSessionIdentity(requestIdentity);
           setGuilds(enrichedGuilds);
           setIsLoggedIn(true);
         }
       } finally {
-        removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
-        clearOAuthCodeFromUrl();
-        if (isCurrent) {
+        releaseExchange?.();
+        if (isRequestCurrent()) {
+          clearOAuthCodeFromUrl(code, state);
           setIsLoading(false);
         }
       }
@@ -157,16 +253,25 @@ export const useFetchGuilds = (
 
     return () => {
       isCurrent = false;
+      releaseExchange?.();
     };
-  }, [isLoading, code, veraxSdk, fetchGuildsFromApi, enrichGuildsWithAttestations]);
+  }, [
+    isLoading,
+    code,
+    state,
+    identityKey,
+    address,
+    chainId,
+    veraxSdk,
+    fetchGuildsFromApi,
+    enrichGuildsWithAttestations,
+  ]);
 
-  useEffect(() => {
-    if (code && !isLoading && !isValidOAuthState()) {
-      removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED);
-      removeLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE);
-      clearOAuthCodeFromUrl();
-    }
-  }, [code, isLoading]);
-
-  return { isLoggedIn, isLoading, guilds, setGuilds };
+  const isSessionCurrent = sessionIdentity === identityKey;
+  return {
+    isLoggedIn: isSessionCurrent && isLoggedIn,
+    isLoading,
+    guilds: isSessionCurrent ? guilds : [],
+    setGuilds,
+  };
 };

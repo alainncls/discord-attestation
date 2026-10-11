@@ -1,43 +1,89 @@
+import { useEffect, useRef, useState } from 'react';
 import './LoginWithDiscord.css';
-import { setLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
 import { DiscordIcon } from './icons';
+import { linea, lineaSepolia } from 'wagmi/chains';
 
-const CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
-const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URL;
-const SCOPE = 'identify guilds';
+interface LoginWithDiscordProps {
+  address?: `0x${string}`;
+  chainId?: number;
+  onAuthorize?: (url: string) => void;
+}
 
-const createOAuthState = () => {
-  if (typeof window.crypto?.randomUUID === 'function') {
-    return window.crypto.randomUUID();
-  }
-
-  const stateBytes = new Uint32Array(4);
-  window.crypto.getRandomValues(stateBytes);
-  return Array.from(stateBytes, (value) => value.toString(16).padStart(8, '0')).join('');
+const getApiBaseUrl = (): string => {
+  const isLocalViteDevServer = import.meta.env.DEV && window.location.port === '5173';
+  return import.meta.env.VITE_MODE === 'development' || isLocalViteDevServer
+    ? 'http://localhost:8888'
+    : '';
 };
 
-const LoginWithDiscord = () => {
-  const handleLogin = () => {
-    const state = createOAuthState();
-    const oauthUrl = new URL('https://discord.com/api/oauth2/authorize');
+const LoginWithDiscord = ({ address, chainId, onAuthorize }: LoginWithDiscordProps) => {
+  const [isStarting, setIsStarting] = useState(false);
+  const [error, setError] = useState<string>();
+  const startController = useRef<AbortController | null>(null);
 
-    oauthUrl.searchParams.set('client_id', CLIENT_ID);
-    oauthUrl.searchParams.set('redirect_uri', REDIRECT_URI);
-    oauthUrl.searchParams.set('response_type', 'code');
-    oauthUrl.searchParams.set('scope', SCOPE);
-    oauthUrl.searchParams.set('state', state);
+  useEffect(
+    () => () => {
+      startController.current?.abort();
+    },
+    [address, chainId],
+  );
 
-    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STATE, state);
-    setLocalStorageValue(STORAGE_KEYS.DISCORD_OAUTH_STARTED, 'true');
-    window.location.href = oauthUrl.toString();
+  const handleLogin = async () => {
+    if (!address || !chainId) return;
+    const controller = new AbortController();
+    startController.current = controller;
+    setIsStarting(true);
+    setError(undefined);
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/.netlify/functions/api`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'start', subject: address, chainId: String(chainId) }),
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      const data: unknown = await response.json();
+      const authorizeUrl =
+        typeof data === 'object' && data !== null && 'authorizeUrl' in data
+          ? data.authorizeUrl
+          : undefined;
+      if (!response.ok || typeof authorizeUrl !== 'string') {
+        throw new Error('Could not start Discord login. Retry in a moment.');
+      }
+
+      const target = new URL(authorizeUrl);
+      if (target.origin !== 'https://discord.com' || target.pathname !== '/api/oauth2/authorize') {
+        throw new Error('Invalid Discord authorization URL.');
+      }
+      (onAuthorize ?? ((url: string) => window.location.assign(url)))(target.toString());
+    } catch (cause) {
+      if (controller.signal.aborted) return;
+      setError(cause instanceof Error ? cause.message : 'Could not start Discord login.');
+    } finally {
+      setIsStarting(false);
+      if (startController.current === controller) startController.current = null;
+    }
   };
+
+  const isSupportedChain = chainId === linea.id || chainId === lineaSepolia.id;
 
   return (
     <div className="login-container">
-      <button type="button" className="discord-btn" onClick={handleLogin}>
+      <button
+        type="button"
+        className="discord-btn"
+        onClick={() => void handleLogin()}
+        disabled={!address || !isSupportedChain || isStarting}
+        aria-busy={isStarting}
+      >
         <DiscordIcon size={24} aria-hidden="true" />
-        <span>Login with Discord</span>
+        <span>{isStarting ? 'Starting Discord login…' : 'Login with Discord'}</span>
       </button>
+      {error ? <p role="alert">{error}</p> : null}
+      {!address || !isSupportedChain ? (
+        <p role="status">Connect a wallet on Linea or Linea Sepolia first.</p>
+      ) : null}
     </div>
   );
 };

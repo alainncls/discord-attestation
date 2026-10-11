@@ -60,7 +60,7 @@ test.describe('production build smoke', () => {
 
     await expect(page.getByRole('heading', { name: 'Discord Attestation' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Connect Wallet' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Login with Discord' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Login with Discord' })).toBeDisabled();
 
     await page.getByRole('button', { name: 'Connect Wallet' }).click();
     await expect(page.locator('appkit-button')).toBeVisible();
@@ -74,40 +74,13 @@ test.describe('production build smoke', () => {
     expect(runtimeErrors).toEqual([]);
   });
 
-  test('starts the Discord OAuth flow and records the pending login marker', async ({
-    context,
-    page,
-  }) => {
+  test('does not start Discord OAuth before a wallet is connected', async ({ page }) => {
     const runtimeErrors = captureRuntimeErrors(page);
     await mockWalletDiscovery(page);
-    await page.route('https://discord.com/**', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'text/html',
-        body: '<h1>Discord OAuth</h1>',
-      });
-    });
 
     await page.goto('/');
-    await page.getByRole('button', { name: 'Login with Discord' }).click();
-
-    await expect(page).toHaveURL(/discord\.com\/api\/oauth2\/authorize/);
-    expect(new URL(page.url()).searchParams.get('client_id')).toBeTruthy();
-    expect(new URL(page.url()).searchParams.get('state')).toBeTruthy();
-
-    const storageState = await context.storageState();
-    const appStorage = storageState.origins.find(
-      (origin) => origin.origin === 'http://127.0.0.1:51973',
-    );
-    expect(
-      appStorage?.localStorage.find(
-        (entry) => entry.name === 'discord-attestation:oauth-started:v1',
-      )?.value,
-    ).toBe('true');
-    expect(
-      appStorage?.localStorage.find((entry) => entry.name === 'discord-attestation:oauth-state:v1')
-        ?.value,
-    ).toBeTruthy();
+    await expect(page.getByRole('button', { name: 'Login with Discord' })).toBeDisabled();
+    expect(new URL(page.url()).searchParams.has('state')).toBe(false);
     expect(runtimeErrors).toEqual([]);
   });
 });

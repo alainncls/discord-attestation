@@ -17,7 +17,6 @@ catalog:
   eslint: 10.12.0
   globals: 17.13.0
   hardhat: 3.18.1
-  netlify-cli: 27.10.2
   prettier: 3.9.9
   react: 19.3.0
   react-dom: 19.3.0
@@ -29,19 +28,11 @@ catalog:
 
 overrides:
   '@graphql-tools/utils': 12.0.3
-  fastify: 5.12.5
-  proxy-addr: 2.0.8
-  '@netlify/build': 37.3.3
-  '@netlify/edge-bundler': 16.1.1
-  '@netlify/functions-utils': 7.1.15
-  '@netlify/zip-it-and-ship-it': 16.2.3
   axios: 1.20.0
   '@fastify/busboy': 3.2.2
   '@graphql-tools/executor-legacy-ws': 1.1.37
   http-cache-semantics: 4.3.0
   source-map-js: 1.2.2
-  sharp: 0.35.5
-  '@fastify/static': 10.1.5
   adm-zip@<0.6.1: 0.6.1
   brace-expansion@>=2.0.0 <2.1.7: 2.1.7
   brace-expansion@>=4.0.0 <5.0.12: 5.0.12
@@ -49,5 +40,4 @@ overrides:
   fast-uri@<2.4.7: 2.4.7
   fast-uri@>=3.0.0 <3.1.8: 3.1.8
   fast-uri@>=4.0.0 <4.1.5: 4.1.5
-  image-size@>=2.0.0 <2.0.3: 2.0.3
-  svgo@>=4.0.0 <4.1.0: 4.1.0
+  '@base-org/account': 2.5.13

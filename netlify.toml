@@ -2,6 +2,10 @@
   publish = "packages/frontend/dist"
   command = "pnpm --filter @discord-attestation/frontend build"
 
+[build.environment]
+  NODE_VERSION = "24.14.1"
+  PNPM_VERSION = "10.26.2"
+
 [functions]
   directory = "packages/functions"
   node_bundler = "esbuild"

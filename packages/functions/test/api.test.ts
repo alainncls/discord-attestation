@@ -168,6 +168,30 @@ describe('Discord signing API', () => {
     expect(authorizeUrl.searchParams.get('state')).toMatch(/^[A-Za-z0-9_-]{43}$/);
   });
 
+  it('reads the deploy context from the Netlify runtime when CONTEXT is not set', async () => {
+    const records = new Map<string, OAuthStateRecord>();
+    const runtimeHandler = createApiHandler({
+      http,
+      config: () => ({ ...config, CONTEXT: undefined }),
+      oauthStateStore: (environment) => ({
+        ...stateStore,
+        async create(key, record) {
+          records.set(environment, record);
+          return true;
+        },
+      }),
+      now: () => NOW,
+    });
+
+    const response = await runtimeHandler(createStartRequest(), {
+      ip: '203.0.113.10',
+      deploy: { context: 'production' },
+    } as never);
+
+    expect(response.status).toBe(200);
+    expect(records.get('production')?.environment).toBe('production');
+  });
+
   it('allows only one of twenty concurrent callbacks across handler instances', async () => {
     const issued = issueState();
     const secondInstance = createApiHandler({

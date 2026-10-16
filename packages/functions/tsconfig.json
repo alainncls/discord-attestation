@@ -4,5 +4,5 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.functions.tsbuildinfo",
     "types": ["node"]
   },
-  "include": ["*.ts", "api/**/*.ts", "verify-netlify-preview.ts", "lib/**/*.ts"]
+  "include": ["*.ts", "api/**/*.ts", "lib/**/*.ts"]
 }

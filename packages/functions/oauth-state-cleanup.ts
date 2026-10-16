@@ -1,4 +1,4 @@
-import { pruneExpiredOAuthStateRecords } from './oauth-state';
+import { pruneExpiredOAuthStateRecords } from './lib/oauthState';
 
 export const config = { schedule: '0 3 * * *' };
 

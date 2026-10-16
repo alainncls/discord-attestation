@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { getStore } from '@netlify/blobs';
-import { createOAuthStateStore } from './oauth-state';
+import { createOAuthStateStore } from './oauthState';
 
 const required = (name: string): string => {
   const value = process.env[name]?.trim();

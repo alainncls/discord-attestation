@@ -6,7 +6,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { linea } from 'viem/chains';
 import { createApiHandler } from '../api';
 import { PORTAL_ID } from '../lib/constants';
-import type { OAuthStateRecord, OAuthStateStore } from '../oauth-state';
+import type { OAuthStateRecord, OAuthStateStore } from '../lib/oauthState';
 
 const TEST_PRIVATE_KEY = `0x${'11'.repeat(32)}` as Hex;
 const SIGNER = privateKeyToAccount(TEST_PRIVATE_KEY);

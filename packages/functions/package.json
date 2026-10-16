@@ -7,8 +7,8 @@
     "dev": "node --env-file-if-exists=.env --import tsx lib/dev.ts",
     "lint": "eslint --config lib/eslint.config.js .",
     "lint:fix": "eslint --config lib/eslint.config.js --fix .",
-    "prettier": "prettier --check 'api.ts' 'test/**/*.ts' 'verify-netlify-preview.ts' 'lib/dev.ts' 'lib/localDevServer.ts' 'lib/localOAuthState.ts' '*.json'",
-    "prettier:fix": "prettier --write 'api.ts' 'test/**/*.ts' 'verify-netlify-preview.ts' 'lib/dev.ts' 'lib/localDevServer.ts' 'lib/localOAuthState.ts' '*.json'",
+    "prettier": "prettier --check 'api.ts' 'test/**/*.ts' 'lib/dev.ts' 'lib/oauthState.ts' 'lib/verifyNetlifyPreview.ts' 'lib/localDevServer.ts' 'lib/localOAuthState.ts' '*.json'",
+    "prettier:fix": "prettier --write 'api.ts' 'test/**/*.ts' 'lib/dev.ts' 'lib/oauthState.ts' 'lib/verifyNetlifyPreview.ts' 'lib/localDevServer.ts' 'lib/localOAuthState.ts' '*.json'",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

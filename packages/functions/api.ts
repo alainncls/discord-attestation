@@ -8,8 +8,8 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { linea, lineaSepolia } from 'viem/chains';
 import { PORTAL_ID, PORTAL_ID_TESTNET } from './lib/constants';
 import type { Guild } from './lib/types';
-import { createNetlifyOAuthStateStore } from './oauth-state';
-import type { OAuthStateRecord, OAuthStateStore } from './oauth-state';
+import { createNetlifyOAuthStateStore } from './lib/oauthState';
+import type { OAuthStateRecord, OAuthStateStore } from './lib/oauthState';
 
 const TOKEN_URL = 'https://discord.com/api/oauth2/token';
 const GUILDS_URL = 'https://discord.com/api/users/@me/guilds';

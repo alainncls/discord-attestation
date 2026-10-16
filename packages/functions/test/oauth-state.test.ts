@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createOAuthStateStore, pruneExpiredRecords } from '../oauth-state';
-import type { OAuthStateRecord } from '../oauth-state';
+import { createOAuthStateStore, pruneExpiredRecords } from '../lib/oauthState';
+import type { OAuthStateRecord } from '../lib/oauthState';
 
 const record: OAuthStateRecord = {
   version: 1,

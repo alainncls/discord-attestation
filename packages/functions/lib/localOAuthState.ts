@@ -1,4 +1,4 @@
-import type { OAuthStateRecord, OAuthStateStore } from '../oauth-state';
+import type { OAuthStateRecord, OAuthStateStore } from './oauthState';
 
 /** Loopback development only. Production continues to use Netlify Blobs. */
 export function createLocalOAuthStateStore(): OAuthStateStore {

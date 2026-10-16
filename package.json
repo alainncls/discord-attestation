@@ -12,7 +12,7 @@
     "prepare": "husky",
     "test": "pnpm -r --parallel run test",
     "test:e2e": "pnpm --filter @discord-attestation/frontend run test:e2e",
-    "verify:oauth-preview": "pnpm --filter @discord-attestation/functions exec tsx verify-netlify-preview.ts",
+    "verify:oauth-preview": "pnpm --filter @discord-attestation/functions exec tsx lib/verifyNetlifyPreview.ts",
     "typecheck": "tsc --noEmit && pnpm -r --parallel run typecheck",
     "update-readme": "tsx updateReadme.ts"
   },

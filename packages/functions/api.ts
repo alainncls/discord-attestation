@@ -623,7 +623,9 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
   const rateLimit = createRateLimiter(now);
 
   return async (req: Request, context?: Context): Promise<Response> => {
-    const config = dependencies.config();
+    const baseConfig = dependencies.config();
+    // Netlify exposes CONTEXT only at build time; read the deploy context at runtime.
+    const config = { ...baseConfig, CONTEXT: baseConfig.CONTEXT ?? context?.deploy?.context };
     const headers = getHeaders(req, config);
 
     if (req.method === 'OPTIONS') return new Response(null, { status: 200, headers });

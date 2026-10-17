@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { CloseIcon } from './icons';
 import './Toast.css';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -36,19 +37,13 @@ const Toast = memo(function Toast({ id, message, type, duration = 5000, onRemove
       role={type === 'error' ? 'alert' : 'status'}
     >
       <span className="toast-message">{message}</span>
-      <button
-        type="button"
-        className="toast-close"
-        onClick={closeToast}
-        aria-label="Close notification"
-      >
-        ×
+      <button type="button" className="toast-close" onClick={closeToast} aria-label="Dismiss">
+        <CloseIcon size={16} aria-hidden="true" />
       </button>
     </div>
   );
 });
 
-// Toast container for multiple toasts
 interface ToastItem {
   id: string;
   message: string;

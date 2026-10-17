@@ -33,6 +33,10 @@ createAppKit({
   },
   coinbasePreference: 'eoaOnly',
   themeMode: 'dark',
+  themeVariables: {
+    '--apkt-accent': '#5865f2',
+    '--apkt-font-family': "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  },
   chainImages: {
     59141: LineaSepoliaIcon,
     59144: LineaMainnetIcon,

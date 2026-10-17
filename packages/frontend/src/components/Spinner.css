@@ -1,21 +1,12 @@
 .loading-icon {
-  color: var(--color-discord);
-  width: 4rem;
-  height: 4rem;
-  animation: animate 2s infinite;
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-text-muted);
+  animation: spin 1s linear infinite;
 }
 
-@keyframes animate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(720deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .loading-icon {
-    animation: none;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }

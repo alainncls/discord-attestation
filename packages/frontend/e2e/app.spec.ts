@@ -59,10 +59,10 @@ test.describe('production build smoke', () => {
     await page.goto('/');
 
     await expect(page.getByRole('heading', { name: 'Discord Attestation' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Connect Wallet' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Login with Discord' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Connect wallet' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Connect Discord' })).toBeDisabled();
 
-    await page.getByRole('button', { name: 'Connect Wallet' }).click();
+    await page.getByRole('button', { name: 'Connect wallet' }).click();
     await expect(page.locator('appkit-button')).toBeVisible();
     await expect(page.locator('body')).not.toHaveText('');
     await expect.poll(() => mockedRequests.length).toBeGreaterThan(0);
@@ -79,7 +79,7 @@ test.describe('production build smoke', () => {
     await mockWalletDiscovery(page);
 
     await page.goto('/');
-    await expect(page.getByRole('button', { name: 'Login with Discord' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Connect Discord' })).toBeDisabled();
     expect(new URL(page.url()).searchParams.has('state')).toBe(false);
     expect(runtimeErrors).toEqual([]);
   });

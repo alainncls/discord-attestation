@@ -20,7 +20,7 @@ const guilds: SignedGuild[] = [
 ];
 
 describe('MainContent', () => {
-  it('renders the wallet and Discord login actions for logged-out users', () => {
+  it('renders the intro and Discord login for logged-out users', () => {
     render(
       <MainContent
         isLoggedIn={false}
@@ -34,8 +34,10 @@ describe('MainContent', () => {
       />,
     );
 
-    expect(screen.getByText('Connect Wallet')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Login with Discord' })).toBeEnabled();
+    expect(
+      screen.getByRole('heading', { name: 'Verify Discord server membership on Linea' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Connect Discord' })).toBeEnabled();
   });
 
   it('renders a loading status while Discord guilds are being fetched', () => {
@@ -51,7 +53,7 @@ describe('MainContent', () => {
     );
 
     expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Login with Discord' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Connect Discord' })).not.toBeInTheDocument();
   });
 
   it('renders guild attestation actions for authenticated users', () => {
@@ -69,12 +71,10 @@ describe('MainContent', () => {
       />,
     );
 
+    expect(screen.getByRole('heading', { name: 'Your servers' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Attest Linea Builders' })).toBeEnabled();
     expect(
-      screen.getByRole('heading', { name: 'You are part of 2 Discord Servers' }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Attest Linea Builders on Verax' })).toBeEnabled();
-    expect(
-      screen.getByRole('button', { name: 'Check attestation for Verax Members on Verax' }),
+      screen.getByRole('button', { name: 'View Verax Members attestation' }),
     ).toBeInTheDocument();
   });
 });

@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import MainContent from './components/MainContent';
+import ConnectButton from './components/ConnectButton';
 import { NetworkWarning } from './components/NetworkWarning';
 import { ToastContainer } from './components/Toast';
 import { SkipLink } from './components/SkipLink';
@@ -54,7 +55,9 @@ function App() {
   return (
     <div className="app-container">
       <SkipLink />
-      <Header />
+      <Header>
+        <ConnectButton />
+      </Header>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       <main id="main-content" className="main-wrapper">
         <NetworkWarning chainId={chainId} />

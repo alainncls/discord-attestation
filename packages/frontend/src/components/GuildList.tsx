@@ -18,9 +18,12 @@ const GuildList = ({
   onCheck,
 }: GuildListProps) => {
   return (
-    <div className="guild-list-container">
-      <h2>You are part of {guilds.length} Discord Servers</h2>
-      <div className="guild-list">
+    <section className="guilds" aria-labelledby="guilds-title">
+      <div className="guilds-header">
+        <h2 id="guilds-title">Your servers</h2>
+        <span className="guilds-count">{guilds.length}</span>
+      </div>
+      <ul className="guild-list">
         {guilds.map((guild) => (
           <GuildItem
             key={guild.id}
@@ -31,8 +34,8 @@ const GuildList = ({
             onCheck={onCheck}
           />
         ))}
-      </div>
-    </div>
+      </ul>
+    </section>
   );
 };
 

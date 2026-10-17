@@ -1,61 +1,36 @@
 :root {
-  /* Colors - Discord & Verax inspired */
-  --color-primary: #5865f2;
-  --color-primary-hover: #4752c4;
-  --color-primary-light: #7289da;
-  --color-secondary: #57f287;
-  --color-secondary-hover: #45d66c;
-  --color-success: #57f287;
-  --color-warning: #fee75c;
-  --color-error: #ed4245;
-  --color-error-light: #fecaca;
+  color-scheme: dark;
 
-  /* Discord brand colors */
-  --color-discord: #5865f2;
-  --color-discord-hover: #4752c4;
+  /* Discord dark client palette: the app is a Discord companion */
+  --color-bg: #1e1f22;
+  --color-surface: #2b2d31;
+  --color-surface-hover: #313338;
+  --color-border: #3f4147;
+  --color-text: #f2f3f5;
+  --color-text-muted: #b5bac1;
+  --color-link: #00a8fc;
+  --color-accent: #5865f2; /* unslop-ignore: Discord brand blurple */
+  --color-accent-hover: #4752c4;
+  --color-neutral: #4e5058;
+  --color-neutral-hover: #6d6f78;
+  --color-success: #2dc770;
+  --color-warning: #f0b232;
+  --color-error: #fa777c;
 
-  /* Verax brand colors */
-  --color-verax: #6366f1;
-  --color-verax-light: #818cf8;
-
-  /* Neutrals - Dark theme */
-  --color-bg: #0f172a;
-  --color-bg-elevated: #1e293b;
-  --color-bg-card: #334155;
-  --color-text: #f8fafc;
-  --color-text-muted: #94a3b8;
-  --color-border: #475569;
-
-  /* Typography */
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --font-mono: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 
-  /* Spacing */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --space-2xl: 3rem;
+  --space-xl: 2.5rem;
 
-  /* Border radius */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-glow: 0 0 20px rgb(88 101 242 / 0.4);
-
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-normal: 250ms ease;
-
-  /* Button sizing */
-  --button-width: 160px;
+  --page-width: 44rem;
+  --transition-fast: 150ms ease-out;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -72,15 +47,21 @@
 html {
   font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.5;
+  scrollbar-color: var(--color-border) var(--color-bg);
+  accent-color: var(--color-accent);
 }
 
 body {
   margin: 0;
-  padding: 0;
   background: var(--color-bg);
   color: var(--color-text);
   min-height: 100vh;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #fff;
 }
 
 #root {
@@ -89,19 +70,23 @@ body {
   min-height: 100vh;
 }
 
+h1,
+h2 {
+  text-wrap: balance;
+}
+
 a {
-  color: var(--color-primary-light);
+  color: var(--color-link);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  text-underline-offset: 0.2em;
 }
 
 a:hover {
-  color: var(--color-primary);
   text-decoration: underline;
 }
 
-a:focus-visible {
-  outline: 2px solid var(--color-primary);
+:focus-visible {
+  outline: 2px solid var(--color-link);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -111,12 +96,6 @@ button {
   cursor: pointer;
 }
 
-button:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* Utility classes */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -127,4 +106,15 @@ button:focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,29 +1,35 @@
 .header {
-  width: 100%;
-  background: linear-gradient(135deg, var(--color-bg-elevated) 0%, var(--color-bg) 100%);
-  border-bottom: 1px solid var(--color-border);
-  padding: var(--space-lg) var(--space-xl);
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(8px);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .header-content {
-  max-width: 1200px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  max-width: var(--page-width);
+  min-height: 3.5rem;
+  margin: 0 auto;
+  padding: var(--space-sm) var(--space-lg);
 }
 
 .header-title {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--color-primary-light), var(--color-secondary));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -0.02em;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .header-content {
+    padding: var(--space-sm) var(--space-md);
+  }
+}
+
+appkit-button {
+  --apkt-tokens-core-backgroundAccentPrimary: var(--color-accent);
+  --apkt-fontFamily-regular: var(--font-sans);
 }

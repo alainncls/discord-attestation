@@ -188,7 +188,7 @@ describe('useAttestationManager', () => {
 
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledTimes(1);
-    expect(showError).toHaveBeenCalledWith('Attestation event was not found. Please try again.');
+    expect(showError).toHaveBeenCalledWith('Attestation not found. Try again.');
     expect(result.current.attestationId).toBeUndefined();
     expect(result.current.pendingGuildId).toBeNull();
   });
@@ -209,7 +209,7 @@ describe('useAttestationManager', () => {
 
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledTimes(1);
-    expect(showError).toHaveBeenCalledWith('Transaction reverted. Please try again.');
+    expect(showError).toHaveBeenCalledWith('Transaction reverted. Try again.');
     expect(result.current.pendingGuildId).toBeNull();
   });
 
@@ -241,7 +241,7 @@ describe('useAttestationManager', () => {
 
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledTimes(1);
-    expect(showError).toHaveBeenCalledWith('Transaction was replaced. Please try again.');
+    expect(showError).toHaveBeenCalledWith('Transaction replaced. Try again.');
     expect(result.current.pendingGuildId).toBeNull();
   });
 
@@ -264,7 +264,7 @@ describe('useAttestationManager', () => {
 
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledTimes(1);
-    expect(showError).toHaveBeenCalledWith('Transaction was replaced. Please try again.');
+    expect(showError).toHaveBeenCalledWith('Transaction replaced. Try again.');
     expect(result.current.attestationId).toBeUndefined();
     expect(result.current.pendingGuildId).toBeNull();
   });

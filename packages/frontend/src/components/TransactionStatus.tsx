@@ -21,27 +21,28 @@ const TransactionStatus = ({ txHash, attestationId, chainId }: TransactionStatus
       : 'https://explorer.ver.ax/linea-sepolia/attestations/';
 
   return (
-    <div className="transaction-status" role="status" aria-live="polite">
-      <div className="message">
-        Transaction Hash:{' '}
-        <a href={`${explorerBaseUrl}${txHash}`} target="_blank" rel="noopener noreferrer">
-          {truncateHexString(txHash)}
-        </a>
-      </div>
-
-      {!attestationId ? (
-        <div className="message pending" aria-busy="true">
-          Transaction pending...
-        </div>
-      ) : (
-        <div className="message success">
-          Attestation ID:{' '}
-          <a href={`${veraxBaseUrl}${attestationId}`} target="_blank" rel="noopener noreferrer">
-            {truncateHexString(attestationId)}
+    <dl className="transaction-status" role="status" aria-live="polite">
+      <div>
+        <dt>Transaction</dt>
+        <dd>
+          <a href={`${explorerBaseUrl}${txHash}`} target="_blank" rel="noopener noreferrer">
+            {truncateHexString(txHash)}
           </a>
-        </div>
-      )}
-    </div>
+        </dd>
+      </div>
+      <div>
+        <dt>Attestation</dt>
+        <dd aria-busy={!attestationId}>
+          {attestationId ? (
+            <a href={`${veraxBaseUrl}${attestationId}`} target="_blank" rel="noopener noreferrer">
+              {truncateHexString(attestationId)}
+            </a>
+          ) : (
+            <span className="transaction-pending">Confirming…</span>
+          )}
+        </dd>
+      </div>
+    </dl>
   );
 };
 

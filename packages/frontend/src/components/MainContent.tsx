@@ -1,9 +1,9 @@
 import type { SignedGuild } from '../types';
 import GuildList from './GuildList';
+import { Intro } from './Intro';
 import LoginWithDiscord from './LoginWithDiscord';
 import Spinner from './Spinner';
 import TransactionStatus from './TransactionStatus';
-import ConnectButton from './ConnectButton';
 import type { Hex } from 'viem';
 import type { Address } from 'viem';
 import './MainContent.css';
@@ -37,41 +37,42 @@ const MainContent = ({
   onAttest,
   onCheck,
 }: MainContentProps) => {
+  if (isLoading) {
+    return (
+      <div className="main-state">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <>
+        <Intro />
+        <LoginWithDiscord address={walletAddress} chainId={walletChainId} />
+      </>
+    );
+  }
+
+  if (guilds.length === 0) {
+    return (
+      <p className="main-state" role="status">
+        No servers found.
+      </p>
+    );
+  }
+
   return (
-    <div className="main-content">
-      <ConnectButton />
-
-      {isLoading && (
-        <div className="centered-content">
-          <Spinner />
-        </div>
-      )}
-
-      {!isLoggedIn && !isLoading && (
-        <div className="centered-content">
-          <LoginWithDiscord address={walletAddress} chainId={walletChainId} />
-        </div>
-      )}
-
-      {isLoggedIn && guilds.length > 0 && (
-        <>
-          <TransactionStatus txHash={txHash} attestationId={attestationId} chainId={chainId} />
-          <GuildList
-            guilds={guilds}
-            pendingGuildId={pendingGuildId}
-            isWalletConnected={isWalletConnected}
-            onAttest={onAttest}
-            onCheck={onCheck}
-          />
-        </>
-      )}
-
-      {isLoggedIn && guilds.length === 0 && !isLoading && (
-        <div className="centered-content" role="status">
-          No Discord servers are available for attestation.
-        </div>
-      )}
-    </div>
+    <>
+      <TransactionStatus txHash={txHash} attestationId={attestationId} chainId={chainId} />
+      <GuildList
+        guilds={guilds}
+        pendingGuildId={pendingGuildId}
+        isWalletConnected={isWalletConnected}
+        onAttest={onAttest}
+        onCheck={onCheck}
+      />
+    </>
   );
 };
 

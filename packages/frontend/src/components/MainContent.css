@@ -1,30 +1,7 @@
-.main-content {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: var(--space-lg);
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.connect-button-container {
+.main-state {
   display: flex;
   justify-content: center;
-  margin-bottom: var(--space-xl);
-  padding: var(--space-md);
-}
-
-.centered-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-height: 50vh;
-}
-
-@media (max-width: 640px) {
-  .main-content {
-    padding: var(--space-md);
-  }
+  margin: 0;
+  padding: var(--space-xl) 0;
+  color: var(--color-text-muted);
 }

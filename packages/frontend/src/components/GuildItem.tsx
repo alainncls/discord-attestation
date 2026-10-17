@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { SignedGuild } from '../types';
-import LogoVerax from '../assets/logo-verax.svg';
+import { CheckIcon } from './icons';
 import './GuildItem.css';
 
 interface GuildItemProps {
@@ -15,39 +15,36 @@ const GuildItem = ({ guild, isPending, isWalletConnected, onAttest, onCheck }: G
   const isDisabled = !isWalletConnected || Boolean(isPending);
 
   return (
-    <div className="guild-item">
-      <div className="guild-name">{guild.name}</div>
+    <li className="guild-item">
+      <span className="guild-name">{guild.name}</span>
       {guild.attestationId ? (
-        <button
-          type="button"
-          className="btn btn-small btn-empty verax-button"
-          onClick={() => onCheck(guild)}
-          aria-label={`Check attestation for ${guild.name} on Verax`}
-        >
-          <img src={LogoVerax} alt="" height={16} className="attested" aria-hidden="true" />
-          <span>Check on Verax</span>
-        </button>
+        <div className="guild-actions">
+          <span className="guild-status">
+            <CheckIcon size={16} aria-hidden="true" />
+            Attested
+          </span>
+          <button
+            type="button"
+            className="btn btn-secondary guild-button"
+            onClick={() => onCheck(guild)}
+            aria-label={`View ${guild.name} attestation`}
+          >
+            View
+          </button>
+        </div>
       ) : (
         <button
           type="button"
-          className={`btn btn-small verax-button ${isDisabled ? 'btn-disabled' : ''}`}
+          className="btn btn-primary guild-button"
           onClick={() => onAttest(guild)}
           disabled={isDisabled}
-          aria-disabled={isDisabled}
           aria-busy={isPending}
-          aria-label={isPending ? `Attesting ${guild.name}...` : `Attest ${guild.name} on Verax`}
+          aria-label={isPending ? `Attesting ${guild.name}` : `Attest ${guild.name}`}
         >
-          {isPending ? (
-            <span>Attesting...</span>
-          ) : (
-            <>
-              <img src={LogoVerax} alt="" height={16} aria-hidden="true" />
-              <span>Attest on Verax</span>
-            </>
-          )}
+          {isPending ? 'Attesting…' : 'Attest'}
         </button>
       )}
-    </div>
+    </li>
   );
 };
 

@@ -40,9 +40,9 @@ describe('NetworkWarning', () => {
     const user = userEvent.setup();
     render(<NetworkWarning chainId={1} />);
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Wrong Network');
+    expect(screen.getByRole('alert')).toHaveTextContent('Wrong network');
 
-    await user.click(screen.getByRole('button', { name: 'Switch to Linea' }));
+    await user.click(screen.getByRole('button', { name: 'Linea' }));
     expect(wagmiState.switchChain).toHaveBeenCalledWith({ chainId: 59144 });
 
     await user.click(screen.getByRole('button', { name: 'Linea Sepolia' }));

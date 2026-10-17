@@ -1,4 +1,4 @@
-import type { Hex } from 'viem';
+import { BaseError, type Hex } from 'viem';
 import { useAccount } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -108,7 +108,7 @@ export const useAttestationManager = (
 
         if (!submitted.transactionHash) {
           onError?.();
-          handleError('Transaction failed. Please try again.');
+          handleError('Transaction failed. Try again.');
           return;
         }
 
@@ -125,22 +125,22 @@ export const useAttestationManager = (
           onError?.();
           handleError(
             replacementReason === 'cancelled'
-              ? 'Transaction was cancelled. Please try again.'
-              : 'Transaction was replaced. Please try again.',
+              ? 'Transaction cancelled. Try again.'
+              : 'Transaction replaced. Try again.',
           );
           return;
         }
 
         if (receipt.status !== 'success') {
           onError?.();
-          handleError('Transaction reverted. Please try again.');
+          handleError('Transaction reverted. Try again.');
           return;
         }
 
         const attestId = extractAttestationIdFromReceipt(submission.chainId, receipt.logs);
         if (!attestId) {
           onError?.();
-          handleError('Attestation event was not found. Please try again.');
+          handleError('Attestation not found. Try again.');
           return;
         }
 
@@ -151,12 +151,15 @@ export const useAttestationManager = (
         onSuccess?.(signedGuild.id, attestId);
       } catch (e) {
         onError?.();
-        const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+        const errorMessage =
+          e instanceof BaseError
+            ? e.shortMessage
+            : e instanceof Error
+              ? e.message
+              : 'Unknown error';
         const replaced = e instanceof Error && e.name === 'TransactionReceiptReplacedError';
         handleError(
-          replaced
-            ? 'Transaction was replaced. Please try again.'
-            : `Attestation failed: ${errorMessage}`,
+          replaced ? 'Transaction replaced. Try again.' : `Attestation failed: ${errorMessage}`,
         );
       } finally {
         inFlightRef.current = false;

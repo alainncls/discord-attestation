@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-content">
         <p className="copyright">
-          Made with <span aria-label="love">❤️</span> by{' '}
+          By{' '}
           <a href="https://alainnicolas.fr/en/" target="_blank" rel="noopener noreferrer">
             Alain Nicolas
           </a>
@@ -18,27 +18,27 @@ const Footer = () => {
             target="_blank"
             rel="noopener noreferrer"
             className="footer-link"
-            aria-label="Visit Verax website"
+            aria-label="Verax"
           >
-            <img src={LogoVerax} alt="Verax logo" height={24} width={24} />
+            <img src={LogoVerax} alt="" height={20} width={20} />
           </a>
           <a
             href="https://github.com/alainncls/discord-attestation"
             target="_blank"
             rel="noopener noreferrer"
             className="footer-link"
-            aria-label="View source code on GitHub"
+            aria-label="GitHub"
           >
-            <GithubIcon size={24} aria-hidden="true" />
+            <GithubIcon size={20} aria-hidden="true" />
           </a>
           <a
             href="https://x.com/Alain_Ncls"
             target="_blank"
             rel="noopener noreferrer"
             className="footer-link"
-            aria-label="View my X profile"
+            aria-label="X"
           >
-            <XIcon size={24} aria-hidden="true" />
+            <XIcon size={20} aria-hidden="true" />
           </a>
         </nav>
       </div>

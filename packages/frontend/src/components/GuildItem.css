@@ -3,51 +3,55 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
+  min-height: 3.5rem;
+  padding: var(--space-sm) var(--space-md);
   content-visibility: auto;
-  contain-intrinsic-size: auto 64px;
-  padding: var(--space-md);
-  background: var(--color-bg-card);
-  border-radius: var(--radius-lg);
-  transition: background var(--transition-fast);
+  contain-intrinsic-size: auto 3.5rem;
+  transition: background-color var(--transition-fast);
+}
+
+.guild-item + .guild-item {
+  border-top: 1px solid var(--color-border);
 }
 
 .guild-item:hover {
-  background: rgb(71 85 105 / 0.8);
+  background: var(--color-surface-hover);
 }
 
 .guild-name {
+  flex: 1;
   min-width: 0;
   font-weight: 500;
-  font-size: 1rem;
-  color: var(--color-text);
   overflow-wrap: anywhere;
 }
 
-/* Green tint for attested icon */
-.attested {
-  filter: brightness(0) saturate(100%) invert(78%) sepia(47%) saturate(1177%) hue-rotate(82deg)
-    brightness(101%) contrast(91%);
+.guild-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-md);
 }
 
-.verax-button {
-  width: var(--button-width);
-  justify-content: center;
-  white-space: nowrap;
-  font-size: 0.8rem;
+.guild-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-success);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
-.verax-button img {
-  width: 16px;
-  height: 16px;
+.guild-button {
+  flex-shrink: 0;
+  min-width: 6rem;
 }
 
 @media (max-width: 480px) {
-  .guild-item {
-    align-items: stretch;
-    flex-direction: column;
+  .guild-actions {
+    gap: var(--space-sm);
   }
 
-  .verax-button {
-    width: 100%;
+  .guild-button {
+    min-width: 4.5rem;
   }
 }

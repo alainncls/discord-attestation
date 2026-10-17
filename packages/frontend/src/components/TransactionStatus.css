@@ -1,52 +1,33 @@
 .transaction-status {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto var(--space-lg);
-  padding: var(--space-lg);
-  background: var(--color-bg-elevated);
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-}
-
-.transaction-status .message {
-  padding: var(--space-sm) 0;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
+}
+
+.transaction-status div {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.transaction-status dt {
+  width: 6rem;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.transaction-status dd {
+  margin: 0;
+  min-width: 0;
   font-family: var(--font-mono);
-  word-break: break-all;
-  color: var(--color-text);
+  overflow-wrap: anywhere;
 }
 
-.transaction-status .message.pending {
+.transaction-pending {
+  font-family: var(--font-sans);
   color: var(--color-warning);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-.transaction-status .message.success {
-  color: var(--color-success);
-}
-
-.transaction-status .message a {
-  color: var(--color-primary-light);
-  text-decoration: underline;
-  transition: color var(--transition-fast);
-}
-
-.transaction-status .message a:hover {
-  color: var(--color-primary);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .transaction-status .message.pending {
-    animation: none;
-  }
 }

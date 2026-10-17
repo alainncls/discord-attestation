@@ -2,142 +2,64 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, var(--color-bg) 0%, #1a1f36 100%);
 }
 
 .main-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: var(--space-xl);
+  gap: var(--space-lg);
   width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
 }
 
-/* Button base styles */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
+  min-height: 2.25rem;
+  padding: 0 var(--space-md);
   border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
-  transition:
-    background-color var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-verax));
-  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #fff;
+  transition: background-color var(--transition-fast);
 }
 
-.btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-glow);
-}
-
-.btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btn-small {
-  padding: var(--space-xs) var(--space-sm);
-  font-size: 0.8rem;
-  width: var(--button-width);
-}
-
-.btn-empty {
-  background: transparent;
-  color: var(--color-success);
-  border: 1px solid var(--color-success);
-}
-
-.btn-empty:hover:not(:disabled) {
-  background: rgb(87 242 135 / 0.1);
-  box-shadow: 0 0 15px rgb(87 242 135 / 0.3);
-}
-
-.btn-disabled {
+.btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn img {
-  vertical-align: middle;
+.btn-primary {
+  background: var(--color-accent);
 }
 
-/* Status messages */
-.status-message {
-  margin-top: var(--space-lg);
-  padding: var(--space-md) var(--space-lg);
-  border-radius: var(--radius-md);
-  text-align: center;
-  font-size: 0.875rem;
-  animation: fadeIn 0.3s ease;
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-0.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.btn-secondary {
+  background: var(--color-neutral);
 }
 
-.status-message.pending {
-  background: rgb(254 231 92 / 0.1);
-  border: 1px solid var(--color-warning);
-  color: var(--color-warning);
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-neutral-hover);
 }
 
-.status-message.success {
-  background: rgb(87 242 135 / 0.1);
-  border: 1px solid var(--color-success);
-  color: var(--color-success);
-}
-
-.status-message.error {
-  background: rgb(237 66 69 / 0.1);
-  border: 1px solid var(--color-error);
-  color: var(--color-error);
-}
-
-.status-message a {
-  color: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-}
-
-.status-message a:hover {
-  opacity: 0.8;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Loading spinner */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.btn-large {
+  min-height: 2.75rem;
+  padding: 0 var(--space-lg);
+  font-size: 1rem;
 }
 
 @media (max-width: 640px) {
   .main-wrapper {
-    padding: var(--space-md);
+    padding: var(--space-lg) var(--space-md);
   }
 }

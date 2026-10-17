@@ -1,23 +1,27 @@
-.guild-list-container {
-  width: 100%;
-  max-width: 700px;
-  margin: var(--space-xl) auto 0;
+.guilds-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
 }
 
-.guild-list-container h1 {
-  font-size: 1.5rem;
+.guilds-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: var(--space-xl);
-  text-align: center;
-  color: var(--color-text);
+}
+
+.guilds-count {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .guild-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  background: var(--color-bg-elevated);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }

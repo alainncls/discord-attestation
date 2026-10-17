@@ -1,8 +1,8 @@
 import Header from './Header';
 import Footer from './Footer';
+import { Intro } from './Intro';
 import LoginWithDiscord from './LoginWithDiscord';
 import { SkipLink } from './SkipLink';
-import './LandingShell.css';
 
 interface LandingShellProps {
   isRuntimeLoading: boolean;
@@ -13,31 +13,20 @@ export const LandingShell = ({ isRuntimeLoading, onConnectWallet }: LandingShell
   return (
     <div className="app-container">
       <SkipLink />
-      <Header />
+      <Header>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={onConnectWallet}
+          disabled={isRuntimeLoading}
+          aria-busy={isRuntimeLoading}
+        >
+          {isRuntimeLoading ? 'Loading…' : 'Connect wallet'}
+        </button>
+      </Header>
       <main id="main-content" className="main-wrapper">
-        <div className="main-content">
-          <section className="landing-summary" aria-labelledby="landing-summary-title">
-            <h2 id="landing-summary-title">Verify Discord server membership on Linea</h2>
-            <p>
-              Create Verax attestations for Discord server memberships and keep a reusable on-chain
-              proof tied to your wallet.
-            </p>
-          </section>
-          <div className="connect-button-container">
-            <button
-              type="button"
-              className="btn"
-              onClick={onConnectWallet}
-              disabled={isRuntimeLoading}
-              aria-busy={isRuntimeLoading}
-            >
-              {isRuntimeLoading ? 'Loading wallet...' : 'Connect Wallet'}
-            </button>
-          </div>
-          <div className="centered-content">
-            <LoginWithDiscord />
-          </div>
-        </div>
+        <Intro />
+        <LoginWithDiscord />
       </main>
       <Footer />
     </div>

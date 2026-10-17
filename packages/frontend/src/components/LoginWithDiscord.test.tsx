@@ -8,8 +8,8 @@ describe('LoginWithDiscord', () => {
   it('requires a supported connected wallet before starting OAuth', () => {
     render(<LoginWithDiscord />);
 
-    expect(screen.getByRole('button', { name: 'Login with Discord' })).toBeDisabled();
-    expect(screen.getByRole('status')).toHaveTextContent('Connect a wallet on Linea');
+    expect(screen.getByRole('button', { name: 'Connect Discord' })).toBeDisabled();
+    expect(screen.getByRole('status')).toHaveTextContent('Connect a Linea wallet first.');
   });
 
   it('requests server-issued state with credentials and accepts only Discord authorization URLs', async () => {
@@ -32,7 +32,7 @@ describe('LoginWithDiscord', () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Login with Discord' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Connect Discord' }));
     await waitFor(() => expect(onAuthorize).toHaveBeenCalledOnce());
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -68,7 +68,7 @@ describe('LoginWithDiscord', () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Login with Discord' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Connect Discord' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid Discord authorization URL');
     expect(onAuthorize).not.toHaveBeenCalled();

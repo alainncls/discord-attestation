@@ -1,43 +1,20 @@
 .login-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-lg);
+  align-items: flex-start;
+  gap: var(--space-sm);
 }
 
-.discord-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  background: var(--color-discord);
-  border: none;
-  color: white;
-  padding: var(--space-lg) var(--space-2xl);
-  font-size: 1.125rem;
-  font-weight: 700;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  cursor: pointer;
-  transition:
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast),
-    background var(--transition-fast);
+.login-hint,
+.login-error {
+  margin: 0;
+  font-size: 0.875rem;
 }
 
-.discord-btn:hover {
-  background: var(--color-discord-hover);
-  transform: translateY(-2px);
-  box-shadow:
-    var(--shadow-lg),
-    0 0 30px rgb(88 101 242 / 0.4);
+.login-hint {
+  color: var(--color-text-muted);
 }
 
-.discord-btn:active {
-  transform: translateY(0);
-}
-
-.discord-btn svg {
-  width: 24px;
-  height: 24px;
+.login-error {
+  color: var(--color-error);
 }

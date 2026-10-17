@@ -49,7 +49,7 @@ const LoginWithDiscord = ({ address, chainId, onAuthorize }: LoginWithDiscordPro
           ? data.authorizeUrl
           : undefined;
       if (!response.ok || typeof authorizeUrl !== 'string') {
-        throw new Error('Could not start Discord login. Retry in a moment.');
+        throw new Error('Discord login failed. Try again.');
       }
 
       const target = new URL(authorizeUrl);
@@ -59,7 +59,7 @@ const LoginWithDiscord = ({ address, chainId, onAuthorize }: LoginWithDiscordPro
       (onAuthorize ?? ((url: string) => window.location.assign(url)))(target.toString());
     } catch (cause) {
       if (controller.signal.aborted) return;
-      setError(cause instanceof Error ? cause.message : 'Could not start Discord login.');
+      setError(cause instanceof Error ? cause.message : 'Discord login failed. Try again.');
     } finally {
       setIsStarting(false);
       if (startController.current === controller) startController.current = null;
@@ -72,17 +72,23 @@ const LoginWithDiscord = ({ address, chainId, onAuthorize }: LoginWithDiscordPro
     <div className="login-container">
       <button
         type="button"
-        className="discord-btn"
+        className="btn btn-primary btn-large"
         onClick={() => void handleLogin()}
         disabled={!address || !isSupportedChain || isStarting}
         aria-busy={isStarting}
       >
-        <DiscordIcon size={24} aria-hidden="true" />
-        <span>{isStarting ? 'Starting Discord login…' : 'Login with Discord'}</span>
+        <DiscordIcon size={20} aria-hidden="true" />
+        <span>{isStarting ? 'Redirecting…' : 'Connect Discord'}</span>
       </button>
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? (
+        <p className="login-error" role="alert">
+          {error}
+        </p>
+      ) : null}
       {!address || !isSupportedChain ? (
-        <p role="status">Connect a wallet on Linea or Linea Sepolia first.</p>
+        <p className="login-hint" role="status">
+          Connect a Linea wallet first.
+        </p>
       ) : null}
     </div>
   );

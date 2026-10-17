@@ -12,9 +12,9 @@
     "prepare": "husky",
     "test": "pnpm -r --parallel run test",
     "test:e2e": "pnpm --filter @discord-attestation/frontend run test:e2e",
-    "verify:oauth-preview": "pnpm --filter @discord-attestation/functions exec tsx lib/verifyNetlifyPreview.ts",
     "typecheck": "tsc --noEmit && pnpm -r --parallel run typecheck",
-    "update-readme": "tsx updateReadme.ts"
+    "update-readme": "tsx updateReadme.ts",
+    "verify:oauth-preview": "pnpm --filter @discord-attestation/functions exec tsx lib/verifyNetlifyPreview.ts"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -29,7 +29,7 @@
   },
   "packageManager": "pnpm@10.26.2",
   "engines": {
-    "node": "24.14.1",
+    "node": "24.18.0",
     "pnpm": "10.26.2"
   }
 }

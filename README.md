@@ -2,7 +2,7 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/48ce283b-7559-462d-8208-a6870f72a9c4/deploy-status)](https://app.netlify.com/sites/discord-attestation/deploys)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Node.js](https://img.shields.io/badge/node-24.14.1-green)
+![Node.js](https://img.shields.io/badge/node-24.18.0-green)
 ![pnpm](https://img.shields.io/badge/pnpm-10.26.2-orange)
 
 An application that allows users to create on-chain attestations of their Discord server memberships using
@@ -82,7 +82,7 @@ packages/
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v24.14.1 (use `nvm use` with `.nvmrc`)
+- [Node.js](https://nodejs.org/) v24.18.0 (use `nvm use` with `.nvmrc`)
 - [pnpm](https://pnpm.io/) v10.26.2
 - [Netlify CLI](https://docs.netlify.com/cli/get-started/) for local development
 - A wallet (MetaMask recommended 🦊)

@@ -27,6 +27,9 @@ catalog:
   wagmi: 3.7.7
 
 overrides:
+  # GHSA-q3jh-wrc6-jgq8 / GHSA-8r9p-f939-6h3c: axios 1.20.0 still resolves
+  # follow-redirects 1.16.0. 1.16.1 is the first patched, mature release.
+  follow-redirects: 1.16.1
   # GHSA-mrhx-c7xc-m3w5 / CVE-2023-54404: Reown AppKit 1.8.24 still resolves
   # Zod 3.x. Zod 4.6.6 is the first patched release; retain this exact override
   # until the upstream graph publishes an explicitly compatible resolution.

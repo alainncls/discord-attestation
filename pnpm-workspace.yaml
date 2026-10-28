@@ -1,6 +1,12 @@
 packages:
   - packages/*
 
+allowBuilds:
+  '@reown/appkit': true
+  bufferutil: true
+  esbuild: true
+  utf-8-validate: true
+
 catalog:
   '@eslint/js': 10.0.1
   '@netlify/functions': 5.3.0

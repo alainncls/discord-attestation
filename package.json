@@ -27,9 +27,9 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
-  "packageManager": "pnpm@10.26.2",
+  "packageManager": "pnpm@12.16.1",
   "engines": {
     "node": "24.22.1",
-    "pnpm": "10.26.2"
+    "pnpm": "12.16.1"
   }
 }

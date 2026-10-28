@@ -47,4 +47,8 @@ overrides:
   fast-uri@<2.4.8: 2.4.8
   fast-uri@>=3.0.0 <3.1.9: 3.1.9
   fast-uri@>=4.0.0 <4.2.3: 4.2.3
+  # GHSA-4qv8-2p9j-2685 et six avis liés : conserver les majors transitives,
+  # mais imposer leur premier correctif mature respectif.
+  undici@>=4.0.0 <6.29.1: 6.29.1
+  undici@>=7.0.0 <7.30.1: 7.30.1
   '@base-org/account': 2.5.13

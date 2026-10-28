@@ -44,7 +44,7 @@ overrides:
   brace-expansion@>=2.0.0 <2.1.7: 2.1.7
   brace-expansion@>=4.0.0 <5.0.12: 5.0.12
   esbuild@>=0.27.0 <0.28.1: 0.28.1
-  fast-uri@<2.4.7: 2.4.7
-  fast-uri@>=3.0.0 <3.1.8: 3.1.8
-  fast-uri@>=4.0.0 <4.1.5: 4.1.5
+  fast-uri@<2.4.8: 2.4.8
+  fast-uri@>=3.0.0 <3.1.9: 3.1.9
+  fast-uri@>=4.0.0 <4.2.3: 4.2.3
   '@base-org/account': 2.5.13

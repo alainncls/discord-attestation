@@ -10,27 +10,27 @@ allowBuilds:
 catalog:
   '@eslint/js': 10.0.1
   '@netlify/functions': 5.3.0
-  '@nomicfoundation/hardhat-verify': 3.1.2
-  '@nomicfoundation/hardhat-viem': 3.0.9
-  '@tanstack/react-query': 5.104.1
+  '@nomicfoundation/hardhat-verify': 3.1.4
+  '@nomicfoundation/hardhat-viem': 3.1.0
+  '@tanstack/react-query': 5.107.1
   '@types/node': 24.19.2
   '@types/react': 19.3.0
   '@types/react-dom': 19.3.0
   '@verax-attestation-registry/verax-sdk': 5.4.0
-  '@vitejs/plugin-react': 6.1.2
-  '@wagmi/core': 3.6.5
-  axios: 1.20.0
-  eslint: 10.12.0
-  globals: 17.13.0
-  hardhat: 3.19.0
-  prettier: 3.9.9
-  react: 19.3.0
-  react-dom: 19.3.0
+  '@vitejs/plugin-react': 6.2.1
+  '@wagmi/core': 3.6.9
+  axios: 1.21.0
+  eslint: 10.14.0
+  globals: 17.14.0
+  hardhat: 3.21.2
+  prettier: 3.9.10
+  react: 19.3.1
+  react-dom: 19.3.1
   typescript: 6.0.3
-  typescript-eslint: 8.71.1
-  viem: 2.57.4
-  vite: 8.3.4
-  wagmi: 3.7.7
+  typescript-eslint: 8.72.1
+  viem: 2.57.16
+  vite: 8.3.6
+  wagmi: 3.7.11
 
 overrides:
   # GHSA-mrwp-f3q8-3g9p: prevent custom credential disclosure on redirects.
@@ -40,7 +40,7 @@ overrides:
   # until the upstream graph publishes an explicitly compatible resolution.
   zod: 4.6.6
   '@graphql-tools/utils': 12.0.3
-  axios: 1.20.0
+  axios: 1.21.0
   '@fastify/busboy': 3.2.2
   '@graphql-tools/executor-legacy-ws': 1.1.37
   http-cache-semantics: 4.3.0
@@ -57,3 +57,5 @@ overrides:
   undici@>=4.0.0 <6.29.1: 6.29.1
   undici@>=7.0.0 <7.30.1: 7.30.1
   '@base-org/account': 2.5.13
+
+minimumReleaseAge: 4320

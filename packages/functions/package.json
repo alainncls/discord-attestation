@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@netlify/blobs": "10.7.13",
+    "@netlify/blobs": "11.1.9",
     "@netlify/functions": "catalog:",
     "axios": "catalog:",
     "viem": "catalog:"
@@ -25,6 +25,6 @@
     "tsx": "4.23.15",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "vitest": "4.1.12"
+    "vitest": "5.1.1"
   }
 }

@@ -30,7 +30,8 @@ const deploymentResponse = await fetch(
   `https://api.netlify.com/api/v1/deploys/${encodeURIComponent(deployId)}`,
   { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(10_000) },
 );
-if (!deploymentResponse.ok) fail(`Netlify deploy lookup failed: HTTP ${deploymentResponse.status}`);
+if (!deploymentResponse.ok)
+  fail(`Netlify deploy lookup failed: HTTP ${String(deploymentResponse.status)}`);
 const deployment = (await deploymentResponse.json()) as {
   site_id?: string;
   context?: string;
@@ -78,7 +79,7 @@ try {
     }),
     signal: AbortSignal.timeout(10_000),
   });
-  if (!startResponse.ok) fail(`Preview OAuth start failed: HTTP ${startResponse.status}`);
+  if (!startResponse.ok) fail(`Preview OAuth start failed: HTTP ${String(startResponse.status)}`);
   if (startResponse.headers.get('access-control-allow-origin') !== previewOrigin) {
     fail('Preview OAuth start did not allow the verified preview origin');
   }

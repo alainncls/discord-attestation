@@ -33,7 +33,7 @@ async function main() {
 
   const constructorArguments: [`0x${string}`[], `0x${string}`] = [[], routerAddress];
 
-  const { viem } = await network.connect();
+  const { viem, networkName } = await network.create();
 
   const discordPortal = await viem.deployContract('DiscordPortal', constructorArguments);
   const discordPortalAddress = discordPortal.address;
@@ -65,7 +65,7 @@ async function main() {
   }
 
   const signerAddress = walletClient.account.address;
-  const networkConfig = hre.config.networks[hre.globalOptions.network ?? 'linea-sepolia'];
+  const networkConfig = hre.config.networks[networkName];
 
   const isLinea =
     networkConfig &&
@@ -93,7 +93,7 @@ async function main() {
   console.log(`END DISCORD SCRIPT`);
 }
 
-main().catch((error) => {
+main().catch((error: unknown) => {
   console.error(error);
   process.exitCode = 1;
 });

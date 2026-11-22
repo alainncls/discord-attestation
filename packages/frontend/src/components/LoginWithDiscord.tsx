@@ -56,7 +56,12 @@ const LoginWithDiscord = ({ address, chainId, onAuthorize }: LoginWithDiscordPro
       if (target.origin !== 'https://discord.com' || target.pathname !== '/api/oauth2/authorize') {
         throw new Error('Invalid Discord authorization URL.');
       }
-      (onAuthorize ?? ((url: string) => window.location.assign(url)))(target.toString());
+      (
+        onAuthorize ??
+        ((url: string) => {
+          window.location.assign(url);
+        })
+      )(target.toString());
     } catch (cause) {
       if (controller.signal.aborted) return;
       setError(cause instanceof Error ? cause.message : 'Discord login failed. Try again.');

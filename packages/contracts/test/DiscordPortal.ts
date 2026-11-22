@@ -16,7 +16,7 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
-const SCHEMA_ID = '0xefa96ce61912c5bb59cb4c26645ea193fc03a234fe09a6b2c8b85aaa51a382d6';
+const SCHEMA_ID: Hex = '0xefa96ce61912c5bb59cb4c26645ea193fc03a234fe09a6b2c8b85aaa51a382d6';
 const FEE = 100_000_000_000_000n;
 const CONTRACTS_ROOT = resolve(import.meta.dirname, '..');
 const require = createRequire(import.meta.url);
@@ -68,20 +68,26 @@ const compileEphemeralSignerFixture = async (signerAddress: Address) => {
     dirname(hardhatEntry),
     'internal/builtin-plugins/solidity/build-system/compiler/index.js',
   );
-  const { getCompiler } = await import(pathToFileURL(compilerModulePath).href);
+  const { getCompiler } = (await import(pathToFileURL(compilerModulePath).href)) as {
+    getCompiler: (
+      version: string,
+      options: { preferWasm: boolean },
+    ) => Promise<{ compile: (input: unknown) => Promise<unknown> }>;
+  };
   const compiler = await getCompiler('0.8.21', { preferWasm: false });
   const compilerOutput = await compiler.compile(input);
   const output = (
     typeof compilerOutput === 'string' ? JSON.parse(compilerOutput) : compilerOutput
   ) as {
-    errors?: Array<{ severity: string; formattedMessage: string }>;
+    errors?: { severity: string; formattedMessage: string }[];
     contracts?: Record<string, Record<string, { abi: Abi; evm: { bytecode: { object: string } } }>>;
   };
   const errors = output.errors?.filter(({ severity }) => severity === 'error') ?? [];
   assert.deepEqual(errors, [], errors.map(({ formattedMessage }) => formattedMessage).join('\n'));
   const artifact = output.contracts?.['src/DiscordPortal.sol']?.DiscordPortal;
   assert.ok(artifact?.evm.bytecode.object, 'fixture compilation must produce deployable bytecode');
-  return { abi: artifact.abi, bytecode: `0x${artifact.evm.bytecode.object}` as Hex };
+  const bytecode: Hex = `0x${artifact.evm.bytecode.object}`;
+  return { abi: artifact.abi, bytecode };
 };
 
 async function rejectsWith(promise: Promise<unknown>, pattern: RegExp) {
@@ -92,11 +98,12 @@ async function rejectsWith(promise: Promise<unknown>, pattern: RegExp) {
   });
 }
 
-describe('DiscordPortal public attestation boundary', async function () {
+void describe('DiscordPortal public attestation boundary', async function () {
   const { viem } = await network.create('hardhat');
   const accounts = await viem.getWalletClients();
   const publicClient = await viem.getPublicClient();
   const [subject, other, portalOwner] = accounts;
+  assert.ok(subject && other && portalOwner);
 
   let portal: Awaited<ReturnType<typeof viem.deployContract<'DiscordPortal'>>>;
   let attestationRegistry: Awaited<
@@ -108,7 +115,7 @@ describe('DiscordPortal public attestation boundary', async function () {
     const moduleRegistry = await viem.deployContract('PortalTestModuleRegistry');
     attestationRegistry = await viem.deployContract('PortalTestAttestationRegistry');
     const portalRegistry = await viem.deployContract('PortalTestRegistry', [
-      portalOwner!.account.address,
+      portalOwner.account.address,
     ]);
     const router = await viem.deployContract('PortalTestRouter', [
       attestationRegistry.address,
@@ -119,8 +126,8 @@ describe('DiscordPortal public attestation boundary', async function () {
     portal = await viem.deployContract('DiscordPortal', [[], router.address]);
   });
 
-  it('rejects unsupported schema, invalid subject, sender mismatch, insufficient fee and missing signatures', async () => {
-    const expirationDate = 1_900_000_000;
+  void it('rejects unsupported schema, invalid subject, sender mismatch, insufficient fee and missing signatures', async () => {
+    const expirationDate = 1_900_000_000n;
     const encoded = encodeAbiParameters(
       [
         {
@@ -169,8 +176,8 @@ describe('DiscordPortal public attestation boundary', async function () {
     assert.equal(await attestationRegistry.read.attestCount(), 0n);
   });
 
-  it('rejects a well-formed EIP-712 signature from a non-authorized signer without registering data', async () => {
-    const expirationDate = 1_900_000_000;
+  void it('rejects a well-formed EIP-712 signature from a non-authorized signer without registering data', async () => {
+    const expirationDate = 1_900_000_000n;
     const guild = { id: 123n, name: 'Guild' };
     const chainId = await publicClient.getChainId();
     const signature = await other.signTypedData({
@@ -227,8 +234,8 @@ describe('DiscordPortal public attestation boundary', async function () {
     assert.equal(await attestationRegistry.read.attestCount(), 0n);
   });
 
-  it('accepts a real EIP-712 signature with an ephemeral local signer and exact production source', async () => {
-    const ephemeralSigner = privateKeyToAccount(`0x${'77'.repeat(32)}` as Hex);
+  void it('accepts a real EIP-712 signature with an ephemeral local signer and exact production source', async () => {
+    const ephemeralSigner = privateKeyToAccount(`0x${'77'.repeat(32)}`);
     const fixture = await compileEphemeralSignerFixture(ephemeralSigner.address);
     const deploymentHash = await subject.deployContract({
       abi: fixture.abi,
@@ -239,10 +246,10 @@ describe('DiscordPortal public attestation boundary', async function () {
     assert.ok(deployment.contractAddress);
     const fixturePortal = getContract({
       address: deployment.contractAddress,
-      abi: fixture.abi,
+      abi: fixture.abi as typeof portal.abi,
       client: { public: publicClient, wallet: subject },
     });
-    const expirationDate = 1_900_000_000;
+    const expirationDate = 1_900_000_000n;
     const guild = { id: 456n, name: 'EIP-712 positive fixture' };
     const chainId = await publicClient.getChainId();
     const domain = {
@@ -283,7 +290,7 @@ describe('DiscordPortal public attestation boundary', async function () {
         subject?: Address;
         guildId?: bigint;
         guildName?: string;
-        expirationDate?: number;
+        expirationDate?: bigint;
       } = {},
     ) =>
       ephemeralSigner.signTypedData({
@@ -308,7 +315,7 @@ describe('DiscordPortal public attestation boundary', async function () {
       getAddress(await attestationRegistry.read.lastAttester()),
       getAddress(subject.account.address),
     );
-    assert.equal(await attestationRegistry.read.lastExpirationDate(), BigInt(expirationDate));
+    assert.equal(await attestationRegistry.read.lastExpirationDate(), expirationDate);
 
     const wrongDomain = await sign({ domain: { ...domain, chainId: chainId + 1 } });
     await rejectsWith(
@@ -342,7 +349,7 @@ describe('DiscordPortal public attestation boundary', async function () {
       }),
       /InvalidSignature/,
     );
-    const wrongExpiration = await sign({ expirationDate: expirationDate + 1 });
+    const wrongExpiration = await sign({ expirationDate: expirationDate + 1n });
     await rejectsWith(
       fixturePortal.write.attest([payload, [wrongExpiration]], {
         account: subject.account,
@@ -361,14 +368,14 @@ describe('DiscordPortal public attestation boundary', async function () {
 
     // Verax documents that expired attestations can be registered; expiry is not a signature TTL.
     const block = await publicClient.getBlock();
-    const expiredDate = Number(block.timestamp) - 3_600;
+    const expiredDate = block.timestamp - 3_600n;
     const expiredSignature = await sign({ expirationDate: expiredDate });
     await fixturePortal.write.attest(
       [{ ...payload, expirationDate: expiredDate }, [expiredSignature]],
       { account: subject.account, value: FEE },
     );
     assert.equal(await attestationRegistry.read.attestCount(), 3n);
-    assert.equal(await attestationRegistry.read.lastExpirationDate(), BigInt(expiredDate));
+    assert.equal(await attestationRegistry.read.lastExpirationDate(), expiredDate);
 
     await attestationRegistry.write.setShouldRevert([true]);
     await rejectsWith(
@@ -379,10 +386,10 @@ describe('DiscordPortal public attestation boundary', async function () {
       /RegistryWriteFailed/,
     );
     assert.equal(await attestationRegistry.read.attestCount(), 3n);
-    assert.equal(await attestationRegistry.read.lastExpirationDate(), BigInt(expiredDate));
+    assert.equal(await attestationRegistry.read.lastExpirationDate(), expiredDate);
   });
 
-  it('preserves fee administration and portal-owner operation guards', async () => {
+  void it('preserves fee administration and portal-owner operation guards', async () => {
     await portal.write.setFee([FEE * 2n], { account: subject.account });
     assert.equal(await portal.read.fee(), FEE * 2n);
     await rejectsWith(
@@ -399,7 +406,7 @@ describe('DiscordPortal public attestation boundary', async function () {
           `0x${'00'.repeat(32)}`,
           {
             schemaId: SCHEMA_ID,
-            expirationDate: 0,
+            expirationDate: 0n,
             subject: subject.account.address,
             attestationData: '0x01',
           },

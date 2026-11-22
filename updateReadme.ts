@@ -11,17 +11,15 @@ const readmePath = join(__dirname, 'README.md');
 try {
   const constantsContent = await readFile(constantsPath, 'utf8');
 
-  const portalIdSepoliaMatch = constantsContent.match(
-    /export const PORTAL_ID_TESTNET: Address = '([^']+)'/,
+  const portalIdSepoliaMatch = /export const PORTAL_ID_TESTNET: Address = '([^']+)'/.exec(
+    constantsContent,
   );
   const portalIdTestnet = portalIdSepoliaMatch?.[1]?.toLowerCase();
   if (!portalIdTestnet) {
     throw new Error('PORTAL_ID_TESTNET not found in constants.ts');
   }
 
-  const portalIdMainnetMatch = constantsContent.match(
-    /export const PORTAL_ID: Address = '([^']+)'/,
-  );
+  const portalIdMainnetMatch = /export const PORTAL_ID: Address = '([^']+)'/.exec(constantsContent);
   const portalIdMainnet = portalIdMainnetMatch?.[1]?.toLowerCase();
   if (!portalIdMainnet) {
     throw new Error('PORTAL_ID not found in constants.ts');

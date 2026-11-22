@@ -7,7 +7,7 @@ interface NetworkWarningProps {
 }
 
 export function NetworkWarning({ chainId }: NetworkWarningProps) {
-  const { switchChain, isPending } = useSwitchChain();
+  const { mutate: switchChain, isPending } = useSwitchChain();
 
   const isValidNetwork = chainId === linea.id || chainId === lineaSepolia.id;
 
@@ -25,7 +25,9 @@ export function NetworkWarning({ chainId }: NetworkWarningProps) {
         <button
           type="button"
           className="btn btn-primary"
-          onClick={() => switchChain({ chainId: linea.id })}
+          onClick={() => {
+            switchChain({ chainId: linea.id });
+          }}
           disabled={isPending}
         >
           Linea
@@ -33,7 +35,9 @@ export function NetworkWarning({ chainId }: NetworkWarningProps) {
         <button
           type="button"
           className="btn btn-secondary"
-          onClick={() => switchChain({ chainId: lineaSepolia.id })}
+          onClick={() => {
+            switchChain({ chainId: lineaSepolia.id });
+          }}
           disabled={isPending}
         >
           Linea Sepolia

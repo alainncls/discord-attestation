@@ -1,5 +1,5 @@
 import { BaseError, type Hex } from 'viem';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
@@ -33,7 +33,7 @@ export const useAttestationManager = (
   chainId?: number,
   showError?: ShowErrorFn,
 ) => {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useConnection();
   const [txHash, setTxHash] = useState<Hex>();
   const [attestationId, setAttestationId] = useState<Hex>();
   const [pendingGuildId, setPendingGuildId] = useState<string | null>(null);

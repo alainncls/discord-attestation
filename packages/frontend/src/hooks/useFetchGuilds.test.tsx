@@ -7,7 +7,7 @@ import { useFetchGuilds } from './useFetchGuilds';
 import { removeLocalStorageValue, setLocalStorageValue, STORAGE_KEYS } from '../utils/storage';
 
 vi.mock('@verax-attestation-registry/verax-sdk', () => ({
-  VeraxSdk: class VeraxSdk {},
+  VeraxSdk: vi.fn(),
 }));
 
 const address = '0x0000000000000000000000000000000000000001' as Address;
@@ -52,9 +52,9 @@ describe('useFetchGuilds', () => {
 
     const { result } = renderHook(() => useFetchGuilds(sdk, address, null, 59144));
 
-    await waitFor(() =>
-      expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN)).toBeNull(),
-    );
+    await waitFor(() => {
+      expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN)).toBeNull();
+    });
 
     expect(result.current.isLoggedIn).toBe(false);
     expect(result.current.guilds).toEqual([]);
@@ -80,7 +80,9 @@ describe('useFetchGuilds', () => {
       useFetchGuilds(sdk, address, 'oauth-code', 59141, 'oauth-state'),
     );
 
-    await waitFor(() => expect(result.current.isLoggedIn).toBe(true));
+    await waitFor(() => {
+      expect(result.current.isLoggedIn).toBe(true);
+    });
 
     expect(result.current.guilds).toEqual([
       {
@@ -92,8 +94,8 @@ describe('useFetchGuilds', () => {
       },
     ]);
     expect(findBy).toHaveBeenCalledWith(1000, 0, {
-      schema: expect.any(String),
-      portal: expect.any(String),
+      schema: expect.any(String) as unknown,
+      portal: expect.any(String) as unknown,
       subject: address,
     });
     expect(fetchMock).toHaveBeenCalledWith('/.netlify/functions/api', {
@@ -107,7 +109,7 @@ describe('useFetchGuilds', () => {
         code: 'oauth-code',
         state: 'oauth-state',
       }),
-      signal: expect.any(AbortSignal),
+      signal: expect.any(AbortSignal) as unknown,
     });
     expect(window.localStorage.getItem(STORAGE_KEYS.DISCORD_ACCESS_TOKEN)).toBeNull();
     expect(window.location.search).toBe('');
@@ -122,12 +124,14 @@ describe('useFetchGuilds', () => {
       useFetchGuilds(sdk, address, 'oauth-code', 59141, 'attacker-state'),
     );
 
-    await waitFor(() => expect(window.location.search).toBe(''));
+    await waitFor(() => {
+      expect(window.location.search).toBe('');
+    });
 
     expect(result.current.isLoggedIn).toBe(false);
     expect(result.current.guilds).toEqual([]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+    expect(JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string)).toMatchObject({
       action: 'exchange',
       state: 'attacker-state',
     });
@@ -139,7 +143,9 @@ describe('useFetchGuilds', () => {
 
     const { result } = renderHook(() => useFetchGuilds(sdk, address, 'oauth-code', 59141, null));
 
-    await waitFor(() => expect(window.location.search).toBe(''));
+    await waitFor(() => {
+      expect(window.location.search).toBe('');
+    });
     expect(result.current.isLoading).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -155,7 +161,9 @@ describe('useFetchGuilds', () => {
       { wrapper },
     );
 
-    await waitFor(() => expect(result.current.isLoggedIn).toBe(true));
+    await waitFor(() => {
+      expect(result.current.isLoggedIn).toBe(true);
+    });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(findBy).toHaveBeenCalledTimes(1);
   });
@@ -166,9 +174,9 @@ describe('useFetchGuilds', () => {
     fetchMock.mockImplementation(
       (_input, init) =>
         new Promise((_resolve, reject) => {
-          init?.signal?.addEventListener('abort', () =>
-            reject(new DOMException('aborted', 'AbortError')),
-          );
+          init?.signal?.addEventListener('abort', () => {
+            reject(new DOMException('aborted', 'AbortError'));
+          });
         }),
     );
     const otherAddress = '0x0000000000000000000000000000000000000002' as Address;
@@ -178,10 +186,14 @@ describe('useFetchGuilds', () => {
       { initialProps: { wallet: address } },
     );
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
     const signal = fetchMock.mock.calls[0]?.[1]?.signal;
     rerender({ wallet: otherAddress });
-    await waitFor(() => expect(signal?.aborted).toBe(true));
+    await waitFor(() => {
+      expect(signal?.aborted).toBe(true);
+    });
 
     expect(result.current.isLoggedIn).toBe(false);
     expect(result.current.guilds).toEqual([]);
@@ -204,14 +216,20 @@ describe('useFetchGuilds', () => {
       { initialProps: { currentChain: 59141 } },
     );
 
-    await waitFor(() => expect(attestationLookup).toHaveBeenCalledTimes(1));
+    await waitFor(() => {
+      expect(attestationLookup).toHaveBeenCalledTimes(1);
+    });
     window.history.pushState({}, '', '/?code=new-code&state=new-state');
     rerender({ currentChain: 59144 });
-    await waitFor(() => expect(result.current.isLoggedIn).toBe(false));
+    await waitFor(() => {
+      expect(result.current.isLoggedIn).toBe(false);
+    });
     expect(window.location.search).toBe('?code=new-code&state=new-state');
 
     resolveLookup?.([{ id: '0xold', decodedPayload: [{ guildId: 101n }] }]);
-    await waitFor(() => expect(result.current.guilds).toEqual([]));
+    await waitFor(() => {
+      expect(result.current.guilds).toEqual([]);
+    });
     expect(result.current.isLoggedIn).toBe(false);
     expect(window.location.search).toBe('?code=new-code&state=new-state');
     expect(fetchMock).toHaveBeenCalledTimes(1);

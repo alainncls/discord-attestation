@@ -33,7 +33,9 @@ describe('LoginWithDiscord', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Connect Discord' }));
-    await waitFor(() => expect(onAuthorize).toHaveBeenCalledOnce());
+    await waitFor(() => {
+      expect(onAuthorize).toHaveBeenCalledOnce();
+    });
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/.netlify/functions/api',

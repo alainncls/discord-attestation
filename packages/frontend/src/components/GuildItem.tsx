@@ -26,7 +26,9 @@ const GuildItem = ({ guild, isPending, isWalletConnected, onAttest, onCheck }: G
           <button
             type="button"
             className="btn btn-secondary guild-button"
-            onClick={() => onCheck(guild)}
+            onClick={() => {
+              onCheck(guild);
+            }}
             aria-label={`View ${guild.name} attestation`}
           >
             View
@@ -36,7 +38,9 @@ const GuildItem = ({ guild, isPending, isWalletConnected, onAttest, onCheck }: G
         <button
           type="button"
           className="btn btn-primary guild-button"
-          onClick={() => onAttest(guild)}
+          onClick={() => {
+            onAttest(guild);
+          }}
           disabled={isDisabled}
           aria-busy={isPending}
           aria-label={isPending ? `Attesting ${guild.name}` : `Attest ${guild.name}`}

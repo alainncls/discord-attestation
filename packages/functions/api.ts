@@ -35,12 +35,12 @@ const DEVELOPMENT_ORIGINS = new Set(['http://localhost:5173', 'http://127.0.0.1:
 let activeFlows = 0;
 
 interface RuntimeConfig {
-  VITE_DISCORD_CLIENT_ID?: string;
-  DISCORD_CLIENT_SECRET?: string;
-  VITE_REDIRECT_URL?: string;
-  SIGNER_PRIVATE_KEY?: string;
-  NODE_ENV?: string;
-  CONTEXT?: string;
+  VITE_DISCORD_CLIENT_ID?: string | undefined;
+  DISCORD_CLIENT_SECRET?: string | undefined;
+  VITE_REDIRECT_URL?: string | undefined;
+  SIGNER_PRIVATE_KEY?: string | undefined;
+  NODE_ENV?: string | undefined;
+  CONTEXT?: string | undefined;
 }
 
 interface ApiDependencies {
@@ -59,13 +59,16 @@ interface RateLimitEntry {
 }
 
 class ApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly publicMessage: string,
-    readonly retryAfter?: string,
-  ) {
+  readonly status: number;
+  readonly publicMessage: string;
+  readonly retryAfter: string | undefined;
+
+  constructor(status: number, publicMessage: string, retryAfter?: string) {
     super(publicMessage);
     this.name = 'ApiError';
+    this.status = status;
+    this.publicMessage = publicMessage;
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -148,10 +151,10 @@ const getCookie = (request: Request, name: string): string | null => {
 };
 
 const formatOAuthCookie = (name: string, value: string, maxAge: number): string =>
-  `${name}=${value}; HttpOnly; Secure; SameSite=Lax; Path=${OAUTH_COOKIE_PATH}; Max-Age=${maxAge}`;
+  `${name}=${value}; HttpOnly; Secure; SameSite=Lax; Path=${OAUTH_COOKIE_PATH}; Max-Age=${String(maxAge)}`;
 
 const validateOAuthStateRecord = (
-  record: OAuthStateRecord,
+  value: unknown,
   expected: {
     browserBinding: string;
     subject: string;
@@ -161,32 +164,35 @@ const validateOAuthStateRecord = (
     environment: string;
     now: number;
   },
-): boolean =>
-  typeof record === 'object' &&
-  record !== null &&
-  record.version === 1 &&
-  record.flow === 'discord' &&
-  record.status === 'pending' &&
-  typeof record.subject === 'string' &&
-  typeof record.chainId === 'number' &&
-  typeof record.origin === 'string' &&
-  typeof record.redirectUri === 'string' &&
-  typeof record.environment === 'string' &&
-  typeof record.issuedAt === 'number' &&
-  typeof record.expiresAt === 'number' &&
-  typeof record.browserBindingHash === 'string' &&
-  Number.isFinite(record.issuedAt) &&
-  Number.isFinite(record.expiresAt) &&
-  record.issuedAt <= expected.now &&
-  record.expiresAt > record.issuedAt &&
-  record.expiresAt > expected.now &&
-  record.expiresAt - record.issuedAt <= OAUTH_STATE_TTL_MS &&
-  record.subject.toLowerCase() === expected.subject.toLowerCase() &&
-  record.chainId === expected.chainId &&
-  record.origin === expected.origin &&
-  record.redirectUri === expected.redirectUri &&
-  record.environment === expected.environment &&
-  matchesHash(expected.browserBinding, record.browserBindingHash);
+): boolean => {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Partial<Record<keyof OAuthStateRecord, unknown>>;
+  return (
+    record.version === 1 &&
+    record.flow === 'discord' &&
+    record.status === 'pending' &&
+    typeof record.subject === 'string' &&
+    typeof record.chainId === 'number' &&
+    typeof record.origin === 'string' &&
+    typeof record.redirectUri === 'string' &&
+    typeof record.environment === 'string' &&
+    typeof record.issuedAt === 'number' &&
+    typeof record.expiresAt === 'number' &&
+    typeof record.browserBindingHash === 'string' &&
+    Number.isFinite(record.issuedAt) &&
+    Number.isFinite(record.expiresAt) &&
+    record.issuedAt <= expected.now &&
+    record.expiresAt > record.issuedAt &&
+    record.expiresAt > expected.now &&
+    record.expiresAt - record.issuedAt <= OAUTH_STATE_TTL_MS &&
+    record.subject.toLowerCase() === expected.subject.toLowerCase() &&
+    record.chainId === expected.chainId &&
+    record.origin === expected.origin &&
+    record.redirectUri === expected.redirectUri &&
+    record.environment === expected.environment &&
+    matchesHash(expected.browserBinding, record.browserBindingHash)
+  );
+};
 
 const jsonResponse = (
   body: unknown,
@@ -219,20 +225,20 @@ const readRequestJson = async (
 
   if (!req.body) throw new ApiError(400, 'Invalid JSON body');
 
-  const reader = req.body.getReader();
+  const reader: ReadableStreamDefaultReader<unknown> = req.body.getReader();
   const chunks: Uint8Array[] = [];
   let byteLength = 0;
-  let timedOut = false;
+  const bodyTimeout = { expired: false };
   const timeout = setTimeout(() => {
-    timedOut = true;
+    bodyTimeout.expired = true;
     void reader.cancel().catch(() => undefined);
   }, timeoutMs);
   try {
-    while (true) {
+    for (;;) {
       const { done, value } = await reader.read();
-      if (timedOut) throw new ApiError(408, 'Request body timed out');
+      if (bodyTimeout.expired) throw new ApiError(408, 'Request body timed out');
       if (done) break;
-      if (!value || value.byteLength === 0) continue;
+      if (!(value instanceof Uint8Array) || value.byteLength === 0) continue;
       byteLength += value.byteLength;
       if (byteLength > MAX_REQUEST_BODY_BYTES) {
         await reader.cancel().catch(() => undefined);
@@ -365,7 +371,7 @@ const createRateLimiter = (now: () => number) => {
     let entry = entries.get(key);
     if (!entry) {
       if (entries.size >= RATE_LIMIT_MAX_CLIENTS) {
-        const oldest = entries.keys().next().value as string | undefined;
+        const oldest = entries.keys().next().value;
         if (oldest) entries.delete(oldest);
       }
       entry = { count: 0, resetAt: currentTime + RATE_LIMIT_WINDOW_MS };
@@ -458,7 +464,7 @@ const getToken = async (
     throw mapProviderError(error);
   }
 
-  const accessToken = response.data?.access_token;
+  const accessToken = (response.data as { access_token?: unknown } | undefined)?.access_token;
   if (typeof accessToken !== 'string' || accessToken.length === 0 || accessToken.length > 8_192) {
     throw new ApiError(502, 'Invalid Discord token response');
   }
@@ -547,7 +553,7 @@ const signGuilds = async (
   expirationDate: bigint,
   requestBudget: ReturnType<typeof createRequestBudget>,
   signal: AbortSignal,
-): Promise<Array<{ id: string; name: string; signature: Hex; expirationDate: number }>> => {
+): Promise<{ id: string; name: string; signature: Hex; expirationDate: number }[]> => {
   const domain = {
     name: 'VerifyDiscord',
     version: '1',
@@ -581,7 +587,8 @@ const signGuilds = async (
       const index = nextIndex;
       nextIndex += 1;
       requestBudget.assertRemaining();
-      const guild = guilds[index]!;
+      const guild = guilds[index];
+      if (!guild) break;
       const signature = await walletClient.signTypedData({
         account,
         domain,
@@ -622,7 +629,7 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
   const monotonicNow = dependencies.monotonicNow ?? (() => performance.now());
   const rateLimit = createRateLimiter(now);
 
-  return async (req: Request, context?: Context): Promise<Response> => {
+  return async (req: Request, context?: Partial<Context>): Promise<Response> => {
     const baseConfig = dependencies.config();
     // Netlify exposes CONTEXT only at build time; read the deploy context at runtime.
     const config = { ...baseConfig, CONTEXT: baseConfig.CONTEXT ?? context?.deploy?.context };

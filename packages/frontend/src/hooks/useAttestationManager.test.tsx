@@ -25,7 +25,7 @@ const TX_HASH = '0xccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 const mocks = vi.hoisted(() => ({
   account: {
-    address: '0x0000000000000000000000000000000000000001' as Address,
+    address: '0x0000000000000000000000000000000000000001',
     isConnected: true,
   },
   getClient: vi.fn(),
@@ -33,7 +33,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('wagmi', () => ({
-  useAccount: () => mocks.account,
+  useConnection: () => mocks.account,
 }));
 
 vi.mock('wagmi/chains', () => ({
@@ -70,7 +70,7 @@ const registeredLog = (
 });
 
 const successReceipt = (
-  logs: Array<{ address?: Address; topics?: readonly Hex[] }>,
+  logs: { address?: Address; topics?: readonly Hex[] }[],
   status: 'success' | 'reverted' = 'success',
 ) => ({ status, logs });
 
@@ -85,16 +85,16 @@ function deferred<T>() {
 }
 
 describe('useAttestationManager', () => {
+  let openWindow: ReturnType<typeof vi.fn>;
+
   beforeEach(() => {
     mocks.account.address = ORIGINAL_ADDRESS;
     mocks.account.isConnected = true;
     mocks.getClient.mockReset();
     mocks.getClient.mockImplementation(() => ({ id: 'client' }));
     mocks.waitForTransactionReceipt.mockReset();
-    vi.stubGlobal(
-      'open',
-      vi.fn(() => null),
-    );
+    openWindow = vi.fn(() => null);
+    vi.stubGlobal('open', openWindow);
   });
 
   const renderManager = (chainId = LINEA_MAINNET) => {
@@ -157,7 +157,7 @@ describe('useAttestationManager', () => {
     expect(mocks.getClient).toHaveBeenCalledWith({ chainId: LINEA_MAINNET });
     expect(mocks.waitForTransactionReceipt).toHaveBeenCalledWith(submissionClient, {
       hash: TX_HASH,
-      onReplaced: expect.any(Function),
+      onReplaced: expect.any(Function) as unknown,
     });
     expect(onSuccess).toHaveBeenCalledTimes(1);
     expect(onSuccess).toHaveBeenCalledWith(guild.id, ATTESTATION_ID);
@@ -249,12 +249,14 @@ describe('useAttestationManager', () => {
     const { result, attest, onSuccess, onError, showError } = renderManager();
     attest.mockResolvedValue({ transactionHash: TX_HASH });
     mocks.waitForTransactionReceipt.mockImplementation(
-      async (
+      (
         _client: unknown,
         parameters: { onReplaced?: (replacement: { reason: string }) => void },
       ) => {
         parameters.onReplaced?.({ reason: 'replaced' });
-        return successReceipt([registeredLog(LINEA_MAINNET_ATTESTATION_REGISTRY, DECOY_ID)]);
+        return Promise.resolve(
+          successReceipt([registeredLog(LINEA_MAINNET_ATTESTATION_REGISTRY, DECOY_ID)]),
+        );
       },
     );
 
@@ -280,28 +282,31 @@ describe('useAttestationManager', () => {
     mocks.waitForTransactionReceipt.mockImplementation(() => receiptGate.promise);
 
     const { result, rerender, attest, onSuccess, onError } = renderManager();
-    attest.mockImplementation(async () => {
+    attest.mockImplementation(() => {
       phase = 'later';
-      return { transactionHash: TX_HASH };
+      return Promise.resolve({ transactionHash: TX_HASH });
     });
 
     let pending: Promise<unknown> = Promise.resolve();
-    await act(async () => {
+    await act(() => {
       pending = result.current.handleAttest(guild, onSuccess, onError);
+      return Promise.resolve();
     });
 
     expect(attest).toHaveBeenCalledTimes(1);
     expectPayload(attest, PORTAL_ID, ORIGINAL_ADDRESS);
     expect(mocks.waitForTransactionReceipt).toHaveBeenCalledWith(submissionClient, {
       hash: TX_HASH,
-      onReplaced: expect.any(Function),
+      onReplaced: expect.any(Function) as unknown,
     });
     expect(result.current.pendingGuildId).toBe(guild.id);
 
     mocks.account.address = OTHER_ADDRESS;
     rerender({ nextChainId: LINEA_SEPOLIA });
 
-    await waitFor(() => expect(result.current.txHash).toBeUndefined());
+    await waitFor(() => {
+      expect(result.current.txHash).toBeUndefined();
+    });
     expect(result.current.attestationId).toBeUndefined();
     expect(attest).toHaveBeenCalledTimes(1);
 
@@ -324,7 +329,7 @@ describe('useAttestationManager', () => {
     act(() => {
       result.current.handleCheck({ ...guild, attestationId: ATTESTATION_ID });
     });
-    expect(window.open).toHaveBeenCalledWith(
+    expect(openWindow).toHaveBeenCalledWith(
       `https://explorer.ver.ax/linea/attestations/${ATTESTATION_ID}`,
       '_blank',
       'noopener,noreferrer',
@@ -339,9 +344,10 @@ describe('useAttestationManager', () => {
 
     let first: Promise<unknown> = Promise.resolve();
     let second: Promise<unknown> = Promise.resolve();
-    await act(async () => {
+    await act(() => {
       first = result.current.handleAttest(guild, onSuccess, onError);
       second = result.current.handleAttest(guild, onSuccess, onError);
+      return Promise.resolve();
     });
 
     expect(attest).toHaveBeenCalledTimes(1);
@@ -376,7 +382,9 @@ describe('useAttestationManager', () => {
     mocks.account.address = OTHER_ADDRESS;
     rerender({ nextChainId: LINEA_SEPOLIA });
 
-    await waitFor(() => expect(result.current.attestationId).toBeUndefined());
+    await waitFor(() => {
+      expect(result.current.attestationId).toBeUndefined();
+    });
     expect(result.current.txHash).toBeUndefined();
     expect(result.current.transactionChainId).toBeUndefined();
     expect(attest).toHaveBeenCalledTimes(1);
@@ -384,7 +392,7 @@ describe('useAttestationManager', () => {
     act(() => {
       result.current.handleCheck({ ...guild, attestationId: ATTESTATION_ID });
     });
-    expect(window.open).toHaveBeenCalledWith(
+    expect(openWindow).toHaveBeenCalledWith(
       `https://explorer.ver.ax/linea-sepolia/attestations/${ATTESTATION_ID}`,
       '_blank',
       'noopener,noreferrer',
@@ -420,7 +428,7 @@ describe('useAttestationManager', () => {
     act(() => {
       result.current.handleCheck({ ...guild, attestationId: ATTESTATION_ID });
     });
-    expect(window.open).toHaveBeenCalledWith(
+    expect(openWindow).toHaveBeenCalledWith(
       `https://explorer.ver.ax/linea-sepolia/attestations/${ATTESTATION_ID}`,
       '_blank',
       'noopener,noreferrer',

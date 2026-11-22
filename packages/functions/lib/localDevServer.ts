@@ -77,7 +77,9 @@ async function handleRequest(
   handlers: LocalFunctionHandlers,
 ): Promise<void> {
   const abortController = new AbortController();
-  incoming.once('aborted', () => abortController.abort());
+  incoming.once('aborted', () => {
+    abortController.abort();
+  });
   outgoing.once('close', () => {
     if (!outgoing.writableEnded) abortController.abort();
   });
@@ -97,10 +99,7 @@ async function handleRequest(
       return;
     }
 
-    await pipeline(
-      Readable.fromWeb(response.body as Parameters<typeof Readable.fromWeb>[0]),
-      outgoing,
-    );
+    await pipeline(Readable.fromWeb(response.body), outgoing);
   } catch {
     if (outgoing.headersSent) {
       outgoing.destroy();

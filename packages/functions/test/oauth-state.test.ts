@@ -22,7 +22,7 @@ describe('Netlify Blobs OAuth state adapter', () => {
     const store = createOAuthStateStore({
       setJSON,
       getWithMetadata: vi.fn(),
-    } as never);
+    });
 
     await expect(store.create('hash', record)).resolves.toBe(true);
     expect(setJSON).toHaveBeenCalledWith('hash', record, { onlyIfNew: true });
@@ -33,7 +33,7 @@ describe('Netlify Blobs OAuth state adapter', () => {
     const store = createOAuthStateStore({
       getWithMetadata,
       setJSON: vi.fn(),
-    } as never);
+    });
 
     await expect(store.read('hash')).resolves.toEqual({ record, etag: 'etag-1' });
     expect(getWithMetadata).toHaveBeenCalledWith('hash', {
@@ -47,7 +47,7 @@ describe('Netlify Blobs OAuth state adapter', () => {
     const store = createOAuthStateStore({
       setJSON,
       getWithMetadata: vi.fn(),
-    } as never);
+    });
 
     await expect(
       store.compareAndSet('hash', 'etag-1', { ...record, status: 'consumed' }),
@@ -63,7 +63,7 @@ describe('Netlify Blobs OAuth state adapter', () => {
 
   it('prunes records only after their expiry plus the retention margin', async () => {
     const now = 1_800_000_000_000;
-    const list = vi.fn(async function* () {
+    const list = vi.fn(function* () {
       yield { blobs: [{ key: 'expired' }, { key: 'recent' }] };
     });
     const getWithMetadata = vi

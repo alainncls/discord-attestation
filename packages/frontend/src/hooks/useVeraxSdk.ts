@@ -4,7 +4,7 @@ import { linea } from 'wagmi/chains';
 import type { VeraxSdk } from '@verax-attestation-registry/verax-sdk';
 
 export const useVeraxSdk = (chainId?: number, address?: Address) => {
-  const sdkKey = chainId && address ? `${chainId}:${address}` : undefined;
+  const sdkKey = chainId && address ? `${String(chainId)}:${address}` : undefined;
   const [sdkState, setSdkState] = useState<{ key: string; sdk: VeraxSdk }>();
   const veraxSdk = sdkState && sdkState.key === sdkKey ? sdkState.sdk : undefined;
 

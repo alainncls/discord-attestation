@@ -4,8 +4,10 @@ import HardhatNodeTestRunner from '@nomicfoundation/hardhat-node-test-runner';
 import HardhatViem from '@nomicfoundation/hardhat-viem';
 import HardhatVerify from '@nomicfoundation/hardhat-verify';
 
-const getRpcUrl = (envKey: string, fallback: SensitiveString) =>
-  process.env[envKey] ? process.env[envKey] : fallback;
+const getRpcUrl = (envKey: string, fallback: SensitiveString) => {
+  const url = process.env[envKey];
+  return url === undefined || url === '' ? fallback : url;
+};
 
 export default defineConfig({
   plugins: [HardhatNodeTestRunner, HardhatViem, HardhatVerify],
@@ -32,18 +34,18 @@ export default defineConfig({
       type: 'http',
       url: getRpcUrl(
         'LINEA_SEPOLIA_RPC_URL',
-        configVariable('INFURA_KEY', 'https://linea-sepolia.infura.io/v3/{variable}'),
+        configVariable('INFURA_KEY', { format: 'https://linea-sepolia.infura.io/v3/{variable}' }),
       ),
-      accounts: [configVariable('PRIVATE_KEY') as SensitiveString],
+      accounts: [configVariable('PRIVATE_KEY')],
       chainId: 59141,
     },
     linea: {
       type: 'http',
       url: getRpcUrl(
         'LINEA_RPC_URL',
-        configVariable('INFURA_KEY', 'https://linea-mainnet.infura.io/v3/{variable}'),
+        configVariable('INFURA_KEY', { format: 'https://linea-mainnet.infura.io/v3/{variable}' }),
       ),
-      accounts: [configVariable('PRIVATE_KEY') as SensitiveString],
+      accounts: [configVariable('PRIVATE_KEY')],
       chainId: 59144,
     },
   },

@@ -35,7 +35,7 @@ export const createOAuthStateStore = (
   },
   async read(key) {
     const result = await store.getWithMetadata(key, { type: 'json', consistency: 'strong' });
-    if (!result || !result.etag || typeof result.data !== 'object' || result.data === null) {
+    if (!result?.etag || typeof result.data !== 'object' || result.data === null) {
       return null;
     }
     return { record: result.data as OAuthStateRecord, etag: result.etag };
@@ -65,13 +65,13 @@ export const pruneExpiredRecords = async (
   for await (const page of store.list({ paginate: true, prefix: '' })) {
     for (const { key } of page.blobs) {
       const result = await store.getWithMetadata(key, { type: 'json', consistency: 'strong' });
+      const data: unknown = result?.data;
       if (
-        result &&
-        typeof result.data === 'object' &&
-        result.data !== null &&
-        'expiresAt' in result.data &&
-        typeof result.data.expiresAt === 'number' &&
-        result.data.expiresAt + retentionMarginMs < now
+        typeof data === 'object' &&
+        data !== null &&
+        'expiresAt' in data &&
+        typeof data.expiresAt === 'number' &&
+        data.expiresAt + retentionMarginMs < now
       ) {
         await store.delete(key);
         removed += 1;

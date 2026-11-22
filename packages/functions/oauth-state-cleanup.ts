@@ -3,7 +3,7 @@ import { pruneExpiredOAuthStateRecords } from './lib/oauthState';
 
 export const config = { schedule: '0 3 * * *' };
 
-export default async (_req: Request, context?: Context): Promise<Response> => {
+export default async (_req: Request, context?: Partial<Context>): Promise<Response> => {
   const environment = process.env.CONTEXT ?? context?.deploy?.context ?? 'production';
   try {
     const removed = await pruneExpiredOAuthStateRecords(environment);

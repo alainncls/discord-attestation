@@ -1,14 +1,4 @@
-import { baseConfig } from '../../../eslint.config.js';
+import { defineConfig } from 'eslint/config';
+import { baseConfig, prettier } from '../../../eslint.config.js';
 
-export default [
-  { ignores: ['dist', 'node_modules'] },
-  ...baseConfig,
-  {
-    files: ['**/*.ts'],
-    rules: {
-      'no-console': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-    },
-  },
-];
-
+export default defineConfig({ ignores: ['dist', 'node_modules'] }, baseConfig, prettier);

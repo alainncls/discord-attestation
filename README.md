@@ -176,14 +176,16 @@ OAuth state is issued by the Netlify Function and stored in Netlify Blobs with s
 
 From the root of the monorepo:
 
-| Script           | Description                     |
-| ---------------- | ------------------------------- |
-| `pnpm dev`       | Start frontend dev server       |
-| `pnpm build`     | Build all packages              |
-| `pnpm lint`      | Run ESLint + Prettier + Solhint |
-| `pnpm lint:fix`  | Auto-fix linting issues         |
-| `pnpm test`      | Run tests (contracts)           |
-| `pnpm typecheck` | TypeScript type checking        |
+| Script           | Description                             |
+| ---------------- | --------------------------------------- |
+| `pnpm dev`       | Start frontend dev server               |
+| `pnpm build`     | Build all packages                      |
+| `pnpm lint`      | Run ESLint + Prettier + Solhint         |
+| `pnpm lint:fix`  | Auto-fix linting issues                 |
+| `pnpm test`      | Run tests (contracts)                   |
+| `pnpm typecheck` | Type checking with TypeScript 7 (`tsc`) |
+
+TypeScript 7 (`@typescript/native`) runs all type checks. The `typescript` package is an alias to the TypeScript 6 API (`@typescript/typescript6`, bin `tsc6`), because typescript-eslint and other tools need the compiler API.
 
 ### Package-specific scripts
 

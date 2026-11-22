@@ -16,7 +16,7 @@ import {
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
-const SCHEMA_ID = '0xefa96ce61912c5bb59cb4c26645ea193fc03a234fe09a6b2c8b85aaa51a382d6';
+const SCHEMA_ID: Hex = '0xefa96ce61912c5bb59cb4c26645ea193fc03a234fe09a6b2c8b85aaa51a382d6';
 const FEE = 100_000_000_000_000n;
 const CONTRACTS_ROOT = resolve(import.meta.dirname, '..');
 const require = createRequire(import.meta.url);
@@ -97,6 +97,7 @@ describe('DiscordPortal public attestation boundary', async function () {
   const accounts = await viem.getWalletClients();
   const publicClient = await viem.getPublicClient();
   const [subject, other, portalOwner] = accounts;
+  assert.ok(subject && other && portalOwner);
 
   let portal: Awaited<ReturnType<typeof viem.deployContract<'DiscordPortal'>>>;
   let attestationRegistry: Awaited<
@@ -108,7 +109,7 @@ describe('DiscordPortal public attestation boundary', async function () {
     const moduleRegistry = await viem.deployContract('PortalTestModuleRegistry');
     attestationRegistry = await viem.deployContract('PortalTestAttestationRegistry');
     const portalRegistry = await viem.deployContract('PortalTestRegistry', [
-      portalOwner!.account.address,
+      portalOwner.account.address,
     ]);
     const router = await viem.deployContract('PortalTestRouter', [
       attestationRegistry.address,
@@ -120,7 +121,7 @@ describe('DiscordPortal public attestation boundary', async function () {
   });
 
   it('rejects unsupported schema, invalid subject, sender mismatch, insufficient fee and missing signatures', async () => {
-    const expirationDate = 1_900_000_000;
+    const expirationDate = 1_900_000_000n;
     const encoded = encodeAbiParameters(
       [
         {
@@ -170,7 +171,7 @@ describe('DiscordPortal public attestation boundary', async function () {
   });
 
   it('rejects a well-formed EIP-712 signature from a non-authorized signer without registering data', async () => {
-    const expirationDate = 1_900_000_000;
+    const expirationDate = 1_900_000_000n;
     const guild = { id: 123n, name: 'Guild' };
     const chainId = await publicClient.getChainId();
     const signature = await other.signTypedData({
@@ -239,10 +240,10 @@ describe('DiscordPortal public attestation boundary', async function () {
     assert.ok(deployment.contractAddress);
     const fixturePortal = getContract({
       address: deployment.contractAddress,
-      abi: fixture.abi,
+      abi: fixture.abi as typeof portal.abi,
       client: { public: publicClient, wallet: subject },
     });
-    const expirationDate = 1_900_000_000;
+    const expirationDate = 1_900_000_000n;
     const guild = { id: 456n, name: 'EIP-712 positive fixture' };
     const chainId = await publicClient.getChainId();
     const domain = {
@@ -283,7 +284,7 @@ describe('DiscordPortal public attestation boundary', async function () {
         subject?: Address;
         guildId?: bigint;
         guildName?: string;
-        expirationDate?: number;
+        expirationDate?: bigint;
       } = {},
     ) =>
       ephemeralSigner.signTypedData({
@@ -308,7 +309,7 @@ describe('DiscordPortal public attestation boundary', async function () {
       getAddress(await attestationRegistry.read.lastAttester()),
       getAddress(subject.account.address),
     );
-    assert.equal(await attestationRegistry.read.lastExpirationDate(), BigInt(expirationDate));
+    assert.equal(await attestationRegistry.read.lastExpirationDate(), expirationDate);
 
     const wrongDomain = await sign({ domain: { ...domain, chainId: chainId + 1 } });
     await rejectsWith(
@@ -342,7 +343,7 @@ describe('DiscordPortal public attestation boundary', async function () {
       }),
       /InvalidSignature/,
     );
-    const wrongExpiration = await sign({ expirationDate: expirationDate + 1 });
+    const wrongExpiration = await sign({ expirationDate: expirationDate + 1n });
     await rejectsWith(
       fixturePortal.write.attest([payload, [wrongExpiration]], {
         account: subject.account,
@@ -361,14 +362,14 @@ describe('DiscordPortal public attestation boundary', async function () {
 
     // Verax documents that expired attestations can be registered; expiry is not a signature TTL.
     const block = await publicClient.getBlock();
-    const expiredDate = Number(block.timestamp) - 3_600;
+    const expiredDate = block.timestamp - 3_600n;
     const expiredSignature = await sign({ expirationDate: expiredDate });
     await fixturePortal.write.attest(
       [{ ...payload, expirationDate: expiredDate }, [expiredSignature]],
       { account: subject.account, value: FEE },
     );
     assert.equal(await attestationRegistry.read.attestCount(), 3n);
-    assert.equal(await attestationRegistry.read.lastExpirationDate(), BigInt(expiredDate));
+    assert.equal(await attestationRegistry.read.lastExpirationDate(), expiredDate);
 
     await attestationRegistry.write.setShouldRevert([true]);
     await rejectsWith(
@@ -379,7 +380,7 @@ describe('DiscordPortal public attestation boundary', async function () {
       /RegistryWriteFailed/,
     );
     assert.equal(await attestationRegistry.read.attestCount(), 3n);
-    assert.equal(await attestationRegistry.read.lastExpirationDate(), BigInt(expiredDate));
+    assert.equal(await attestationRegistry.read.lastExpirationDate(), expiredDate);
   });
 
   it('preserves fee administration and portal-owner operation guards', async () => {
@@ -399,7 +400,7 @@ describe('DiscordPortal public attestation boundary', async function () {
           `0x${'00'.repeat(32)}`,
           {
             schemaId: SCHEMA_ID,
-            expirationDate: 0,
+            expirationDate: 0n,
             subject: subject.account.address,
             attestationData: '0x01',
           },

@@ -42,6 +42,8 @@ export default defineConfig({
           ) {
             return 'wallet-ui';
           }
+
+          return undefined;
         },
       },
     },

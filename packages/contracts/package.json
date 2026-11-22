@@ -12,7 +12,7 @@
     "prettier:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json'",
     "solhint": "solhint **/*.sol -c .solhint.json",
     "test": "hardhat test solidity && node scripts/run-nodejs-tests.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "hardhat compile --quiet && tsc --noEmit"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6"

@@ -49,7 +49,9 @@ describe('loopback development uses the production handler', () => {
     expect(start.status).toBe(200);
     expect(start.headers.get('cache-control')).toContain('no-store');
     expect(start.headers.get('set-cookie')).toContain('HttpOnly');
-    expect((await start.json()).authorizeUrl).toContain('discord.com');
+    expect(((await start.json()) as { authorizeUrl: string }).authorizeUrl).toContain(
+      'discord.com',
+    );
     expect((await fetch(base + '/missing')).status).toBe(404);
     const invalid = await fetch(base + '/api', {
       method: 'POST',

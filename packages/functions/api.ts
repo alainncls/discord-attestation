@@ -35,12 +35,12 @@ const DEVELOPMENT_ORIGINS = new Set(['http://localhost:5173', 'http://127.0.0.1:
 let activeFlows = 0;
 
 interface RuntimeConfig {
-  VITE_DISCORD_CLIENT_ID?: string;
-  DISCORD_CLIENT_SECRET?: string;
-  VITE_REDIRECT_URL?: string;
-  SIGNER_PRIVATE_KEY?: string;
-  NODE_ENV?: string;
-  CONTEXT?: string;
+  VITE_DISCORD_CLIENT_ID?: string | undefined;
+  DISCORD_CLIENT_SECRET?: string | undefined;
+  VITE_REDIRECT_URL?: string | undefined;
+  SIGNER_PRIVATE_KEY?: string | undefined;
+  NODE_ENV?: string | undefined;
+  CONTEXT?: string | undefined;
 }
 
 interface ApiDependencies {
@@ -59,13 +59,16 @@ interface RateLimitEntry {
 }
 
 class ApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly publicMessage: string,
-    readonly retryAfter?: string,
-  ) {
+  readonly status: number;
+  readonly publicMessage: string;
+  readonly retryAfter: string | undefined;
+
+  constructor(status: number, publicMessage: string, retryAfter?: string) {
     super(publicMessage);
     this.name = 'ApiError';
+    this.status = status;
+    this.publicMessage = publicMessage;
+    this.retryAfter = retryAfter;
   }
 }
 

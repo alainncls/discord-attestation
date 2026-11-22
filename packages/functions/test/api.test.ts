@@ -175,7 +175,7 @@ describe('Discord signing API', () => {
       config: () => ({ ...config, CONTEXT: undefined }),
       oauthStateStore: (environment) => ({
         ...stateStore,
-        async create(key, record) {
+        async create(_key, record) {
           records.set(environment, record);
           return true;
         },
@@ -452,7 +452,10 @@ describe('Discord signing API', () => {
     vi.mocked(http.get).mockImplementation(
       async (_url, options) =>
         ({
-          data: options?.params?.after === '200' ? secondPage : firstPage,
+          data:
+            (options?.params as { after?: string } | undefined)?.after === '200'
+              ? secondPage
+              : firstPage,
         }) as never,
     );
 
@@ -708,7 +711,7 @@ describe('Discord signing API', () => {
     for (const overrides of [{ subject: 'not-an-address' }, { chainId: 1 }, { code: '' }]) {
       const response = await handler(
         createRequest(overrides),
-        createContext(`203.0.113.${20 + http.post.mock.calls.length}`),
+        createContext(`203.0.113.${20 + vi.mocked(http.post).mock.calls.length}`),
       );
       expect(response.status).toBe(400);
     }

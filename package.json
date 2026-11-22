@@ -27,6 +27,9 @@
     "typescript-eslint": "catalog:"
   },
   "packageManager": "pnpm@12.21.0",
+  "engines": {
+    "node": ">=24.22.3"
+  },
   "devEngines": {
     "runtime": {
       "name": "node",
@@ -38,8 +41,5 @@
       "version": "12.21.0",
       "onFail": "download"
     }
-  },
-  "engines": {
-    "node": ">=24.22.3"
   }
 }

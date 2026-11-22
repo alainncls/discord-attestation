@@ -6,8 +6,8 @@
   "scripts": {
     "compile": "hardhat compile",
     "deploy": "node --env-file=.env ./node_modules/hardhat/dist/src/cli.js run scripts/deployDiscord.ts --network",
-    "lint": "eslint --max-warnings 0 . && pnpm run solhint",
-    "lint:fix": "eslint --fix .",
+    "lint": "hardhat compile --quiet && eslint --max-warnings 0 . && pnpm run solhint",
+    "lint:fix": "hardhat compile --quiet && eslint --fix .",
     "prettier": "prettier --check '**/*.sol' '**/*.ts' '**/*.json'",
     "prettier:fix": "prettier --write '**/*.sol' '**/*.ts' '**/*.json'",
     "solhint": "solhint **/*.sol -c .solhint.json",

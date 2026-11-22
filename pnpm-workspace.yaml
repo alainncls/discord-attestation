@@ -33,29 +33,13 @@ catalog:
   wagmi: 3.7.11
 
 overrides:
-  # GHSA-mrwp-f3q8-3g9p: prevent custom credential disclosure on redirects.
-  follow-redirects: 1.16.2
   # GHSA-mrhx-c7xc-m3w5 / CVE-2023-54404: Reown AppKit 1.8.24 still resolves
   # Zod 3.x. Zod 4.6.6 is the first patched release; retain this exact override
   # until the upstream graph publishes an explicitly compatible resolution.
   zod: 4.6.6
+  # GHSA-7mx3-vvmw-hjmv / GHSA-c4qx-w738-7hr3: Verax SDK pulls vulnerable 10.x/11.x.
   '@graphql-tools/utils': 12.0.3
   axios: 1.21.1
-  '@fastify/busboy': 3.2.2
-  '@graphql-tools/executor-legacy-ws': 1.1.37
-  http-cache-semantics: 4.3.0
-  source-map-js: 1.2.2
-  adm-zip@<0.6.1: 0.6.1
-  brace-expansion@>=2.0.0 <2.1.7: 2.1.7
-  brace-expansion@>=4.0.0 <5.0.12: 5.0.12
-  esbuild@>=0.27.0 <0.28.1: 0.28.1
-  fast-uri@<2.4.8: 2.4.8
-  fast-uri@>=3.0.0 <3.1.9: 3.1.9
-  fast-uri@>=4.0.0 <4.2.3: 4.2.3
-  # GHSA-4qv8-2p9j-2685 and six related advisories: keep the transitive
-  # majors, but pin each to its first mature patched release.
-  undici@>=4.0.0 <6.29.1: 6.29.1
-  undici@>=7.0.0 <7.30.1: 7.30.1
   '@base-org/account': 2.5.13
   # GHSA-3g3m-2fjr-6pw4 / GHSA-g3hv-75wg-m249: solhint pins glob 13 (minimatch 10).
   glob@>=9.0.0 <14.0.2: 14.0.6
@@ -79,7 +63,6 @@ minimumReleaseAgeExclude:
   - '@typescript-eslint/visitor-keys@8.73.0'
   - '@vitest/mocker@5.1.1'
   - '@vitest/spy@5.1.1'
-  - 'eslint-plugin-react-refresh@0.5.8'
   - 'minimatch@11.0.9'
   - 'typescript-eslint@8.73.0'
   - 'viem@2.58.0'

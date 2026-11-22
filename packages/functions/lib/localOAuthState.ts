@@ -4,23 +4,25 @@ import type { OAuthStateRecord, OAuthStateStore } from './oauthState';
 export function createLocalOAuthStateStore(): OAuthStateStore {
   const entries = new Map<string, { record: OAuthStateRecord; version: number }>();
   return {
-    async create(key, record) {
+    create(key, record) {
       for (const [oldKey, entry] of entries) {
         if (entry.record.expiresAt <= Date.now()) entries.delete(oldKey);
       }
-      if (entries.has(key) || entries.size >= 4096) return false;
+      if (entries.has(key) || entries.size >= 4096) return Promise.resolve(false);
       entries.set(key, { record: structuredClone(record), version: 1 });
-      return true;
+      return Promise.resolve(true);
     },
-    async read(key) {
+    read(key) {
       const entry = entries.get(key);
-      return entry ? { record: structuredClone(entry.record), etag: String(entry.version) } : null;
+      return Promise.resolve(
+        entry ? { record: structuredClone(entry.record), etag: String(entry.version) } : null,
+      );
     },
-    async compareAndSet(key, etag, record) {
+    compareAndSet(key, etag, record) {
       const entry = entries.get(key);
-      if (!entry || String(entry.version) !== etag) return false;
+      if (!entry || String(entry.version) !== etag) return Promise.resolve(false);
       entries.set(key, { record: structuredClone(record), version: entry.version + 1 });
-      return true;
+      return Promise.resolve(true);
     },
   };
 }

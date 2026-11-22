@@ -19,7 +19,9 @@ const Toast = memo(function Toast({ id, message, type, duration = 5000, onRemove
   const closeToast = useCallback(() => {
     setIsVisible(false);
     window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = window.setTimeout(() => onRemove(id), 300);
+    closeTimerRef.current = window.setTimeout(() => {
+      onRemove(id);
+    }, 300);
   }, [id, onRemove]);
 
   useEffect(() => {

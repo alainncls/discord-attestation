@@ -1,10 +1,10 @@
 import { type Address, type Hex, isAddressEqual } from 'viem';
 import { ATTESTATION_REGISTERED_EVENT_TOPIC, getAttestationRegistryAddress } from './constants';
 
-export type AttestationReceiptLog = {
+export interface AttestationReceiptLog {
   address?: Address;
   topics?: readonly Hex[];
-};
+}
 
 export const extractAttestationIdFromReceipt = (
   chainId: number | undefined,

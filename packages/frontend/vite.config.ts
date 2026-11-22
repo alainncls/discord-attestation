@@ -8,7 +8,7 @@ export default defineConfig({
     sourcemap: true,
     cssCodeSplit: false,
     modulePreload: false,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('vite/preload-helper')) {

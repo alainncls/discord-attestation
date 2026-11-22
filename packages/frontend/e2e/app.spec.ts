@@ -18,16 +18,16 @@ function captureRuntimeErrors(page: Page) {
       request.failure()?.errorText === 'net::ERR_ABORTED'
     )
       return;
-    errors.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText}`);
+    errors.push(`${request.method()} ${request.url()}: ${String(request.failure()?.errorText)}`);
   });
   page.on('response', (response) => {
-    if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
+    if (response.status() >= 400) errors.push(`${String(response.status())} ${response.url()}`);
   });
   return errors;
 }
 
 async function mockWalletDiscovery(page: Page) {
-  const calls: Array<{ url: string; status: number }> = [];
+  const calls: { url: string; status: number }[] = [];
   await page.route('https://api.web3modal.org/appkit/v1/config?*', async (route) => {
     calls.push({ url: route.request().url(), status: 200 });
     await route.fulfill({ json: {} });

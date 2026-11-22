@@ -10,7 +10,7 @@ vi.stubEnv('VITE_WALLETCONNECT_PROJECT_ID', 'walletconnect-project-id');
 vi.stubEnv('VITE_INFURA_API_KEY', 'infura-api-key');
 vi.stubEnv('VITE_MODE', 'production');
 
-if (!window.matchMedia) {
+if (typeof window.matchMedia !== 'function') {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({
@@ -26,11 +26,11 @@ if (!window.matchMedia) {
   });
 }
 
-if (!window.ResizeObserver) {
+if (typeof window.ResizeObserver !== 'function') {
   window.ResizeObserver = class ResizeObserver {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
+    observe = () => undefined;
+    unobserve = () => undefined;
+    disconnect = () => undefined;
   };
 }
 

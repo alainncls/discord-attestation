@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import './App.css';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import MainContent from './components/MainContent';
@@ -16,7 +16,7 @@ import type { Hex } from 'viem';
 import type { SignedGuild } from './types';
 
 function App() {
-  const { address, chainId, isConnected } = useAccount();
+  const { address, chainId, isConnected } = useConnection();
   const { veraxSdk } = useVeraxSdk(chainId, address);
   const { toasts, removeToast, showError } = useToast();
 
@@ -38,8 +38,8 @@ function App() {
     useAttestationManager(veraxSdk, chainId, showError);
 
   const handleAttestAndUpdateGuilds = useCallback(
-    async (guild: SignedGuild) => {
-      await handleAttest(guild, (guildId: string, attestId: Hex) => {
+    (guild: SignedGuild) => {
+      void handleAttest(guild, (guildId: string, attestId: Hex) => {
         setGuilds((currentGuilds) =>
           currentGuilds.map((currentGuild) =>
             currentGuild.id === guildId

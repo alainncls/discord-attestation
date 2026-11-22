@@ -68,20 +68,26 @@ const compileEphemeralSignerFixture = async (signerAddress: Address) => {
     dirname(hardhatEntry),
     'internal/builtin-plugins/solidity/build-system/compiler/index.js',
   );
-  const { getCompiler } = await import(pathToFileURL(compilerModulePath).href);
+  const { getCompiler } = (await import(pathToFileURL(compilerModulePath).href)) as {
+    getCompiler: (
+      version: string,
+      options: { preferWasm: boolean },
+    ) => Promise<{ compile: (input: unknown) => Promise<unknown> }>;
+  };
   const compiler = await getCompiler('0.8.21', { preferWasm: false });
   const compilerOutput = await compiler.compile(input);
   const output = (
     typeof compilerOutput === 'string' ? JSON.parse(compilerOutput) : compilerOutput
   ) as {
-    errors?: Array<{ severity: string; formattedMessage: string }>;
+    errors?: { severity: string; formattedMessage: string }[];
     contracts?: Record<string, Record<string, { abi: Abi; evm: { bytecode: { object: string } } }>>;
   };
   const errors = output.errors?.filter(({ severity }) => severity === 'error') ?? [];
   assert.deepEqual(errors, [], errors.map(({ formattedMessage }) => formattedMessage).join('\n'));
   const artifact = output.contracts?.['src/DiscordPortal.sol']?.DiscordPortal;
   assert.ok(artifact?.evm.bytecode.object, 'fixture compilation must produce deployable bytecode');
-  return { abi: artifact.abi, bytecode: `0x${artifact.evm.bytecode.object}` as Hex };
+  const bytecode: Hex = `0x${artifact.evm.bytecode.object}`;
+  return { abi: artifact.abi, bytecode };
 };
 
 async function rejectsWith(promise: Promise<unknown>, pattern: RegExp) {
@@ -92,7 +98,7 @@ async function rejectsWith(promise: Promise<unknown>, pattern: RegExp) {
   });
 }
 
-describe('DiscordPortal public attestation boundary', async function () {
+void describe('DiscordPortal public attestation boundary', async function () {
   const { viem } = await network.create('hardhat');
   const accounts = await viem.getWalletClients();
   const publicClient = await viem.getPublicClient();
@@ -120,7 +126,7 @@ describe('DiscordPortal public attestation boundary', async function () {
     portal = await viem.deployContract('DiscordPortal', [[], router.address]);
   });
 
-  it('rejects unsupported schema, invalid subject, sender mismatch, insufficient fee and missing signatures', async () => {
+  void it('rejects unsupported schema, invalid subject, sender mismatch, insufficient fee and missing signatures', async () => {
     const expirationDate = 1_900_000_000n;
     const encoded = encodeAbiParameters(
       [
@@ -170,7 +176,7 @@ describe('DiscordPortal public attestation boundary', async function () {
     assert.equal(await attestationRegistry.read.attestCount(), 0n);
   });
 
-  it('rejects a well-formed EIP-712 signature from a non-authorized signer without registering data', async () => {
+  void it('rejects a well-formed EIP-712 signature from a non-authorized signer without registering data', async () => {
     const expirationDate = 1_900_000_000n;
     const guild = { id: 123n, name: 'Guild' };
     const chainId = await publicClient.getChainId();
@@ -228,8 +234,8 @@ describe('DiscordPortal public attestation boundary', async function () {
     assert.equal(await attestationRegistry.read.attestCount(), 0n);
   });
 
-  it('accepts a real EIP-712 signature with an ephemeral local signer and exact production source', async () => {
-    const ephemeralSigner = privateKeyToAccount(`0x${'77'.repeat(32)}` as Hex);
+  void it('accepts a real EIP-712 signature with an ephemeral local signer and exact production source', async () => {
+    const ephemeralSigner = privateKeyToAccount(`0x${'77'.repeat(32)}`);
     const fixture = await compileEphemeralSignerFixture(ephemeralSigner.address);
     const deploymentHash = await subject.deployContract({
       abi: fixture.abi,
@@ -383,7 +389,7 @@ describe('DiscordPortal public attestation boundary', async function () {
     assert.equal(await attestationRegistry.read.lastExpirationDate(), expiredDate);
   });
 
-  it('preserves fee administration and portal-owner operation guards', async () => {
+  void it('preserves fee administration and portal-owner operation guards', async () => {
     await portal.write.setFee([FEE * 2n], { account: subject.account });
     assert.equal(await portal.read.fee(), FEE * 2n);
     await rejectsWith(

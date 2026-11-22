@@ -78,7 +78,7 @@ const createOAuthExchangeLease = (
 };
 
 const getIdentityKey = (address?: Address, chainId?: number): string =>
-  `${address?.toLowerCase() ?? 'disconnected'}:${chainId ?? 'unknown'}`;
+  `${address?.toLowerCase() ?? 'disconnected'}:${chainId === undefined ? 'unknown' : String(chainId)}`;
 
 const getApiBaseUrl = () => {
   const isLocalViteDevServer = import.meta.env.DEV && window.location.port === '5173';
@@ -138,7 +138,7 @@ export const useFetchGuilds = (
       });
 
       const attestationIdByGuildId = new Map(
-        attestedGuilds.flatMap((attested) => {
+        attestedGuilds.flatMap((attested): [string, Hex][] => {
           const guildId = (attested.decodedPayload as DecodedPayload[])[0]?.guildId;
           return guildId ? [[guildId.toString(), attested.id as Hex]] : [];
         }),
@@ -172,15 +172,18 @@ export const useFetchGuilds = (
           body: JSON.stringify(payload),
           signal,
         });
-        if (signal.aborted) return null;
-        const data = await res.json();
+        const data = (await res.json()) as {
+          error?: unknown;
+          message?: unknown;
+          signedGuilds: SignedGuild[];
+        };
         if (signal.aborted || !res.ok) return null;
 
         if (data.error || data.message) {
           return null;
         }
 
-        return data.signedGuilds as SignedGuild[];
+        return data.signedGuilds;
       } catch {
         return null;
       }

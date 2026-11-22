@@ -4,7 +4,10 @@ import './index.css';
 import './App.css';
 import { AppBootstrap } from './AppBootstrap';
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Missing #root element');
+
+createRoot(rootElement).render(
   <StrictMode>
     <AppBootstrap />
   </StrictMode>,
@@ -20,15 +23,16 @@ const loadInsights = () =>
     const script = document.createElement('script');
     script.src = '/js/insights-js.umd.min.js';
     script.async = true;
-    script.onload = () => resolve(window.insights);
+    script.onload = () => {
+      resolve(window.insights);
+    };
     script.onerror = reject;
     document.head.append(script);
   });
 
 const scheduleAnalytics = (callback: () => void) => {
-  const requestIdleCallback = window.requestIdleCallback;
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(callback, { timeout: 2000 });
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(callback, { timeout: 2000 });
     return;
   }
 

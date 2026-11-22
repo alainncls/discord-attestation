@@ -8,16 +8,21 @@ import { createLocalOAuthStateStore } from '../lib/localOAuthState';
 
 let server: Server | undefined;
 afterEach(async () => {
-  if (server) {
-    server.closeAllConnections();
-    await new Promise<void>((resolve) => server!.close(() => resolve()));
+  const activeServer = server;
+  if (activeServer) {
+    activeServer.closeAllConnections();
+    await new Promise<void>((resolve) =>
+      activeServer.close(() => {
+        resolve();
+      }),
+    );
   }
 });
 
 describe('loopback development uses the production handler', () => {
   it('preserves routes, CORS, cookies, no-store and one-use state without Netlify CLI', async () => {
     const store = createLocalOAuthStateStore();
-    server = createLocalFunctionServer({
+    const localServer = createLocalFunctionServer({
       api: createApiHandler({
         http: axios,
         config: () => ({
@@ -29,8 +34,11 @@ describe('loopback development uses the production handler', () => {
         oauthStateStore: () => store,
       }),
     });
-    await new Promise<void>((resolve) => server!.listen(0, '127.0.0.1', resolve));
-    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    server = localServer;
+    await new Promise<void>((resolve) => {
+      localServer.listen(0, '127.0.0.1', resolve);
+    });
+    const base = `http://127.0.0.1:${String((localServer.address() as AddressInfo).port)}`;
     const origin = 'http://localhost:5173';
     const preflight = await fetch(base + '/api', {
       method: 'OPTIONS',
@@ -77,7 +85,8 @@ describe('loopback development uses the production handler', () => {
       status: 'pending' as const,
     };
     expect(await store.create('key', record)).toBe(true);
-    const entry = (await store.read('key'))!;
+    const entry = await store.read('key');
+    if (!entry) throw new Error('Expected a stored entry');
     const results = await Promise.all(
       Array.from({ length: 20 }, () =>
         store.compareAndSet('key', entry.etag, { ...record, status: 'consumed' }),

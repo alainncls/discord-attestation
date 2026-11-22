@@ -11,7 +11,7 @@ const wagmiState = vi.hoisted(() => ({
 vi.mock('wagmi', () => ({
   useSwitchChain: () => ({
     isPending: wagmiState.isPending,
-    switchChain: wagmiState.switchChain,
+    mutate: wagmiState.switchChain,
   }),
 }));
 

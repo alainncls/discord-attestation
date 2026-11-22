@@ -6,7 +6,6 @@
   "scripts": {
     "build": "pnpm -r --parallel run build",
     "dev": "pnpm -r --parallel run dev",
-    "preinstall": "npx only-allow@1.2.2 pnpm",
     "lint": "eslint updateReadme.ts && pnpm -r --parallel run lint && prettier --check 'updateReadme.ts' '*.json' && pnpm -r --parallel run prettier",
     "lint:fix": "eslint --fix updateReadme.ts && pnpm -r --parallel run lint:fix && prettier --write 'updateReadme.ts' '*.json' && pnpm -r --parallel run prettier:fix",
     "prepare": "husky",
@@ -28,6 +27,18 @@
     "typescript-eslint": "catalog:"
   },
   "packageManager": "pnpm@12.21.0",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.22.3",
+      "onFail": "download"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.21.0",
+      "onFail": "download"
+    }
+  },
   "engines": {
     "node": ">=24.22.3"
   }

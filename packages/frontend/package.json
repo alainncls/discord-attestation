@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -b && vite build",
     "dev": "vite",
-    "lint": "eslint .",
+    "lint": "eslint --max-warnings 0 .",
     "lint:fix": "eslint --fix .",
     "prettier": "prettier --check 'src/**/*.ts' 'src/**/*.tsx' 'src/**/*.css' 'e2e/**/*.ts' '*.ts' '*.json'",
     "prettier:fix": "prettier --write 'src/**/*.ts' 'src/**/*.tsx' 'src/**/*.css' 'e2e/**/*.ts' '*.ts' '*.json'",

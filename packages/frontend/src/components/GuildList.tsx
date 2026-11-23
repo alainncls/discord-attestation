@@ -4,7 +4,7 @@ import GuildItem from './GuildItem';
 
 interface GuildListProps {
   guilds: SignedGuild[];
-  pendingGuildId?: string | null;
+  pendingGuildId?: string | null | undefined;
   isWalletConnected: boolean;
   onAttest: (guild: SignedGuild) => void;
   onCheck: (guild: SignedGuild) => void;

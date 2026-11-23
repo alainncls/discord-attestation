@@ -12,12 +12,12 @@ interface MainContentProps {
   isLoggedIn: boolean;
   isLoading: boolean;
   guilds: SignedGuild[];
-  txHash?: Hex;
-  attestationId?: Hex;
-  pendingGuildId?: string | null;
-  chainId?: number;
-  walletAddress?: Address;
-  walletChainId?: number;
+  txHash?: Hex | undefined;
+  attestationId?: Hex | undefined;
+  pendingGuildId?: string | null | undefined;
+  chainId?: number | undefined;
+  walletAddress?: Address | undefined;
+  walletChainId?: number | undefined;
   isWalletConnected: boolean;
   onAttest: (guild: SignedGuild) => void;
   onCheck: (guild: SignedGuild) => void;

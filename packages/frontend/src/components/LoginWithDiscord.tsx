@@ -4,8 +4,8 @@ import { DiscordIcon } from './icons';
 import { linea, lineaSepolia } from 'wagmi/chains';
 
 interface LoginWithDiscordProps {
-  address?: `0x${string}`;
-  chainId?: number;
+  address?: `0x${string}` | undefined;
+  chainId?: number | undefined;
   onAuthorize?: (url: string) => void;
 }
 

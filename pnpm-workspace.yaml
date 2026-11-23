@@ -19,6 +19,7 @@ catalog:
   '@types/react-dom': 19.3.0
   '@verax-attestation-registry/verax-sdk': 5.4.0
   '@vitejs/plugin-react': 6.3.0
+  '@wagmi/connectors': 8.2.4
   '@wagmi/core': 3.6.9
   axios: 1.21.1
   eslint: 10.15.0
@@ -35,14 +36,12 @@ catalog:
   wagmi: 3.7.11
 
 overrides:
-  # GHSA-mrhx-c7xc-m3w5 / CVE-2023-54404: Reown AppKit 1.8.24 still resolves
-  # Zod 3.x. Zod 4.6.6 is the first patched release; retain this exact override
+  # GHSA-mrhx-c7xc-m3w5 / CVE-2023-54404: Reown AppKit 2.0.0 (appkit-wallet) still
+  # resolves Zod 3.x. Zod 4.6.6 is the first patched release; retain this exact override
   # until the upstream graph publishes an explicitly compatible resolution.
   zod: 4.6.6
   # GHSA-7mx3-vvmw-hjmv / GHSA-c4qx-w738-7hr3: Verax SDK pulls vulnerable 10.x/11.x.
   '@graphql-tools/utils': 12.0.3
-  axios: 1.21.1
-  '@base-org/account': 2.5.13
   # GHSA-3g3m-2fjr-6pw4 / GHSA-g3hv-75wg-m249: solhint pins glob 13 (minimatch 10).
   glob@>=9.0.0 <14.0.2: 14.0.6
 

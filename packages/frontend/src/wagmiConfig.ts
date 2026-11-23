@@ -1,6 +1,6 @@
 import { linea, lineaSepolia, mainnet } from 'wagmi/chains';
 import type { AppKitNetwork } from '@reown/appkit/networks';
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { EvmWagmiAdapter } from './evmWagmiAdapter';
 import { http } from 'viem';
 
 // Validate required environment variables
@@ -20,7 +20,7 @@ export const projectId = walletConnectProjectId;
 // Networks: Linea (mainnet + testnet) + Ethereum mainnet for ENS resolution
 export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [linea, lineaSepolia, mainnet];
 
-export const wagmiAdapter = new WagmiAdapter({
+export const wagmiAdapter = new EvmWagmiAdapter({
   networks,
   projectId,
   transports: {

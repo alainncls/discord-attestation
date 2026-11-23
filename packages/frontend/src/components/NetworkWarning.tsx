@@ -3,7 +3,7 @@ import { linea, lineaSepolia } from 'wagmi/chains';
 import './NetworkWarning.css';
 
 interface NetworkWarningProps {
-  chainId?: number;
+  chainId?: number | undefined;
 }
 
 export function NetworkWarning({ chainId }: NetworkWarningProps) {

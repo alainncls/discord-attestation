@@ -4,9 +4,9 @@ import { truncateHexString } from '../utils/helpers';
 import './TransactionStatus.css';
 
 interface TransactionStatusProps {
-  txHash?: Hex;
-  attestationId?: Hex;
-  chainId?: number;
+  txHash?: Hex | undefined;
+  attestationId?: Hex | undefined;
+  chainId?: number | undefined;
 }
 
 const TransactionStatus = ({ txHash, attestationId, chainId }: TransactionStatusProps) => {

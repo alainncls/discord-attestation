@@ -16,10 +16,11 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@reown/appkit": "1.8.24",
-    "@reown/appkit-adapter-wagmi": "1.8.24",
+    "@reown/appkit": "2.0.0",
+    "@reown/appkit-adapter-wagmi": "2.0.0",
     "@tanstack/react-query": "catalog:",
     "@verax-attestation-registry/verax-sdk": "catalog:",
+    "@wagmi/connectors": "catalog:",
     "@wagmi/core": "catalog:",
     "date-fns": "4.4.0",
     "react": "catalog:",

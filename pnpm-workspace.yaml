@@ -46,25 +46,3 @@ overrides:
   glob@>=9.0.0 <14.0.2: 14.0.6
 
 minimumReleaseAge: 10080
-# Temporary: locked versions younger than minimumReleaseAge. Remove after 2026-11-25.
-minimumReleaseAgeExclude:
-  - '@tanstack/query-core@5.108.0'
-  - '@tanstack/react-query@5.108.0'
-  - '@testing-library/user-event@14.6.12'
-  - '@tybys/wasm-util@0.10.5'
-  - '@typescript-eslint/eslint-plugin@8.73.0'
-  - '@typescript-eslint/parser@8.73.0'
-  - '@typescript-eslint/project-service@8.73.0'
-  - '@typescript-eslint/scope-manager@8.73.0'
-  - '@typescript-eslint/tsconfig-utils@8.73.0'
-  - '@typescript-eslint/type-utils@8.73.0'
-  - '@typescript-eslint/types@8.73.0'
-  - '@typescript-eslint/typescript-estree@8.73.0'
-  - '@typescript-eslint/utils@8.73.0'
-  - '@typescript-eslint/visitor-keys@8.73.0'
-  - '@vitest/mocker@5.1.1'
-  - '@vitest/spy@5.1.1'
-  - 'minimatch@11.0.9'
-  - 'typescript-eslint@8.73.0'
-  - 'viem@2.58.0'
-  - 'vitest@5.1.1'

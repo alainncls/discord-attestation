@@ -13,7 +13,9 @@ const getApiBaseUrl = (): string => {
   const isLocalViteDevServer = import.meta.env.DEV && window.location.port === '5173';
   return import.meta.env.VITE_MODE === 'development' || isLocalViteDevServer
     ? 'http://localhost:8888'
-    : '';
+    : window.location.pathname.startsWith('/discord/')
+      ? '/discord'
+      : '';
 };
 
 const LoginWithDiscord = ({ address, chainId, onAuthorize }: LoginWithDiscordProps) => {

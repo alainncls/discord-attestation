@@ -85,7 +85,9 @@ const getApiBaseUrl = () => {
 
   return import.meta.env.VITE_MODE === 'development' || isLocalViteDevServer
     ? 'http://localhost:8888'
-    : '';
+    : window.location.pathname.startsWith('/discord/')
+      ? '/discord'
+      : '';
 };
 
 const clearOAuthCodeFromUrl = (expectedCode: string, expectedState: string | null) => {

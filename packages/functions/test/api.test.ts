@@ -170,6 +170,47 @@ describe('Discord signing API', () => {
     expect(authorizeUrl.searchParams.get('state')).toMatch(/^[A-Za-z0-9_-]{43}$/);
   });
 
+  it.each([
+    [
+      'https://discord.alainnicolas.fr',
+      'https://alainnicolas.fr',
+      'https://alainnicolas.fr/discord/',
+    ],
+    [
+      'https://alainnicolas.fr/discord/',
+      'https://discord.alainnicolas.fr',
+      'https://discord.alainnicolas.fr',
+    ],
+  ])(
+    'preserves the redirect URI for each production origin',
+    async (configured, origin, redirectUri) => {
+      const transitionHandler = createApiHandler({
+        http,
+        config: () => ({ ...config, VITE_REDIRECT_URL: configured }),
+        oauthStateStore: () => stateStore,
+        now: () => NOW,
+      });
+      const start = await transitionHandler(createStartRequest({}, origin), createContext());
+      const payload = (await start.json()) as { authorizeUrl: string };
+      const authorize = new URL(payload.authorizeUrl);
+      expect(authorize.searchParams.get('redirect_uri')).toBe(redirectUri);
+      const state = required(authorize.searchParams.get('state'));
+      const cookie = required(required(start.headers.get('set-cookie')).split(';')[0]);
+      const response = await transitionHandler(
+        createRequest(
+          { state },
+          { state, stateHash: hash(state), cookieName: '', cookie },
+          origin,
+          cookie,
+        ),
+        createContext(),
+      );
+      expect(response.status).toBe(200);
+      const tokenParams = httpPost.mock.calls[0]?.[1] as URLSearchParams;
+      expect(tokenParams.get('redirect_uri')).toBe(redirectUri);
+    },
+  );
+
   it('reads the deploy context from the Netlify runtime when CONTEXT is not set', async () => {
     const records = new Map<string, OAuthStateRecord>();
     const runtimeHandler = createApiHandler({

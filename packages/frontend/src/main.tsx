@@ -40,7 +40,7 @@ const scheduleAnalytics = (callback: () => void) => {
 };
 
 const insightsId = import.meta.env.VITE_INSIGHTS_ID;
-if (insightsId) {
+if (insightsId && location.hostname !== 'alainnicolas.fr') {
   scheduleAnalytics(() => {
     void loadInsights()
       .then((analytics) => {

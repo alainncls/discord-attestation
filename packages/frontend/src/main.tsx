@@ -21,7 +21,7 @@ const loadInsights = () =>
     }
 
     const script = document.createElement('script');
-    script.src = '/js/insights-js.umd.min.js';
+    script.src = `${import.meta.env.BASE_URL}js/insights-js.umd.min.js`;
     script.async = true;
     script.onload = () => {
       resolve(window.insights);

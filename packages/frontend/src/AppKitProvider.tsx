@@ -7,6 +7,9 @@ import LineaMainnetIcon from './assets/linea-mainnet.svg';
 
 const queryClient = new QueryClient();
 const siteUrl =
+  (typeof window !== 'undefined' && window.location.pathname.startsWith('/discord/')
+    ? `${window.location.origin}/discord`
+    : undefined) ??
   import.meta.env.VITE_PUBLIC_SITE_URL ??
   (typeof window !== 'undefined' ? window.location.origin : 'https://discord.alainnicolas.fr');
 

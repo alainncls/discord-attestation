@@ -85,6 +85,13 @@ const getHeaders = (req: Request, config: RuntimeConfig): Record<string, string>
   const allowedOrigins = new Set(
     [configuredOrigin, DEV_REDIRECT_URL, 'http://127.0.0.1:5173'].filter(Boolean),
   );
+  if (
+    config.CONTEXT === 'production' &&
+    ['https://discord.alainnicolas.fr', 'https://alainnicolas.fr'].includes(configuredOrigin ?? '')
+  ) {
+    allowedOrigins.add('https://discord.alainnicolas.fr');
+    allowedOrigins.add('https://alainnicolas.fr');
+  }
   const allowedOrigin =
     origin && allowedOrigins.has(origin) ? origin : (configuredOrigin ?? DEV_REDIRECT_URL);
 
@@ -120,13 +127,27 @@ const getOAuthContext = (
   } catch {
     throw new ApiError(500, 'Configuration is invalid');
   }
-  if (origin !== configuredOrigin) throw new ApiError(403, 'Invalid OAuth origin');
+  let redirectUri = config.VITE_REDIRECT_URL;
+  if (origin !== configuredOrigin) {
+    const productionOrigins = ['https://discord.alainnicolas.fr', 'https://alainnicolas.fr'];
+    if (
+      config.CONTEXT !== 'production' ||
+      !productionOrigins.includes(configuredOrigin) ||
+      !productionOrigins.includes(origin)
+    ) {
+      throw new ApiError(403, 'Invalid OAuth origin');
+    }
+    redirectUri =
+      origin === 'https://alainnicolas.fr'
+        ? 'https://alainnicolas.fr/discord/'
+        : 'https://discord.alainnicolas.fr';
+  }
 
   const environment = config.CONTEXT;
   if (!environment || !/^[a-z0-9-]{1,32}$/i.test(environment)) {
     throw new ApiError(500, 'Configuration is invalid');
   }
-  return { origin, redirectUri: config.VITE_REDIRECT_URL, environment };
+  return { origin, redirectUri, environment };
 };
 
 const sha256 = (value: string): string => createHash('sha256').update(value).digest('hex');
@@ -437,7 +458,7 @@ const getToken = async (
     VITE_REDIRECT_URL: string;
   },
   code: string,
-  isDev: boolean,
+  redirectUri: string,
   requestBudget: ReturnType<typeof createRequestBudget>,
 ): Promise<string> => {
   const params = new URLSearchParams({
@@ -445,7 +466,7 @@ const getToken = async (
     client_secret: config.DISCORD_CLIENT_SECRET,
     grant_type: 'authorization_code',
     code,
-    redirect_uri: isDev ? DEV_REDIRECT_URL : config.VITE_REDIRECT_URL,
+    redirect_uri: redirectUri,
   });
 
   let response;
@@ -775,7 +796,7 @@ export const createApiHandler = (dependencies: ApiDependencies) => {
         dependencies.http,
         config,
         code,
-        entry.record.environment === 'dev',
+        oauthContext.redirectUri,
         requestBudget,
       );
       requestBudget.assertRemaining();
